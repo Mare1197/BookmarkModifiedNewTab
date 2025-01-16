@@ -97,6 +97,17 @@
                     <div>
                         <h3 class="changelogTitle">Changelog</h3>
                         <div class="changelogEntry featured">
+                            <b>v1.5.1</b>
+                            <ul>
+                                <li>
+                                    <div>Bug Fixes</div>
+                                    <ul>
+                                        <li>Attempting to fix weird reddit fetch bug.</li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="changelogEntry">
                             <b>v1.5.0</b>
                             <ul>
                                 <li>
