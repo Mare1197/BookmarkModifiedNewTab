@@ -657,7 +657,7 @@
         const time = options.time || 'day'; // 'hour', 'day', 'week', 'month', 'year', 'all'
         const sort = options.sort || 'top';
         const imageOrientation = options.imageOrientation || 'any';
-        const redditData = await fetch(`https://www.reddit.com/r/${subreddits.join('+')}/${section}.json?sort=${sort}&t=${time}&limit=${limit}`)
+        const redditData = await fetch(`https://www.reddit.com/r/${subreddits.join('+')}/${section}.json?sort=${sort}&t=${time}&limit=${limit}`, { cache: 'no-cache' })
             .then(r => r.json()).catch(() => null);
         const identity = a => a;
         const domainMapFunctions = {

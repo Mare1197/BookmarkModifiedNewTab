@@ -19,7 +19,7 @@ const fetchFeed = (subs = {all: true}, after) => new Promise(res => {
     if (after) {
         feedUrl += '?after=' + after;
     }
-    fetch(feedUrl).then(r => r.json()).then(res).catch(() => res(null));
+    fetch(feedUrl, { cache: 'no-cache' }).then(r => r.json()).then(res).catch(() => res(null));
 });
 
 const formatUpvotes = (upvotes) => {
