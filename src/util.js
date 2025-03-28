@@ -719,13 +719,13 @@
             bg.image = randomImage.url;
             bg.redditOptions.title = randomImage.title;
             bg.redditOptions.link = randomImage.link;
-            localStorage.lastBgSrc = bg.image;
             if (bg.smartFit) {
                 const img = await util.loadImage(bg.image);
                 const screenIsWide = window.innerWidth > window.innerHeight;
                 const imageIsWide = img.width > img.height;
                 bg.mode = screenIsWide !== imageIsWide ? 'fit' : 'fill';
             }
+            localStorage.lastBgSrc = bg.image;
         }
     };
 
