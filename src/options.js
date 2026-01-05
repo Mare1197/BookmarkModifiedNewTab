@@ -82,17 +82,11 @@
                     <h3 class="extensionName">Super Bookmark Desktop v<span data-id="version"></span></h3>
                     <div>&copy; Kyle Paulsen (2017-${(new Date()).getFullYear()})</div>
                     <div><a href="https://github.com/kylepaulsen/SuperBookmarkDesktop">Open Source on Github</a></div><br>
-                    <div>
-                        <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
-                        <input type="hidden" name="cmd" value="_s-xclick">
-                        <input type="hidden" name="encrypted" value="-----BEGIN PKCS7-----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-----END PKCS7-----
-                        ">
-                        <div style="display: flex">
-                            <input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
-                            <div style="font-size: 20px; margin-left: 10px;">Like this extension? Please buy me food! &#x1F35C</div>
-                        </div>
-                        <img alt="" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
-                        </form>
+                    <div style="margin-bottom: 16px;">
+                        <a class="donateBtn" target="_blank" href="https://www.paypal.com/donate/?business=7598UZYTQPWEN&no_recurring=0&item_name=Thanks+for+supporting+my+development+work.+This+motivates+me+to+create+more+cool+things+for+everyone.&currency_code=USD">
+                            Donate
+                        </a>
+                        <span style="font-size: 20px; margin-left: 6px; display: inline-block; transform: translateY(1px);">Like this extension? Please buy me food! &#x1F35C</span>
                     </div>
                     <div>
                         <h3 class="changelogTitle">Changelog</h3>
