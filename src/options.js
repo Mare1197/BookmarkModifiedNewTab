@@ -86,11 +86,23 @@
                         <a class="donateBtn" target="_blank" href="https://www.paypal.com/donate/?business=7598UZYTQPWEN&no_recurring=0&item_name=Thanks+for+supporting+my+development+work.+This+motivates+me+to+create+more+cool+things+for+everyone.&currency_code=USD">
                             Donate
                         </a>
-                        <span style="font-size: 20px; margin-left: 6px; display: inline-block; transform: translateY(1px);">Like this extension? Please buy me food! &#x1F35C</span>
+                        <span style="font-size: 20px; margin-left: 6px; display: inline-block; transform: translateY(1px);">Like this extension? Please buy me food! 🍜</span>
                     </div>
                     <div>
                         <h3 class="changelogTitle">Changelog</h3>
                         <div class="changelogEntry featured">
+                            <b>v1.5.2</b>
+                            <ul>
+                                <li>
+                                    <div>Bug Fixes</div>
+                                    <ul>
+                                        <li>Fixing subreddit background tiles showing wrong image.</li>
+                                        <li>Fixing donation button (Thank you for reporting this ❤️).</li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="changelogEntry">
                             <b>v1.5.1</b>
                             <ul>
                                 <li>
