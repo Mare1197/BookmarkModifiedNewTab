@@ -474,6 +474,8 @@
                 await app.openDocument(win.id, win);
             } else if (win.type === 'folder') {
                 await app.openFolder(win.id, null, win);
+            } else if (win.type === 'resource' && app.openBrowserResource) {
+                app.openBrowserResource(win.id, Object.assign({}, win, {userOpened: false}));
             }
         }
     };

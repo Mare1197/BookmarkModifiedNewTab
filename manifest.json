@@ -10,10 +10,15 @@
     "action": {
         "default_popup": "popup.html"
     },
+    "background": {
+        "service_worker": "background.js"
+    },
     "permissions": [
         "bookmarks",
         "favicon",
-        "storage"
+        "history",
+        "storage",
+        "tabs"
     ],
     "chrome_url_overrides": {
         "newtab": "index.html"

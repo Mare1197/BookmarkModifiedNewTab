@@ -3,6 +3,718 @@
     user-select: none;
 }
 
+/* Browser resources + shared inspector */
+.srOnly {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.resourceDock {
+    position: fixed;
+    left: 50%;
+    bottom: 18px;
+    z-index: 8;
+    display: flex;
+    max-width: calc(100vw - 24px);
+    overflow-x: auto;
+    transform: translateX(-50%);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 11px;
+    background: rgba(31, 33, 35, 0.94);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28);
+    backdrop-filter: blur(16px);
+    scrollbar-width: none;
+}
+
+.resourceDock::-webkit-scrollbar {
+    display: none;
+}
+
+.resourceLauncher {
+    position: relative;
+    display: flex;
+    flex: 0 0 92px;
+    min-height: 76px;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 5px;
+    padding: 9px 8px 8px;
+    border: 0;
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 0;
+    color: #fff;
+    background: transparent;
+    font: 550 12px/1.2 "Segoe UI", system-ui, sans-serif;
+    cursor: pointer;
+}
+
+.resourceLauncher:first-child {
+    border-radius: 10px 0 0 10px;
+}
+
+.resourceLauncher:last-child {
+    border-right: 0;
+    border-radius: 0 10px 10px 0;
+}
+
+.resourceLauncher:hover,
+.resourceLauncher.active {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.resourceLauncher.active::after {
+    content: "";
+    position: absolute;
+    right: 14px;
+    bottom: 6px;
+    left: 14px;
+    height: 2px;
+    border-radius: 2px;
+    background: #8bb8f5;
+}
+
+.resourceLauncher:focus-visible,
+.resourceWindow button:focus-visible,
+.resourceWindow input:focus-visible,
+.resourceRow:focus-visible,
+.resourceInspector a:focus-visible {
+    outline: 2px solid #63a8ef;
+    outline-offset: 2px;
+}
+
+.resourceLauncher svg {
+    width: 27px;
+    height: 27px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.75;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.window.systemWindow {
+    z-index: 7;
+    min-width: 340px;
+    min-height: 360px;
+    border: 1px solid rgba(24, 27, 31, 0.72);
+    border-radius: 10px;
+    background: #f7f8fa;
+    box-shadow: 0 20px 55px rgba(0, 0, 0, 0.34), 0 2px 8px rgba(0, 0, 0, 0.18);
+    color: #24272c;
+    font-family: Inter, "Segoe UI", system-ui, sans-serif;
+}
+
+.window.systemWindow.active {
+    z-index: 9;
+}
+
+.systemWindow .window-top {
+    flex-basis: 5px;
+    background: #292c30;
+}
+
+.systemWindow .window-top-middle {
+    flex-basis: 37px;
+    background: #292c30;
+}
+
+.systemWindow .window-top-middle > .w-resize,
+.systemWindow .window-top-middle > .e-resize,
+.systemWindow .window-middle > .w-resize,
+.systemWindow .window-middle > .e-resize {
+    flex-basis: 5px;
+}
+
+.systemWindow .title-bar {
+    align-items: center;
+    flex-direction: row-reverse;
+    border-bottom: 0;
+    color: #fff;
+}
+
+.systemWindow .title {
+    margin: 0;
+    padding-left: 9px;
+    font: 600 14px/1.2 Inter, "Segoe UI", system-ui, sans-serif;
+}
+
+.systemWindow .close {
+    position: relative;
+    flex: 0 0 32px;
+    height: 29px;
+    margin: 0 4px 0 0;
+    border-radius: 6px;
+    background: transparent;
+}
+
+.systemWindow .close::before,
+.systemWindow .close::after {
+    content: "";
+    position: absolute;
+    top: 14px;
+    left: 10px;
+    width: 12px;
+    height: 1.5px;
+    border-radius: 1px;
+    background: #f2f4f6;
+}
+
+.systemWindow .close::before {
+    transform: rotate(45deg);
+}
+
+.systemWindow .close::after {
+    transform: rotate(-45deg);
+}
+
+.systemWindow .close:hover {
+    background: #c73f47;
+}
+
+.systemWindow .window-middle {
+    min-width: 0;
+    background: #f7f8fa;
+}
+
+.systemWindow .window-bottom {
+    flex-basis: 5px;
+    background: #f7f8fa;
+}
+
+.resourceWindowContent {
+    display: flex;
+    min-width: 0;
+    overflow: hidden !important;
+}
+
+.resourceApp {
+    display: flex;
+    width: 100%;
+    min-width: 0;
+    min-height: 0;
+    flex: 1 1 auto;
+    flex-direction: column;
+    background: #f7f8fa;
+}
+
+.resourceToolbar {
+    display: flex;
+    flex: 0 0 52px;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 11px;
+    border-bottom: 1px solid #d7dbe1;
+    background: #fbfcfd;
+}
+
+.resourceSearch {
+    display: flex;
+    width: min(360px, 52%);
+    min-width: 180px;
+    height: 35px;
+    align-items: center;
+    gap: 8px;
+    padding: 0 10px;
+    border: 1px solid #d7dbe1;
+    border-radius: 7px;
+    background: #fff;
+}
+
+.resourceSearch svg,
+.resourceIconButton svg,
+.inspectorButton svg,
+.resourceGroupHeading svg,
+.resourceFavicon svg,
+.resourceRowClose svg,
+.resourceActionButton svg,
+.inspectorSectionToggle svg {
+    flex: 0 0 auto;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.resourceSearch svg {
+    width: 17px;
+    height: 17px;
+    color: #737b86;
+}
+
+.resourceSearch input {
+    width: 100%;
+    min-width: 0;
+    border: 0;
+    outline: 0;
+    color: #24272c;
+    background: transparent;
+    font: 500 13px/1.2 Inter, "Segoe UI", system-ui, sans-serif;
+}
+
+.resourceSearch input::placeholder {
+    color: #7c848f;
+}
+
+.resourceToolbarSpacer {
+    flex: 1 1 auto;
+}
+
+.resourceIconButton,
+.inspectorButton {
+    display: inline-flex;
+    height: 35px;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    border: 1px solid #d7dbe1;
+    border-radius: 7px;
+    color: #343941;
+    background: #fff;
+    font: 600 13px/1 Inter, "Segoe UI", system-ui, sans-serif;
+    cursor: pointer;
+}
+
+.resourceIconButton {
+    width: 35px;
+    padding: 0;
+}
+
+.resourceIconButton svg,
+.inspectorButton svg {
+    width: 18px;
+    height: 18px;
+}
+
+.inspectorButton {
+    padding: 0 12px;
+}
+
+.resourceIconButton:hover,
+.inspectorButton:hover,
+.inspectorButton.active {
+    border-color: #9fb9d7;
+    background: #eef5fd;
+}
+
+.resourceBody {
+    position: relative;
+    display: flex;
+    min-width: 0;
+    min-height: 0;
+    flex: 1 1 auto;
+}
+
+.resourceListPane {
+    display: flex;
+    min-width: 0;
+    min-height: 0;
+    flex: 1 1 auto;
+    flex-direction: column;
+}
+
+.resourceList {
+    min-height: 0;
+    flex: 1 1 auto;
+    overflow: auto;
+    padding: 10px 11px 12px;
+}
+
+.resourceGroup + .resourceGroup {
+    margin-top: 10px;
+}
+
+.resourceGroupHeading {
+    display: flex;
+    height: 36px;
+    align-items: center;
+    gap: 7px;
+    padding: 0 8px;
+    color: #2c3036;
+    font: 650 14px/1.2 Inter, "Segoe UI", system-ui, sans-serif;
+}
+
+.resourceGroupHeading > svg {
+    width: 19px;
+    height: 19px;
+}
+
+.resourceGroupMeta {
+    margin-left: auto;
+    color: #7a828c;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.resourceCurrentLabel {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: #506274;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.resourceCurrentLabel::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #2e7de0;
+}
+
+.resourceGroupRows {
+    overflow: hidden;
+    border: 1px solid #d7dbe1;
+    border-radius: 7px;
+    background: #fff;
+}
+
+.resourceRow {
+    display: grid;
+    min-height: 46px;
+    align-items: center;
+    grid-template-columns: 30px minmax(0, 1fr) auto auto;
+    gap: 10px;
+    padding: 5px 8px 5px 10px;
+    border-bottom: 1px solid #e2e5e9;
+    color: #24272c;
+    cursor: default;
+}
+
+.resourceRow:last-child {
+    border-bottom: 0;
+}
+
+.resourceRow:hover {
+    background: #f3f7fb;
+}
+
+.resourceRow.selected {
+    position: relative;
+    z-index: 1;
+    margin: -1px;
+    border: 1px solid #8bb8f5;
+    background: #e6f0ff;
+}
+
+.resourceRow.current:not(.selected) {
+    box-shadow: inset 3px 0 #2e7de0;
+}
+
+.resourceFavicon {
+    position: relative;
+    display: inline-flex;
+    width: 24px;
+    height: 24px;
+    align-items: center;
+    justify-content: center;
+    color: #69727e;
+}
+
+.resourceFavicon svg {
+    width: 18px;
+    height: 18px;
+}
+
+.resourceFavicon img {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+}
+
+.resourceFavicon.hasImage > svg {
+    visibility: hidden;
+}
+
+.resourceRowCopy {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.resourceRowTitle,
+.resourceRowSecondary,
+.resourceRowTrailing {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.resourceRowTitle {
+    font-size: 13px;
+    font-weight: 550;
+}
+
+.resourceRowSecondary,
+.resourceRowTrailing {
+    color: #6d7580;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.resourceRowTrailing {
+    max-width: 134px;
+}
+
+.resourceRowClose {
+    display: inline-flex;
+    width: 30px;
+    height: 30px;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: 6px;
+    color: #4b535d;
+    background: transparent;
+    cursor: pointer;
+}
+
+.resourceRowClose:hover {
+    color: #a72430;
+    background: rgba(185, 43, 55, 0.09);
+}
+
+.resourceRowClose svg {
+    width: 17px;
+    height: 17px;
+}
+
+.resourceFooter {
+    display: flex;
+    min-height: 38px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 0 12px;
+    border-top: 1px solid #d7dbe1;
+    color: #59616c;
+    background: #fbfcfd;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.resourceLiveStatus {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.resourceLiveStatus.live::after {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #26a269;
+}
+
+.resourceLiveStatus.error {
+    color: #9b2d38;
+}
+
+.resourceState {
+    display: flex;
+    min-height: 180px;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    color: #6e7681;
+    text-align: center;
+    font-size: 13px;
+}
+
+.resourceState.error {
+    color: #9b2d38;
+}
+
+.resourceInspector {
+    width: 34%;
+    min-width: 300px;
+    overflow: auto;
+    border-left: 1px solid #d7dbe1;
+    background: #f8f9fb;
+}
+
+.resourceInspector[hidden] {
+    display: none;
+}
+
+.inspectorSection {
+    border-bottom: 1px solid #d7dbe1;
+}
+
+.inspectorSectionToggle {
+    display: flex;
+    width: 100%;
+    height: 42px;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 12px;
+    border: 0;
+    color: #2d3137;
+    background: transparent;
+    font: 650 13px/1.2 Inter, "Segoe UI", system-ui, sans-serif;
+    cursor: pointer;
+}
+
+.inspectorSectionToggle:hover {
+    background: #f0f3f6;
+}
+
+.inspectorSectionToggle svg {
+    width: 16px;
+    height: 16px;
+    transition: transform 150ms ease;
+}
+
+.inspectorSectionToggle[aria-expanded="true"] svg {
+    transform: rotate(180deg);
+}
+
+.inspectorSectionContent {
+    padding: 0 12px 12px;
+}
+
+.inspectorMetadataRow {
+    display: grid;
+    align-items: start;
+    grid-template-columns: minmax(98px, 42%) minmax(0, 1fr);
+    gap: 10px;
+    padding: 5px 0;
+    font-size: 12px;
+    line-height: 1.35;
+}
+
+.inspectorMetadataLabel {
+    color: #646c77;
+    font-weight: 500;
+}
+
+.inspectorMetadataValue {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    color: #30353c;
+    font-weight: 550;
+}
+
+a.inspectorMetadataValue {
+    color: #2176d2;
+    text-decoration: none;
+}
+
+a.inspectorMetadataValue:hover {
+    text-decoration: underline;
+}
+
+.inspectorActions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.resourceActionButton {
+    display: inline-flex;
+    min-height: 36px;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 7px 9px;
+    border: 1px solid #d0d5db;
+    border-radius: 7px;
+    color: #343a42;
+    background: #fff;
+    font: 600 12px/1.2 Inter, "Segoe UI", system-ui, sans-serif;
+    cursor: pointer;
+}
+
+.resourceActionButton:hover {
+    border-color: #9fb9d7;
+    background: #eef5fd;
+}
+
+.resourceActionButton.danger:hover {
+    border-color: #d9a4aa;
+    color: #9b2d38;
+    background: #fff1f2;
+}
+
+.resourceActionButton svg {
+    width: 17px;
+    height: 17px;
+}
+
+@media (max-width: 860px) {
+    .resourceInspector {
+        position: absolute;
+        z-index: 2;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: min(360px, calc(100% - 24px));
+        min-width: 0;
+        box-shadow: -14px 0 28px rgba(25, 30, 37, 0.18);
+    }
+
+    .resourceLauncher {
+        flex-basis: 82px;
+    }
+}
+
+@media (max-width: 620px) {
+    .resourceDock {
+        right: 12px;
+        left: 12px;
+        transform: none;
+    }
+
+    .resourceLauncher {
+        flex: 1 0 72px;
+        min-height: 68px;
+        font-size: 11px;
+    }
+
+    .resourceLauncher svg {
+        width: 23px;
+        height: 23px;
+    }
+
+    .resourceSearch {
+        width: auto;
+        min-width: 0;
+        flex: 1 1 auto;
+    }
+
+    .inspectorButton span,
+    .resourceRowSecondary,
+    .resourceRowTrailing,
+    .resourceGroupMeta {
+        display: none;
+    }
+
+    .inspectorButton {
+        width: 35px;
+        padding: 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .resourceLauncher,
+    .resourceRow,
+    .inspectorSectionToggle svg {
+        transition: none;
+    }
+}
+
 html, body {
     margin: 0;
     padding: 0;

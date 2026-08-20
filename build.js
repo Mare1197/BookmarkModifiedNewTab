@@ -146,6 +146,7 @@ fs.writeFileSync(builtCSSPath, cssOut);
 // Copy stuff into dist
 const copyList = [
     'backgrounds',
+    'background.js',
     'icons',
     'LICENSE',
     'manifest.json',

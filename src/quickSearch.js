@@ -120,6 +120,7 @@
         ui.searchInput.value = '';
         ui.searchInput.focus();
     };
+    app.openSearchModal = openSearchModal;
 
     const searchButton = document.createElement('button');
     searchButton.className = 'quickSearchButton';
