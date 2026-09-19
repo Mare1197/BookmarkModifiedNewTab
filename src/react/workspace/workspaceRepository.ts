@@ -2,6 +2,7 @@ import {browser} from 'wxt/browser';
 import {syncObjectMentions} from './brainRepository';
 import {validateBrainSetting, validateMemoryPolicy} from './brainValidation';
 import {syncTaskReminder} from './taskReminders';
+import {richContentToPlainText, validateRichContent} from './richContent';
 
 import type {
     AssetRecord,
@@ -374,6 +375,12 @@ export async function updateEntity(entityId: string, patch: Partial<WorkspaceEnt
     if (!current) {
         return;
     }
+    if (patch.richContent !== undefined) validateRichContent(patch.richContent);
+    const bodyChanged = patch.metadata?.body !== undefined && patch.metadata.body !== current.metadata?.body;
+    if (current.richContent && bodyChanged && !patch.richContent) {
+        throw new Error('Use the rich text editor to change formatted content.');
+    }
+    if (Object.hasOwn(patch, 'richContent') && !patch.richContent) throw new Error('Cannot remove rich text implicitly.');
     const next: WorkspaceEntity = {
         ...current,
         ...patch,
@@ -384,6 +391,8 @@ export async function updateEntity(entityId: string, patch: Partial<WorkspaceEnt
             workspaceEditedAt: now()
         }
     };
+    next.contentRevision = (current.contentRevision || 0) + 1;
+    if (next.richContent) next.metadata = {...next.metadata, body: richContentToPlainText(next.richContent)};
     next.searchTerms = searchTerms(next.title, next.canonicalUrl, String(next.metadata?.body || ''));
     await workspaceClient.entities.put(next);
     await syncObjectMentions(entityId);

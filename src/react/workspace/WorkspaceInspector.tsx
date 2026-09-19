@@ -30,6 +30,7 @@ interface WorkspaceInspectorProps {
     onCreateTask: () => void;
     onInboxChange: (inInbox: boolean) => Promise<void>;
     onSave: (patch: Partial<WorkspaceEntity>) => Promise<void>;
+    onOpenRichText?: (entityId: string) => void;
     onTaskSave: (taskId: string, patch: Partial<WorkspaceTask>) => Promise<void>;
 }
 
@@ -67,6 +68,7 @@ export function WorkspaceInspector({
     onCreateTask,
     onInboxChange,
     onSave,
+    onOpenRichText,
     onTaskSave
 }: WorkspaceInspectorProps) {
     const [drafts, setDrafts] = useState<Record<string, {title: string; body: string}>>({});
@@ -107,7 +109,7 @@ export function WorkspaceInspector({
         if (savingEntityId === entity.id) return;
         setSavingEntityId(entity.id);
         try {
-            await onSave({title, metadata: {...entity.metadata, body}});
+            await onSave(entity.richContent ? {title} : {title, metadata: {body}});
             setDrafts(current => {
                 // A save finishing after another edit must not discard the newer draft.
                 if (current[entity.id]?.title !== title || current[entity.id]?.body !== body) {
@@ -166,11 +168,12 @@ export function WorkspaceInspector({
                 {(entity.type !== 'image' && entity.type !== 'screenshot') && (
                     <label>
                         Notes
-                        <textarea disabled={savingEntityId === entity.id} value={body} onChange={event => {
+                        <textarea readOnly={Boolean(entity.richContent)} disabled={savingEntityId === entity.id} value={body} onChange={event => {
                             edit({body: event.target.value});
                         }} rows={6} />
                     </label>
                 )}
+                {entity.richContent && <button type="button" disabled={!onOpenRichText} onClick={() => onOpenRichText?.(entity.id)}>Edit rich text</button>}
             </section>
             {children}
             <section className="workspaceInspector__facts">
