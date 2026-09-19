@@ -14,6 +14,7 @@
         tabs: '<rect x="4" y="5" width="14" height="12" rx="2"/><path d="M8 3h10a2 2 0 0 1 2 2v9M8 20h8"/>',
         history: '<path d="M4 5v5h5"/><path d="M5.4 15.2A8 8 0 1 0 6 7"/><path d="M12 7v5l3 2"/>',
         search: '<circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/>',
+        boards: '<rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/>',
         settings: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.2h-4V21a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3 14H2.8v-4H3a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1a1.7 1.7 0 0 0 1.9.3A1.7 1.7 0 0 0 10 3v-.2h4V3a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2v4H21a1.7 1.7 0 0 0-1.6 1Z"/>',
         inspector: '<path d="M4 7h10M18 7h2M4 17h2M10 17h10M4 12h4M12 12h8"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/><circle cx="10" cy="12" r="2"/>',
         refresh: '<path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 5v6h-6"/>',
@@ -78,14 +79,16 @@
     const createResourceRow = (item, controller, options = {}) => {
         const row = document.createElement('div');
         row.className = 'resourceRow';
-        row.tabIndex = 0;
-        row.setAttribute('role', 'button');
-        row.setAttribute('aria-label', item.title || 'Untitled');
         row.dataset.itemId = item.id;
         if (item.active) {
             row.classList.add('current');
         }
-        row.appendChild(createFavicon(item));
+        const selectSurface = document.createElement('button');
+        selectSurface.type = 'button';
+        selectSurface.className = 'resourceRowSelect';
+        selectSurface.setAttribute('aria-pressed', 'false');
+        selectSurface.setAttribute('aria-label', item.title || 'Untitled');
+        selectSurface.appendChild(createFavicon(item));
 
         const copy = document.createElement('span');
         copy.className = 'resourceRowCopy';
@@ -97,14 +100,15 @@
         secondary.textContent = item.path || item.displayHost || 'Not available';
         copy.appendChild(title);
         copy.appendChild(secondary);
-        row.appendChild(copy);
+        selectSurface.appendChild(copy);
 
         if (options.trailing) {
             const trailing = document.createElement('span');
             trailing.className = 'resourceRowTrailing';
             trailing.textContent = options.trailing;
-            row.appendChild(trailing);
+            selectSurface.appendChild(trailing);
         }
+        row.appendChild(selectSurface);
 
         if (item.type === 'tab') {
             const close = document.createElement('button');
@@ -130,14 +134,16 @@
         }
 
         const select = () => controller.selectItem(item, row);
-        row.addEventListener('click', select);
-        row.addEventListener('dblclick', () => controller.openItem(item));
-        row.addEventListener('keydown', e => {
+        selectSurface.addEventListener('click', select);
+        selectSurface.addEventListener('dblclick', () => controller.openItem(item));
+        selectSurface.addEventListener('keydown', e => {
             if (e.key === 'Enter') {
                 e.preventDefault();
+                e.stopPropagation();
                 controller.openItem(item);
             } else if (e.key === ' ') {
                 e.preventDefault();
+                e.stopPropagation();
                 select();
             }
         });
@@ -167,6 +173,8 @@
         }
         const rows = document.createElement('div');
         rows.className = 'resourceGroupRows';
+        rows.setAttribute('role', 'group');
+        rows.setAttribute('aria-label', label);
         group.appendChild(heading);
         group.appendChild(rows);
         return {group, rows};
@@ -267,6 +275,7 @@
             }
         });
         win.classList.add('systemWindow', 'resourceWindow');
+        win.setAttribute('aria-label', config.title);
         win.dataset.type = 'resource';
         win.dataset.id = type;
         const winUi = getUiElements(win);
@@ -292,7 +301,7 @@
             </div>
             <div class="resourceBody">
                 <div class="resourceListPane">
-                    <div class="resourceList" data-id="list"></div>
+                    <div class="resourceList" data-id="list" role="region" aria-label="${config.title}"></div>
                     <div class="resourceFooter">
                         <span data-id="summary"></span>
                         <span class="resourceLiveStatus" data-id="status"></span>
@@ -323,6 +332,9 @@
             }
         });
         ui.list.parentElement.parentElement.appendChild(inspector.element);
+        inspector.element.id = `resource-inspector-${type}`;
+        ui.inspector.setAttribute('aria-controls', inspector.element.id);
+        ui.inspector.setAttribute('aria-expanded', 'false');
         inspector.setToggleButton(ui.inspector);
 
         const controller = {
@@ -338,8 +350,12 @@
             groups: [],
             selectItem(item, row) {
                 this.selectedId = item.id;
-                this.list.querySelectorAll('.resourceRow.selected').forEach(el => el.classList.remove('selected'));
+                this.list.querySelectorAll('.resourceRow.selected').forEach(el => {
+                    el.classList.remove('selected');
+                    el.querySelector('.resourceRowSelect').setAttribute('aria-pressed', 'false');
+                });
                 row.classList.add('selected');
+                row.querySelector('.resourceRowSelect').setAttribute('aria-pressed', 'true');
                 inspector.setItem(item);
             },
             async openItem(item) {
@@ -368,11 +384,13 @@
                     const selected = this.list.querySelector(`[data-item-id="${CSS.escape(this.selectedId)}"]`);
                     if (selected) {
                         selected.classList.add('selected');
+                        selected.querySelector('.resourceRowSelect').setAttribute('aria-pressed', 'true');
                     }
                 }
             },
             async refresh() {
                 this.status.textContent = '';
+                this.list.setAttribute('aria-busy', 'true');
                 createStateMessage(this.list, 'Loading…');
                 try {
                     if (this.type === 'tabs') {
@@ -386,6 +404,8 @@
                 } catch (error) {
                     this.showError(this.type === 'history' ?
                         'History permission is unavailable.' : 'Browser data is unavailable.');
+                } finally {
+                    this.list.setAttribute('aria-busy', 'false');
                 }
             }
         };
@@ -440,6 +460,7 @@
         {id: 'tabs', label: 'Open Tabs'},
         {id: 'history', label: 'History'},
         {id: 'search', label: 'Search'},
+        {id: 'boards', label: 'Boards'},
         {id: 'settings', label: 'Settings'}
     ];
     launchers.forEach(launcher => {
@@ -457,6 +478,8 @@
                 openBrowserResource(launcher.id, {userOpened: true});
             } else if (launcher.id === 'search' && app.openSearchModal) {
                 app.openSearchModal();
+            } else if (launcher.id === 'boards') {
+                window.parent.postMessage({type: 'browser-os:open-workspace'}, window.location.origin);
             } else if (launcher.id === 'settings' && app.openOptions) {
                 app.openOptions();
             }

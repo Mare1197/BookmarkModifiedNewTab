@@ -188,6 +188,7 @@
             element.hidden = !shouldOpen;
             if (toggleButton) {
                 toggleButton.setAttribute('aria-pressed', shouldOpen ? 'true' : 'false');
+                toggleButton.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
                 toggleButton.classList.toggle('active', shouldOpen);
             }
             return shouldOpen;
@@ -196,6 +197,7 @@
         const setToggleButton = button => {
             toggleButton = button;
             toggleButton.setAttribute('aria-pressed', element.hidden ? 'false' : 'true');
+            toggleButton.setAttribute('aria-expanded', element.hidden ? 'false' : 'true');
         };
 
         renderEmpty();

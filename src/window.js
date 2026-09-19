@@ -23,7 +23,7 @@
                 <div class="window-top-middle">
                     <div class="w-resize top-resize"></div>
                     <div class="title-bar">
-                        <div class="close"></div>
+                        <button class="close" type="button" aria-label="Close window"></button>
                         <div class="title" data-id="title">Some Title</div>
                     </div>
                     <div class="e-resize top-resize"></div>
@@ -47,6 +47,8 @@
         `;
 
         const win = instanceTemplate(template);
+        win.setAttribute('role', 'dialog');
+        win.setAttribute('aria-label', title || 'Window');
         const titleBar = win.querySelector('.title-bar');
         titleBar.querySelector('.title').textContent = title;
 

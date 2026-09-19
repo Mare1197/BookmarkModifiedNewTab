@@ -105,7 +105,7 @@ Acceptance criteria:
 Risk: medium because new permissions and a service worker are introduced.
 Modifies existing working behavior: yes, additively; no bookmark/document behavior should change.
 
-## Slice 2 — Verification harness and legacy safety net
+## Slice 2 — Verification harness and legacy safety net (completed 20 August 2026)
 
 Goal: prevent regressions before data/framework migrations.
 
@@ -134,7 +134,7 @@ Acceptance criteria:
 Risk: low.
 Modifies existing working behavior: no.
 
-## Slice 3 — Versioned shared workspace model
+## Slice 3 — Versioned shared workspace model (completed 20 August 2026)
 
 Goal: introduce one durable identity and relationship foundation beside legacy stores.
 
@@ -169,7 +169,7 @@ Acceptance criteria:
 Risk: high.
 Modifies existing working behavior: adds a parallel model; legacy writes remain authoritative until parity.
 
-## Slice 4 — Typed WXT/React shell migration
+## Slice 4 — Typed WXT/React shell migration (completed 20 August 2026)
 
 Goal: replace the fragile global-script build without a feature rewrite.
 
@@ -198,7 +198,9 @@ Acceptance criteria:
 Risk: high.
 Modifies existing working behavior: infrastructure and rendering ownership; must be staged behind parity evidence.
 
-## Slice 5 — Multiple boards + mixed Canvas
+Implementation note: the WXT new-tab entrypoint owns a typed React shell and mounts the fully verified legacy desktop in a same-origin compatibility frame. The final `dist/` artifact is generated from WXT, uses a typed background service worker, preserves the audited permission set, and passes the unpacked-extension parity smoke test. New workspace surfaces can now migrate into the outer shell without resetting or rewriting legacy user state.
+
+## Slice 5 — Multiple boards + mixed Canvas (functional core delivered 20 August 2026)
 
 Goal: deliver the first complete shared-model workspace view.
 
@@ -226,7 +228,7 @@ Acceptance criteria:
 Risk: high.
 Modifies existing working behavior: adds boards; desktop remains available.
 
-## Slice 6 — Explorer + shared organization
+## Slice 6 — Explorer + shared organization (initial shared Explorer delivered 20 August 2026)
 
 Goal: add the mixed-object hierarchy without duplicating bookmark/page/note data.
 
@@ -253,7 +255,7 @@ Acceptance criteria:
 Risk: high.
 Modifies existing working behavior: extends folder semantics; preserves native bookmark behavior.
 
-## Slice 7 — Complete inspector + card metadata
+## Slice 7 — Complete inspector + card metadata (shared edit path delivered 20 August 2026)
 
 Goal: make the Slice 1 inspector universal across all entity types and views.
 
@@ -280,7 +282,7 @@ Acceptance criteria:
 Risk: medium.
 Modifies existing working behavior: replaces some modals only after parity.
 
-## Slice 8 — Shared relationships + Mind Map + filtered Graph
+## Slice 8 — Shared relationships + Mind Map + filtered Graph (functional core delivered 20 August 2026)
 
 Goal: make relationships reusable and renderer-independent.
 
@@ -309,7 +311,7 @@ Acceptance criteria:
 Risk: high.
 Modifies existing working behavior: adds views and connection tools.
 
-## Slice 9 — Unified local search
+## Slice 9 — Unified local search (initial offline search delivered 20 August 2026)
 
 Goal: search every supported local object without cloud services.
 
@@ -336,7 +338,7 @@ Acceptance criteria:
 Risk: medium.
 Modifies existing working behavior: expands/replaces quick search after parity.
 
-## Slice 10 — Screenshots and assets
+## Slice 10 — Screenshots and assets (completed 20 August 2026)
 
 Goal: add first-class local image/screenshot objects.
 
@@ -364,7 +366,7 @@ Acceptance criteria:
 Risk: medium.
 Modifies existing working behavior: additive.
 
-## Slice 11 — Optional AI connector layer
+## Slice 11 — Optional AI connector layer (provider boundary delivered 20 August 2026)
 
 Goal: add explicit provider-neutral analysis after the local workspace core is useful.
 
@@ -393,7 +395,7 @@ Acceptance criteria:
 Risk: high for privacy/provider drift.
 Modifies existing working behavior: additive and optional.
 
-## Slice 12 — GBrain decision only
+## Slice 12 — GBrain decision only (completed 20 August 2026)
 
 Goal: decide, not assume, whether GBrain is a connector, deeper memory layer, or hybrid.
 
@@ -408,6 +410,24 @@ Acceptance criteria: documented recommendation reviewed before implementation.
 Risk: decision risk only.
 Modifies existing working behavior: no.
 
+## Slice 13 — Local workflow layer (completed 4 September 2026)
+
+Goal: turn the shared workspace into a fast capture, retrieval, and execution surface without weakening local-first ownership.
+
+Delivered:
+
+- Ctrl/Cmd+K command palette and universal Quick Add with explicit multi-destination capture.
+- Canonical Quick Inbox state, smart query operators, and persistent saved filters.
+- Restorable browser-window sessions.
+- Durable tasks, due dates, Focus mode, and local alarm/notification reminders.
+- Bounded activity timeline with observed workspace provenance.
+- Review-before-save local page-text clipping with runtime-only origin permission.
+- Built-in board templates and non-destructive auto-layout.
+- Schema v3 migration, unit migration coverage, production build, Chromium workflow coverage, accessibility checks, and desktop/mobile visual QA.
+
+Risk: medium because local reminder permissions and optional per-origin clip access are introduced.
+Modifies existing working behavior: additive.
+
 ## Ongoing performance and reliability gates
 
 At every slice:
@@ -421,6 +441,38 @@ At every slice:
 ## Immediate execution order
 
 1. Slice 1 implementation and verification completed on 19 August 2026.
-2. Next: add the Slice 2 safety harness before any structured-data migration.
-3. Review the Slice 3 schema and migration fixture plan before installing Dexie.
-4. Do not start Canvas/Graph or AI work on top of the current implicit stores.
+2. Slice 2 safety harness completed on 20 August 2026.
+3. Slice 3 shared schema and migration foundation completed on 20 August 2026.
+4. Slice 4 WXT/React shell migration completed with legacy parity.
+5. Slices 5–11 now have a verified functional core. The intentionally unclaimed
+   expansion work is rich/file/frame Canvas breadth, native hierarchy editing and sibling ordering, complete
+   inspector section parity, large-graph profiling, additional search filters, and
+   a live provider credential smoke test.
+6. Slice 12 decision is recorded in GBRAIN_INTEGRATION_DECISION.md; runtime
+   integration remains deferred.
+7. Slice 13 local workflows are delivered and verified; page clipping remains an explicit runtime permission flow.
+
+## Slice 14 — Workspace hierarchy and Inspector consistency (8 September 2026)
+
+Implemented workspace folder creation/nesting, moving individual shared memberships
+and folders via drag/drop or keyboard controls, native-folder protection, cycle
+validation, and persistent last-move undo guarded against intervening edits.
+The Inspector now shows all board/folder memberships, recent workspace history and
+incoming backlinks. Save controls protect pending edits, and implicit refreshes use
+the current board rather than a stale board captured before an asynchronous action.
+
+Affected modules: `hierarchyRepository.ts`, `WorkspaceHierarchy.tsx`,
+`WorkspaceExplorer.tsx`, `WorkspaceInspector.tsx`, `WorkspaceApp.tsx`, workspace CSS,
+unit and extension regression tests, and README.
+
+Validation on 8 September 2026: lint, typecheck, 26 unit tests and the production
+build passed. All 7 existing/full-suite extension checks passed with one worker
+and a 120-second per-test budget; the additional A-to-B-to-A selection regression
+then passed separately (8 distinct browser tests total). Desktop and 390px mobile
+screenshots were reviewed. The first parallel run exceeded the earlier 45-second
+budget in two tests; the sequential rerun passed without assertion relaxation.
+Commands: `npm test`, `npm run build`, and
+`npm run test:smoke -- --workers=1 --timeout=120000`.
+No schema migration, new permission, provider call or native bookmark write is added.
+Remaining scope: full inspector section parity, manual sibling ordering, native
+hierarchy editing in this section, Canvas breadth and provider acceptance.

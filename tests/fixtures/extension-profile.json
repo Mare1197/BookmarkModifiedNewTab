@@ -1,0 +1,148 @@
+{
+  "windows": [
+    {
+      "id": 1,
+      "focused": true,
+      "tabs": [
+        {
+          "id": 11,
+          "windowId": 1,
+          "index": 0,
+          "active": true,
+          "title": "Fixture Search",
+          "url": "https://www.google.com/search?q=browser+workspace",
+          "favIconUrl": ""
+        },
+        {
+          "id": 12,
+          "windowId": 1,
+          "index": 1,
+          "active": false,
+          "openerTabId": 11,
+          "title": "Fixture Article",
+          "url": "https://example.test/article",
+          "favIconUrl": ""
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "focused": false,
+      "tabs": [
+        {
+          "id": 21,
+          "windowId": 2,
+          "index": 0,
+          "active": true,
+          "title": "Fixture Notes",
+          "url": "https://notes.example.test/",
+          "favIconUrl": ""
+        }
+      ]
+    }
+  ],
+  "history": [
+    {
+      "id": "history-1",
+      "url": "https://example.test/article",
+      "title": "Fixture Article",
+      "lastVisitTime": 1787153400000,
+      "visitCount": 3,
+      "typedCount": 1
+    },
+    {
+      "id": "history-2",
+      "url": "https://notes.example.test/",
+      "title": "Fixture Notes",
+      "lastVisitTime": 1787149800000,
+      "visitCount": 1,
+      "typedCount": 0
+    }
+  ],
+  "visits": {
+    "https://example.test/article": [
+      {"id": "visit-1", "visitId": "visit-1", "visitTime": 1787067000000, "transition": "link"},
+      {"id": "visit-2", "visitId": "visit-2", "visitTime": 1787153400000, "transition": "link"}
+    ],
+    "https://notes.example.test/": [
+      {"id": "visit-3", "visitId": "visit-3", "visitTime": 1787149800000, "transition": "typed"}
+    ]
+  },
+  "bookmarksTree": [
+    {
+      "id": "0",
+      "title": "",
+      "children": [
+        {
+          "id": "1",
+          "parentId": "0",
+          "title": "Bookmarks bar",
+          "children": [
+            {
+              "id": "101",
+              "parentId": "1",
+              "title": "Fixture Folder",
+              "children": [
+                {
+                  "id": "102",
+                  "parentId": "101",
+                  "title": "Nested Fixture",
+                  "url": "https://example.test/nested"
+                }
+              ]
+            },
+            {
+              "id": "103",
+              "parentId": "1",
+              "title": "Fixture Bookmark",
+              "url": "https://example.test/article"
+            },
+            {
+              "id": "104",
+              "parentId": "1",
+              "title": "Fixture Document",
+              "url": "data:text/html;charset=UTF-8;base64,PCEtLXNiZC1kb2MtLT48cD5GaXh0dXJlIGRvY3VtZW50PC9wPg=="
+            }
+          ]
+        },
+        {
+          "id": "2",
+          "parentId": "0",
+          "title": "Other bookmarks",
+          "children": []
+        }
+      ]
+    }
+  ],
+  "storage": {
+    "browserOsTabSessionsV1": {
+      "11": {
+        "tabId": 11,
+        "windowId": 1,
+        "openedAt": 1787151000000,
+        "openedAtSource": "created-event",
+        "url": "https://www.google.com/search?q=browser+workspace",
+        "title": "Fixture Search"
+      },
+      "12": {
+        "tabId": 12,
+        "windowId": 1,
+        "openedAt": 1787151600000,
+        "openedAtSource": "created-event",
+        "openerTabId": 11,
+        "openedFrom": {
+          "tabId": 11,
+          "title": "Fixture Search",
+          "url": "https://www.google.com/search?q=browser+workspace"
+        },
+        "openedBySearch": {
+          "engine": "Google",
+          "query": "browser workspace",
+          "sourceUrl": "https://www.google.com/search?q=browser+workspace"
+        },
+        "url": "https://example.test/article",
+        "title": "Fixture Article"
+      }
+    }
+  }
+}

@@ -14,33 +14,6 @@
         }
     };
 
-    const persistFirstObservedSessions = async (groups, sessions) => {
-        let changed = false;
-        groups.forEach(group => {
-            group.tabs.forEach(tab => {
-                const key = String(tab.tabId);
-                if (!sessions[key]) {
-                    sessions[key] = {
-                        tabId: tab.tabId,
-                        windowId: tab.windowId,
-                        title: tab.title,
-                        url: tab.url,
-                        openedAt: tab.openedAt,
-                        openedAtSource: 'first-observed',
-                        openedBySearch: {known: false},
-                        updatedAt: Date.now()
-                    };
-                    changed = true;
-                }
-            });
-        });
-        if (changed) {
-            try {
-                await chrome.storage.local.set({[TAB_SESSIONS_KEY]: sessions});
-            } catch (e) {}
-        }
-    };
-
     const getBrowserWindows = async () => {
         const [windows, sessions] = await Promise.all([
             chrome.windows.getAll({populate: true, windowTypes: ['normal']}),
@@ -48,7 +21,9 @@
         ]);
         const observedAt = Date.now();
         const groups = browserDataCore.groupTabsByWindow(windows, sessions, observedAt);
-        await persistFirstObservedSessions(groups, sessions);
+        if (app.workspaceReady) {
+            app.workspaceReady.then(repository => repository && repository.recordTabGroups(groups)).catch(() => {});
+        }
         return groups;
     };
 
