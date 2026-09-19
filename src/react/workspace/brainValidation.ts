@@ -1,5 +1,6 @@
 import type {MemoryPolicy} from '../../workspace/types';
 import type {BrainView, TileLayout} from './brainRepository';
+import {validatePagePresentation} from './pageValidation';
 
 const record = (value: unknown): value is Record<string, unknown> =>
     Boolean(value && typeof value === 'object' && !Array.isArray(value));
@@ -27,6 +28,7 @@ export function validateTileLayout(value: unknown): asserts value is Record<stri
         typeof item.width !== 'number')) throw new Error('Invalid tile layout.');
 }
 export function validateBrainSetting(key: string, value: unknown) {
+    if (key.startsWith('workspace-page:')) validatePagePresentation(value);
     if (key.startsWith('brain-view:')) validateBrainView(value);
     if (key.startsWith('brain-tiles:')) validateTileLayout(value);
 }

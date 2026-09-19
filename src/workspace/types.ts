@@ -1,3 +1,5 @@
+import type {RichContent} from './pageTypes';
+
 export type EntityType =
     | 'analysis'
     | 'clip'
@@ -38,6 +40,8 @@ export interface WorkspaceEntity {
     properties?: Record<string, string | number | boolean | null>;
     source?: {provider: string; externalId: string; url?: string; createdAt?: number; updatedAt?: number};
     memory?: MemoryPolicy;
+    richContent?: RichContent;
+    contentRevision?: number;
     metadata?: Record<string, unknown>;
 }
 
