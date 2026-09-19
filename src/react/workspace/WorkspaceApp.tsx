@@ -2,6 +2,7 @@ import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {liveQuery} from 'dexie';
 import {workspaceClient} from './workspaceClient';
 import type {AssetRecord} from '../../workspace/types';
+import {addPageFile, isSafeRaster} from './pageAssets';
 import {
     addEdge,
     Background,
@@ -39,7 +40,6 @@ import {
 import {AnalysisView, SettingsView} from './WorkspaceUtilities';
 import {
     addCurrentTab,
-    addImageAsset,
     addNote,
     autoLayoutBoard,
     captureWindowSession,
@@ -88,13 +88,14 @@ function useAssetUrls(snapshot: WorkspaceSnapshot): Map<string, string> {
     const [urls, setUrls] = useState<Map<string, string>>(new Map());
     useEffect(() => {
         const urls = new Map<string, string>();
-        snapshot.assets.forEach(asset => {
-            if (asset.blob instanceof Blob) {
-                urls.set(asset.entityId, URL.createObjectURL(asset.blob));
-            }
+        let cancelled = false;
+        void Promise.all(snapshot.assets.map(async asset => {
+            if (await isSafeRaster(asset) && !cancelled) urls.set(asset.entityId, URL.createObjectURL(asset.blob));
+        })).then(() => {
+            if (!cancelled) setUrls(new Map(urls));
         });
-        setUrls(urls);
         return () => {
+            cancelled = true;
             urls.forEach(url => URL.revokeObjectURL(url));
         };
     }, [snapshot.assets]);
@@ -282,11 +283,13 @@ function WorkspaceFlow({
 function AssetsView({
     activeBoardId,
     refresh,
-    snapshot
+    snapshot,
+    onOpenWorkspace
 }: {
     activeBoardId: string;
     refresh: () => Promise<void>;
     snapshot: WorkspaceSnapshot;
+    onOpenWorkspace: (entityId: string) => void;
 }) {
     const [page, setPage] = useState(0);
     const [assets, setAssets] = useState<AssetRecord[]>([]);
@@ -323,17 +326,17 @@ function AssetsView({
                     className="primaryButton"
                     onClick={() => uploadRef.current?.click()}
                 >
-                    Upload image
+                    Upload file
                 </button>
                 <input
                     ref={uploadRef}
                     type="file"
-                    accept="image/*"
                     hidden
                     onChange={event => {
                         const file = event.target.files?.[0];
                         if (file) {
-                            void runAssetAction(() => addImageAsset(activeBoardId, file), 'Image added.');
+                            void runAssetAction(async () => {await addPageFile(activeBoardId, file);}, 'File added.');
+                            event.target.value = '';
                         }
                     }}
                 />
@@ -345,12 +348,13 @@ function AssetsView({
             <div className="workspaceAssets__grid">
                 {assets.map(asset => (
                     <article key={asset.id}>
-                        <img src={urls.get(asset.entityId)} alt="" />
+                        {urls.has(asset.entityId) && <img src={urls.get(asset.entityId)} alt="" />}
                         <strong>{asset.name}</strong>
                         <span>{Math.ceil(asset.size / 1024) + ' KB'} · {asset.mimeType}</span>
+                        <button onClick={() => onOpenWorkspace(asset.entityId)}>Open in workspace</button>
                     </article>
                 ))}
-                {assets.length === 0 && <p>No images on this page.</p>}
+                {assets.length === 0 && <p>No files on this page.</p>}
             </div>
             <button disabled={page === 0} onClick={() => setPage(page - 1)}>Previous assets</button>
             <span> {total} assets · Page {page + 1} </span>
@@ -685,7 +689,8 @@ function WorkspaceAppInner({onClose}: WorkspaceAppProps) {
                             snapshot={snapshot}
                         />}
                         {view === 'assets' && (
-                            <AssetsView activeBoardId={activeBoardId} refresh={() => refresh()} snapshot={snapshot} />
+                            <AssetsView activeBoardId={activeBoardId} refresh={() => refresh()} snapshot={snapshot}
+                                onOpenWorkspace={id => {setSelectedEntityId(id); setView('editor');}} />
                         )}
                         {view === 'analysis' && (
                             <AnalysisView
