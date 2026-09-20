@@ -4,9 +4,10 @@ import type {WorkspaceSnapshot} from './workspaceRepository';
 import {brainStatus, projectMembers, projectResumePreview} from './brainSelectors';
 import {workspaceClient} from './workspaceClient';
 
-export function ProjectHome({projectId, snapshot, onSelect, onCanvas, onStatus}: {
+export function ProjectHome({projectId, snapshot, onSelect, onCanvas, onWorkspace, onStatus}: {
     projectId: string; snapshot: WorkspaceSnapshot; onSelect: (id: string) => void;
     onCanvas: (id: string) => Promise<void>; onStatus: (text: string) => void;
+    onWorkspace?: (id: string) => Promise<void>;
 }) {
     const [preview, setPreview] = useState<ReturnType<typeof projectResumePreview>>();
     const [chosen, setChosen] = useState<Set<string>>(new Set());
@@ -49,6 +50,7 @@ export function ProjectHome({projectId, snapshot, onSelect, onCanvas, onStatus}:
         <h3>{project?.title} · Project home</h3>
         <p>{members.length} connected objects · {members.filter(item => item.type === 'task' && brainStatus(item, snapshot.tasks) !== 'done').length} open tasks · {members.filter(item => item.type === 'memory').length} memories</p>
         <button onClick={() => void onCanvas(projectId).catch(error => onStatus(String(error)))}>Open project canvas</button>
+        {onWorkspace && <button onClick={() => void onWorkspace(projectId).catch(error => onStatus(String(error)))}>Open project workspace</button>}
         <button disabled={busy} onClick={() => void previewResume()}>Preview resume work</button>
         {preview && <fieldset disabled={busy}><legend>Review tabs before opening (maximum 20)</legend>
             <p>Already-open and duplicate URLs are excluded. No tabs open until you confirm.</p>

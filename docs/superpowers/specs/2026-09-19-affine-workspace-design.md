@@ -1,6 +1,6 @@
 # Integrated AFFiNE-style workspace completion
 
-Status: design proposed for review; not implemented by this document.
+Status: design and execution approved by the user's follow-ups. The September 20 build implements the persistent multi-object workspace slice; remaining acceptance gaps are recorded in `docs/UNIFIED_BRAIN_STATUS.md`. This design is not evidence that every native AFFiNE feature is complete.
 
 ## Intent and agreed constraints
 
@@ -121,4 +121,4 @@ Keep the installed compatible BlockSuite versions for this work unless a verifie
 
 Workflow: review this written design, then prepare/review the implementation plan and execute test-first in independently verifiable stages. This document does not reduce the user's requested scope to a prototype. Implementation completion requires all ten acceptance cases or an explicit, evidenced blocker—not merely a successful build.
 
-Git boundary: preserve the current dirty checkout and earlier no-history-mutation ruling. No product code, staging, commit, push or installation is authorized by writing this design alone.
+Git boundary: the user subsequently authorized saving the current state. Local commit `09013d3` preserves the entire pre-upgrade implementation. No push or personal-browser installation is included. Preserve this checkpoint and unrelated work during implementation.

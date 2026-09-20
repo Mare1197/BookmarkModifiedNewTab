@@ -74,41 +74,40 @@ test('provider import, memory controls, project resume and cross-tab changes sha
     expect(errors).toEqual([]);
 });
 
-test('BlockSuite document and edgeless prototype edit one canonical reference and survive reload', async ({context, extensionId}) => {
+test('BlockSuite workspace edits the canonical reference without storing content in its document', async ({context, extensionId}) => {
     const page = await openBrain(context, extensionId);
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
     page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
     await page.getByRole('region', {name: 'Unified Brain', exact: true}).getByRole('button', {name: 'Start collecting ideas', exact: true}).click();
-    await page.getByRole('button', {name: 'Open in BlockSuite prototype', exact: true}).click();
-    const prototype = page.getByRole('region', {name: 'BlockSuite reference prototype'});
-    const block = prototype.locator('brain-reference-block');
+    await page.getByRole('complementary', {name: 'Inspector'}).getByRole('button', {name: 'Open in workspace', exact: true}).click();
+    const prototype = page.getByRole('region', {name: 'AFFiNE workspace'});
+    const block = prototype.locator('workspace-reference-block').filter({hasText: 'Start collecting ideas'});
     await expect(block).toContainText('Start collecting ideas');
+    // Formatting is owned by canonical notes, not the native selection toolbar.
+    await expect(prototype.locator('affine-format-bar-widget')).toHaveCount(0);
     const referenceProps = await block.evaluate(element =>
         Object.fromEntries(Object.entries(element.doc.spaceDoc.getMap('blocks').get(element.model.id).toJSON())
             .filter(([key]) => key.startsWith('prop:'))));
-    expect(Object.keys(referenceProps)).toEqual(['prop:entityId']);
+    expect(Object.keys(referenceProps).sort()).toEqual(['prop:entityId', 'prop:placementId']);
     expect(referenceProps['prop:entityId']).toBeTruthy();
-    await block.getByLabel('Reference title').fill('Canonical editor change');
-    await block.getByRole('button', {name: 'Save to Brain'}).click();
-    await expect(block).toContainText('Saved to canonical object');
+    await block.locator('rich-text [contenteditable="true"]').first().fill('Canonical editor change');
+    await prototype.getByRole('button', {name: 'Save now'}).click();
+    await expect(prototype.getByRole('status').first()).toContainText('saved');
     expect(await block.evaluate(element => JSON.stringify(element.doc.spaceDoc.toJSON())))
         .not.toContain('Canonical editor change');
-    await prototype.getByRole('button', {name: 'Edgeless', exact: true}).click();
+    await prototype.getByRole('button', {name: 'Canvas', exact: true}).click();
     await expect(block).toContainText('Canonical editor change');
-    await block.getByLabel('Reference title').scrollIntoViewIfNeeded();
-    await expect(block.getByLabel('Reference title')).toBeVisible();
-    await block.getByLabel('Reference notes').fill('Saved from the edgeless renderer');
-    await block.getByRole('button', {name: 'Save to Brain'}).click();
-    await expect(block).toContainText('Saved to canonical object');
+    await prototype.getByRole('button', {name: 'Fit cards', exact: true}).click();
+    await expect(block).toContainText('Canonical editor change');
     await page.screenshot({path: path.join(os.tmpdir(), 'brain-blocksuite.png')});
     await page.getByRole('button', {name: 'Brain', exact: true}).click();
-    await expect(page.locator('.brainTable tbody')).toContainText('Canonical editor change');
+    await expect(page.locator('.brainTable tbody')).toContainText('Start collecting ideas');
     await page.reload();
     await page.frameLocator('iframe[title="Browser OS desktop"]').getByRole('button', {name: 'Boards', exact: true}).click();
     await page.getByRole('button', {name: 'Brain', exact: true}).click();
-    await page.locator('.brainTable').getByRole('button', {name: 'Canonical editor change', exact: true}).click();
-    await page.getByRole('button', {name: 'Open in BlockSuite prototype', exact: true}).click();
+    await page.locator('.brainTable').getByRole('button', {name: 'Start collecting ideas', exact: true}).click();
+    await page.getByRole('complementary', {name: 'Inspector'}).getByRole('button', {name: 'Open in workspace', exact: true}).click();
     await expect(block).toContainText('Canonical editor change');
     expect(errors).toEqual([]);
 });

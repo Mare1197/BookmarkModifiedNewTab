@@ -121,6 +121,7 @@ export function WorkspaceExplorer({
                         role="treeitem"
                         key={entity.id}
                         onClick={() => onSelectEntity(entity.id)}
+                        draggable onDragStart={event => {event.dataTransfer.setData('text/brain-object', entity.id); event.dataTransfer.effectAllowed = 'copy';}}
                     >
                         <span>{entity.type === 'note' ? '▤' : entity.type === 'task' ? '☑' :
                             entity.type === 'clip' ? '✂' : entity.type === 'image' ? '▧' : '↗'}</span>

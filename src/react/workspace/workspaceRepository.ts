@@ -3,6 +3,9 @@ import {syncObjectMentions} from './brainRepository';
 import {validateBrainSetting, validateMemoryPolicy} from './brainValidation';
 import {syncTaskReminder} from './taskReminders';
 import {richContentToPlainText, validateRichContent} from './richContent';
+import {validateAssetDataUrl, validateEffectivePageState} from './pageBackupValidation';
+import {validatePagePresentation, validatePlacementPresentation} from './pageValidation';
+import type {PagePresentation} from '../../workspace/pageTypes';
 
 import type {
     AssetRecord,
@@ -247,26 +250,49 @@ export async function createBoard(name = 'Untitled board'): Promise<BoardRecord>
 }
 
 export async function renameBoard(boardId: string, name: string): Promise<void> {
+    await workspaceClient.transaction('rw', [workspaceClient.boards, workspaceClient.settings, workspaceClient.entities, workspaceClient.activities], async () => {
     await workspaceClient.boards.update(boardId, {name: name.trim() || 'Untitled board', updatedAt: now()});
+    const setting = await workspaceClient.settings.get('workspace-page:' + boardId);
+    if (setting) {
+        validatePagePresentation(setting.value);
+        const owner = await workspaceClient.entities.get(setting.value.ownerEntityId);
+        if (owner) await workspaceClient.entities.update(owner.id, {title: name.trim() || 'Untitled board', updatedAt: now(),
+            contentRevision: (owner.contentRevision || 0) + 1, searchTerms: searchTerms(name, String(owner.metadata?.body || ''))});
+    }
     await recordActivity('board-renamed', 'Board renamed', {boardId});
+    });
 }
 
 export async function duplicateBoard(boardId: string): Promise<BoardRecord> {
+    return workspaceClient.transaction('rw', [workspaceClient.boards, workspaceClient.placements, workspaceClient.settings, workspaceClient.entities, workspaceClient.activities], async () => {
     const source = await workspaceClient.boards.get(boardId);
     if (!source) {
         throw new Error('Board not found.');
     }
     const board = await createBoard(source.name + ' copy');
     const placements = await workspaceClient.placements.where('boardId').equals(boardId).toArray();
+    const ids = new Map(placements.map(p => [p.id, makeId('placement')]));
     await workspaceClient.placements.bulkPut(placements.map(placement => ({
         ...placement,
-        id: makeId('placement'),
+        id: ids.get(placement.id)!,
         boardId: board.id,
         createdAt: now(),
         updatedAt: now()
     })));
+    const setting = await workspaceClient.settings.get('workspace-page:' + boardId);
+    if (setting) {
+        validatePagePresentation(setting.value);
+        const owner: WorkspaceEntity = {id: makeId('document'), type: 'document', title: board.name, createdAt: now(), updatedAt: now(),
+            searchTerms: searchTerms(board.name), metadata: {workspacePage: true}};
+        await workspaceClient.entities.add(owner);
+        const value: PagePresentation = {...setting.value, ownerEntityId: owner.id, revision: 0,
+            connectors: setting.value.connectors.map(c => ({...c, id: makeId('connector'), fromPlacementId: ids.get(c.fromPlacementId)!, toPlacementId: ids.get(c.toPlacementId)!}))};
+        validatePagePresentation(value);
+        await workspaceClient.settings.put({key: 'workspace-page:' + board.id, value, updatedAt: now()});
+    }
     await recordActivity('board-duplicated', 'Board duplicated', {boardId: board.id});
     return board;
+    });
 }
 
 export async function deleteBoard(boardId: string): Promise<BoardRecord> {
@@ -280,11 +306,12 @@ export async function deleteBoard(boardId: string): Promise<BoardRecord> {
         workspaceClient.settings, async () => {
             await workspaceClient.settings.put({
                 key: 'trash:' + now() + ':board',
-                value: {kind: 'board', board, placements},
+                value: {kind: 'board', board, placements, pageSetting: await workspaceClient.settings.get('workspace-page:' + boardId)},
                 updatedAt: now()
             });
         await workspaceClient.placements.where('boardId').equals(boardId).delete();
         await workspaceClient.boards.delete(boardId);
+        await workspaceClient.settings.delete('workspace-page:' + boardId);
     });
     await recordActivity('board-trashed', 'Board moved to Trash', {boardId});
     return boards.find(board => board.id !== boardId) as BoardRecord;
@@ -413,6 +440,14 @@ export async function removePlacements(placementIds: string[]): Promise<void> {
             updatedAt: now()
         });
         await workspaceClient.placements.bulkDelete(placementIds);
+        const removed = new Set(placementIds);
+        for (const boardId of new Set(placements.map(p => p.boardId))) {
+            const setting = await workspaceClient.settings.get('workspace-page:' + boardId);
+            if (!setting) continue;
+            validatePagePresentation(setting.value);
+            await workspaceClient.settings.put({...setting, updatedAt: now(), value: {...setting.value, revision: setting.value.revision + 1,
+                connectors: setting.value.connectors.filter(c => !removed.has(c.fromPlacementId) && !removed.has(c.toPlacementId))}});
+        }
     });
     await recordActivity('placements-trashed', 'Card placement moved to Trash', {
         boardId: placements[0]?.boardId,
@@ -457,7 +492,14 @@ export async function createRelationship(
 }
 
 export async function deleteRelationship(relationshipId: string): Promise<void> {
+    await workspaceClient.transaction('rw', [workspaceClient.relationships, workspaceClient.settings], async () => {
     await workspaceClient.relationships.delete(relationshipId);
+    for (const s of await workspaceClient.settings.where('key').startsWith('workspace-page:').toArray()) {
+        validatePagePresentation(s.value);
+        if (s.value.connectors.some(c => c.relationshipId === relationshipId)) await workspaceClient.settings.put({...s, updatedAt: now(),
+            value: {...s.value, revision: s.value.revision + 1, connectors: s.value.connectors.filter(c => c.relationshipId !== relationshipId)}});
+    }
+    });
 }
 
 export async function addImageAsset(
@@ -1019,6 +1061,12 @@ function validateRecords(tableName: string, records: unknown[]): void {
         requireString(value, primaryKey, tableName);
         if (tableName === 'settings') validateBrainSetting(String(value.key), value.value);
         if (tableName === 'entities') {
+            if (value.richContent !== undefined) {
+                validateRichContent(value.richContent);
+                if (!['note', 'document'].includes(String(value.type))) throw new Error('Invalid rich text object type.');
+                if (!isRecord(value.metadata) || value.metadata.body !== richContentToPlainText(value.richContent)) throw new Error('Rich text body projection mismatch.');
+            }
+            if (value.contentRevision !== undefined && (!Number.isSafeInteger(value.contentRevision) || Number(value.contentRevision) < 0)) throw new Error('Invalid content revision.');
             if (value.memory !== undefined) validateMemoryPolicy(value.memory);
             requireString(value, 'title', tableName);
             const type = requireString(value, 'type', tableName);
@@ -1046,6 +1094,7 @@ function validateRecords(tableName: string, records: unknown[]): void {
             requireString(value, 'name', tableName);
         }
         if (tableName === 'placements') {
+            if (isRecord(value.metadata) && value.metadata.page !== undefined) validatePlacementPresentation(value.metadata.page);
             requireString(value, 'boardId', tableName);
             requireString(value, 'entityId', tableName);
             ['x', 'y', 'width', 'height'].forEach(field => {
@@ -1101,9 +1150,7 @@ function validateRecords(tableName: string, records: unknown[]): void {
         }
         if (tableName === 'assets') {
             requireString(value, 'entityId', tableName);
-            if (typeof value.blobDataUrl !== 'string' || !value.blobDataUrl.startsWith('data:image/')) {
-                throw new Error('Invalid or missing asset blob.');
-            }
+            validateAssetDataUrl(value);
         }
     });
 }
@@ -1191,6 +1238,7 @@ export async function importWorkspace(snapshot: WorkspaceExport): Promise<void> 
         }));
     }
     await workspaceClient.transaction('rw', workspaceClient.tables, async () => {
+        await validateEffectivePageState(preparedTables);
         for (const tableName of tableNames) {
             let records = preparedTables[tableName];
             if (Array.isArray(records) && records.length) {
@@ -1200,6 +1248,12 @@ export async function importWorkspace(snapshot: WorkspaceExport): Promise<void> 
                         const existing = await workspaceClient.entities.get(record.id);
                         // Backup merge must not undo local privacy choices. Restoration is explicit in Memory controls.
                         if (existing?.memory) record.memory = existing.memory;
+                        if (existing?.richContent && !record.richContent) {
+                            record.richContent = existing.richContent;
+                            record.metadata = {...record.metadata, body: richContentToPlainText(existing.richContent)};
+                            record.searchTerms = searchTerms(record.title, record.canonicalUrl, String(record.metadata.body));
+                        }
+                        if (existing) record.contentRevision = Math.max(existing.contentRevision || 0, record.contentRevision || 0) + 1;
                     }
                 }
                 await workspaceClient.table(tableName).bulkPut(records);
@@ -1218,11 +1272,13 @@ export async function restoreLatestTrash(): Promise<string> {
         board?: BoardRecord;
         kind?: string;
         placements?: BoardPlacement[];
+        pageSetting?: {key: string; value: PagePresentation; updatedAt: number};
     };
     await workspaceClient.transaction('rw', workspaceClient.boards, workspaceClient.placements,
         workspaceClient.settings, async () => {
             if (value.kind === 'board' && value.board) {
                 await workspaceClient.boards.put(value.board);
+                if (value.pageSetting) {validatePagePresentation(value.pageSetting.value); await workspaceClient.settings.put(value.pageSetting);}
             }
             if (Array.isArray(value.placements) && value.placements.length) {
                 await workspaceClient.placements.bulkPut(value.placements);

@@ -55,7 +55,7 @@ export function BrainObjectTools({entity, entities, relationships, onSelect, onC
         <button onClick={() => onBrain('Tiles')}>Show in Tiles</button>
         <button onClick={() => onBrain('Kanban')}>Show in Kanban</button>
         <button onClick={onAI}>Ask AI</button>
-        {onEditor && <button onClick={onEditor}>Open in BlockSuite prototype</button>}
+        {onEditor && <button onClick={onEditor}>Open in workspace</button>}
         {entity.source?.url && <a href={entity.source.url} target="_blank" rel="noreferrer">Open original</a>}
         <p><small>{entity.source ? entity.source.provider + ' · ' + entity.source.externalId : 'Local / browser source'}</small></p>
         <label>Add to Project<select value={projectId} onChange={event => setProjectId(event.target.value)}>

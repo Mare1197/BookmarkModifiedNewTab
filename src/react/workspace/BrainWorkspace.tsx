@@ -15,11 +15,12 @@ interface Props {
     snapshot: WorkspaceSnapshot;
     onSelect: (entityId: string) => void;
     onCanvas: (entityId: string) => Promise<void>;
+    onWorkspace?: (entityId: string) => Promise<void>;
     onRefresh: () => Promise<void>;
     onStatus: (message: string) => void;
 }
 
-export function BrainWorkspace({snapshot, onSelect, onCanvas, onRefresh, onStatus, initialMode = 'Table', navigationKey}: Props) {
+export function BrainWorkspace({snapshot, onSelect, onCanvas, onWorkspace, onRefresh, onStatus, initialMode = 'Table', navigationKey}: Props) {
     const [mode, setMode] = useState<BrainMode>(initialMode);
     useEffect(() => setMode(initialMode), [initialMode, navigationKey]);
     const [query, setQuery] = useState<BrainQuery>({sort: 'updated'});
@@ -132,7 +133,7 @@ export function BrainWorkspace({snapshot, onSelect, onCanvas, onRefresh, onStatu
             <ConversationImportPanel onImported={onRefresh} onStatus={onStatus} />
         </details>
         {query.projectId && <ProjectHome key={query.projectId} projectId={query.projectId} snapshot={snapshot}
-            onSelect={onSelect} onCanvas={onCanvas} onStatus={onStatus} />}
+            onSelect={onSelect} onCanvas={onCanvas} onWorkspace={onWorkspace} onStatus={onStatus} />}
         <p role="status">{displayed.length} objects · shared IDs across all views</p>
         <nav aria-label="Object pages"><button disabled={pageIndex === 0} onClick={() => setPage(pageIndex - 1)}>Previous page</button>
             <span> Page {pageIndex + 1} of {pageCount} · 50 objects per page </span>
@@ -142,7 +143,8 @@ export function BrainWorkspace({snapshot, onSelect, onCanvas, onRefresh, onStatu
         </tr></thead><tbody>{pageItems.map(entity => <tr key={entity.id} data-entity-id={entity.id}>
             <td>{objectLink(entity)}</td><td>{entity.type}</td><td>{statusControl(entity)}</td>
             <td>{new Date(entity.updatedAt).toLocaleString()}</td>
-            <td><button disabled={busy} onClick={() => void act(() => onCanvas(entity.id), 'Opened in Canvas')}>Open in Canvas</button></td>
+            <td><button disabled={busy} onClick={() => void act(() => onCanvas(entity.id), 'Opened in Canvas')}>Open in Canvas</button>
+                {onWorkspace && <button disabled={busy} onClick={() => void act(() => onWorkspace(entity.id), 'Opened workspace')}>Open in workspace</button>}</td>
         </tr>)}</tbody></table></div>}
         {mode === 'Kanban' && <div className="brainKanban">{BRAIN_STATUSES.map(status => <section key={status}
             aria-label={status} onDragOver={event => event.preventDefault()} onDrop={event => {
