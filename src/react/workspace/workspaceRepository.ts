@@ -4,7 +4,9 @@ import {validateBrainSetting, validateMemoryPolicy} from './brainValidation';
 import {syncTaskReminder} from './taskReminders';
 import {richContentToPlainText, validateRichContent} from './richContent';
 import {validateAssetDataUrl, validateEffectivePageState} from './pageBackupValidation';
-import {validatePagePresentation, validatePlacementPresentation} from './pageValidation';
+import {validateGeometry, validatePagePresentation, validatePlacementPresentation} from './pageValidation';
+import {captureEntityTransition} from './revisionRepository';
+import {mutatePages, openWorkspacePage, recordPageTransition} from './pageRepository';
 import type {PagePresentation} from '../../workspace/pageTypes';
 
 import type {
@@ -250,21 +252,24 @@ export async function createBoard(name = 'Untitled board'): Promise<BoardRecord>
 }
 
 export async function renameBoard(boardId: string, name: string): Promise<void> {
-    await workspaceClient.transaction('rw', [workspaceClient.boards, workspaceClient.settings, workspaceClient.entities, workspaceClient.activities], async () => {
+    await mutatePages([boardId], async () => {
     await workspaceClient.boards.update(boardId, {name: name.trim() || 'Untitled board', updatedAt: now()});
     const setting = await workspaceClient.settings.get('workspace-page:' + boardId);
     if (setting) {
         validatePagePresentation(setting.value);
         const owner = await workspaceClient.entities.get(setting.value.ownerEntityId);
-        if (owner) await workspaceClient.entities.update(owner.id, {title: name.trim() || 'Untitled board', updatedAt: now(),
-            contentRevision: (owner.contentRevision || 0) + 1, searchTerms: searchTerms(name, String(owner.metadata?.body || ''))});
+        if (owner) {
+            const next = {...owner, title: name.trim() || 'Untitled board', updatedAt: now(),
+                contentRevision: (owner.contentRevision || 0) + 1, searchTerms: searchTerms(name, String(owner.metadata?.body || ''))};
+            await workspaceClient.entities.put(next); await captureEntityTransition(owner, next, 'renamed');
+        }
     }
     await recordActivity('board-renamed', 'Board renamed', {boardId});
-    });
+    }, 'renamed');
 }
 
 export async function duplicateBoard(boardId: string): Promise<BoardRecord> {
-    return workspaceClient.transaction('rw', [workspaceClient.boards, workspaceClient.placements, workspaceClient.settings, workspaceClient.entities, workspaceClient.activities], async () => {
+    return workspaceClient.transaction('rw', workspaceClient.tables, async () => {
     const source = await workspaceClient.boards.get(boardId);
     if (!source) {
         throw new Error('Board not found.');
@@ -285,12 +290,14 @@ export async function duplicateBoard(boardId: string): Promise<BoardRecord> {
         const owner: WorkspaceEntity = {id: makeId('document'), type: 'document', title: board.name, createdAt: now(), updatedAt: now(),
             searchTerms: searchTerms(board.name), metadata: {workspacePage: true}};
         await workspaceClient.entities.add(owner);
+        await captureEntityTransition(undefined, owner, 'created');
         const value: PagePresentation = {...setting.value, ownerEntityId: owner.id, revision: 0,
             connectors: setting.value.connectors.map(c => ({...c, id: makeId('connector'), fromPlacementId: ids.get(c.fromPlacementId)!, toPlacementId: ids.get(c.toPlacementId)!}))};
         validatePagePresentation(value);
         await workspaceClient.settings.put({key: 'workspace-page:' + board.id, value, updatedAt: now()});
     }
     await recordActivity('board-duplicated', 'Board duplicated', {boardId: board.id});
+    await recordPageTransition(undefined, await openWorkspacePage(board.id), 'created');
     return board;
     });
 }
@@ -342,10 +349,11 @@ export async function addNote(boardId: string): Promise<BoardPlacement> {
         createdAt: timestamp,
         updatedAt: timestamp
     };
-    await workspaceClient.transaction('rw', workspaceClient.entities, workspaceClient.placements, async () => {
+    await mutatePages([boardId], async () => {
         await workspaceClient.entities.add(entity);
         await workspaceClient.placements.add(placement);
-    });
+        await captureEntityTransition(undefined, entity, 'created');
+    }, 'note-added');
     await recordActivity('note-added', 'Note added', {boardId, entityId: entity.id});
     return placement;
 }
@@ -393,11 +401,19 @@ export async function addCurrentTab(boardId: string): Promise<BoardPlacement> {
 }
 
 export async function updatePlacement(placementId: string, patch: Partial<BoardPlacement>): Promise<void> {
-    await workspaceClient.placements.update(placementId, {...patch, updatedAt: now()});
+    await mutatePages(async () => {const p = await workspaceClient.placements.get(placementId); return p ? [p.boardId] : [];}, async () => {
+        const current = await workspaceClient.placements.get(placementId);
+        if (!current) return;
+        if (patch.id && patch.id !== current.id || patch.boardId && patch.boardId !== current.boardId || patch.entityId && patch.entityId !== current.entityId) {
+            throw new Error('Placement identity cannot be changed.');
+        }
+        validateGeometry({...current, ...patch});
+        await workspaceClient.placements.update(placementId, {...patch, updatedAt: now()});
+    }, 'placement-updated');
 }
 
 export async function updateEntity(entityId: string, patch: Partial<WorkspaceEntity>): Promise<void> {
-    await workspaceClient.transaction('rw', [workspaceClient.entities, workspaceClient.relationships, workspaceClient.activities], async () => {
+    await workspaceClient.transaction('rw', [workspaceClient.entities, workspaceClient.relationships, workspaceClient.activities, workspaceClient.workspaceRevisions], async () => {
     const current = await workspaceClient.entities.get(entityId);
     if (!current) {
         return;
@@ -408,6 +424,7 @@ export async function updateEntity(entityId: string, patch: Partial<WorkspaceEnt
         throw new Error('Use the rich text editor to change formatted content.');
     }
     if (Object.hasOwn(patch, 'richContent') && !patch.richContent) throw new Error('Cannot remove rich text implicitly.');
+    if (patch.id && patch.id !== current.id || patch.type && patch.type !== current.type) throw new Error('Object identity cannot be changed.');
     const next: WorkspaceEntity = {
         ...current,
         ...patch,
@@ -422,12 +439,14 @@ export async function updateEntity(entityId: string, patch: Partial<WorkspaceEnt
     if (next.richContent) next.metadata = {...next.metadata, body: richContentToPlainText(next.richContent)};
     next.searchTerms = searchTerms(next.title, next.canonicalUrl, String(next.metadata?.body || ''));
     await workspaceClient.entities.put(next);
+    await captureEntityTransition(current, next, 'entity-updated');
     await syncObjectMentions(entityId);
     await recordActivity('entity-updated', 'Object updated', {entityId});
     });
 }
 
 export async function removePlacements(placementIds: string[]): Promise<void> {
+    await mutatePages(async () => (await workspaceClient.placements.bulkGet(placementIds)).filter((p): p is BoardPlacement => Boolean(p)).map(p => p.boardId), async () => {
     const placements = (await workspaceClient.placements.bulkGet(placementIds))
         .filter(Boolean) as BoardPlacement[];
     if (!placements.length) {
@@ -453,9 +472,11 @@ export async function removePlacements(placementIds: string[]): Promise<void> {
         boardId: placements[0]?.boardId,
         metadata: {count: placements.length}
     });
+    }, 'references-removed');
 }
 
 export async function duplicatePlacements(placementIds: string[]): Promise<void> {
+    await mutatePages(async () => (await workspaceClient.placements.bulkGet(placementIds)).filter((p): p is BoardPlacement => Boolean(p)).map(p => p.boardId), async () => {
     const placements = (await workspaceClient.placements.bulkGet(placementIds))
         .filter(Boolean) as BoardPlacement[];
     await workspaceClient.placements.bulkPut(placements.map(placement => ({
@@ -467,6 +488,7 @@ export async function duplicatePlacements(placementIds: string[]): Promise<void>
         createdAt: now(),
         updatedAt: now()
     })));
+    }, 'references-duplicated');
 }
 
 export async function createRelationship(
@@ -492,14 +514,16 @@ export async function createRelationship(
 }
 
 export async function deleteRelationship(relationshipId: string): Promise<void> {
-    await workspaceClient.transaction('rw', [workspaceClient.relationships, workspaceClient.settings], async () => {
+    await mutatePages(async () => (await workspaceClient.settings.where('key').startsWith('workspace-page:').toArray())
+        .filter(s => {validatePagePresentation(s.value); return s.value.connectors.some(c => c.relationshipId === relationshipId);})
+        .map(s => s.key.slice('workspace-page:'.length)), async () => {
     await workspaceClient.relationships.delete(relationshipId);
     for (const s of await workspaceClient.settings.where('key').startsWith('workspace-page:').toArray()) {
         validatePagePresentation(s.value);
         if (s.value.connectors.some(c => c.relationshipId === relationshipId)) await workspaceClient.settings.put({...s, updatedAt: now(),
             value: {...s.value, revision: s.value.revision + 1, connectors: s.value.connectors.filter(c => c.relationshipId !== relationshipId)}});
     }
-    });
+    }, 'relationship-removed');
 }
 
 export async function addImageAsset(
@@ -542,12 +566,11 @@ export async function addImageAsset(
         createdAt: timestamp,
         updatedAt: timestamp
     };
-    await workspaceClient.transaction('rw', workspaceClient.entities, workspaceClient.assets,
-        workspaceClient.placements, async () => {
+    await mutatePages([boardId], async () => {
             await workspaceClient.entities.add(entity);
             await workspaceClient.assets.add(asset);
             await workspaceClient.placements.add(placement);
-        });
+        }, 'asset-added');
     await recordActivity(assetType + '-added', assetType === 'screenshot' ? 'Screenshot added' : 'Image added', {
         boardId,
         entityId: entity.id
@@ -609,10 +632,10 @@ export async function saveAnalysis(
         createdAt: timestamp,
         updatedAt: timestamp
     };
-    await workspaceClient.transaction('rw', workspaceClient.entities, workspaceClient.placements, async () => {
+    await mutatePages([boardId], async () => {
         await workspaceClient.entities.add(entity);
         await workspaceClient.placements.add(placement);
-    });
+    }, 'analysis-added');
     await recordActivity('analysis-added', 'Analysis card added', {boardId, entityId: entity.id});
 }
 
@@ -718,6 +741,8 @@ export async function prepareClipFromRecentTab(): Promise<PreparedClip> {
 }
 
 export async function quickAdd(input: QuickAddInput): Promise<WorkspaceEntity> {
+    let reminder: WorkspaceTask | undefined;
+    const saved = await mutatePages(input.boardIds, async () => {
     const timestamp = now();
     const canonicalUrl = input.url ? canonicalizeUrl(input.url) : '';
     if ((input.kind === 'web' || input.kind === 'clip') && !canonicalUrl) {
@@ -754,6 +779,7 @@ export async function quickAdd(input: QuickAddInput): Promise<WorkspaceEntity> {
         await placeEntityOnBoard(boardId, entity);
     }
     for (const folderId of Array.from(new Set(input.folderIds || []))) {
+        if (!await workspaceClient.folders.get(folderId)) throw new Error('Destination folder no longer exists.');
         const existingMembership = await workspaceClient.folderMemberships
             .where('[folderId+entityId]').equals([folderId, entity.id]).first();
         if (!existingMembership) {
@@ -780,9 +806,10 @@ export async function quickAdd(input: QuickAddInput): Promise<WorkspaceEntity> {
             updatedAt: timestamp
         };
         await workspaceClient.tasks.add(task);
-        await syncTaskReminder(task, title);
+        reminder = task;
     }
     if (input.linkEntityId && input.linkEntityId !== entity.id) {
+        if (!await workspaceClient.entities.get(input.linkEntityId)) throw new Error('Linked object no longer exists.');
         await createRelationship(entity.id, input.linkEntityId,
             input.kind === 'task' ? 'task-for' : 'related');
     }
@@ -793,16 +820,22 @@ export async function quickAdd(input: QuickAddInput): Promise<WorkspaceEntity> {
             entityId: entity.id,
             metadata: {destinations: input.boardIds.length + (input.inbox ? 1 : 0)}
         });
+    await captureEntityTransition(undefined, entity, 'created');
     return entity;
+    }, 'quick-add');
+    if (reminder) await syncTaskReminder(reminder, saved.title);
+    return saved;
 }
 
 export async function addEntityToBoard(entityId: string, boardId: string): Promise<void> {
+    await mutatePages([boardId], async () => {
     const entity = await workspaceClient.entities.get(entityId);
     if (!entity) {
         throw new Error('Workspace object not found.');
     }
     await placeEntityOnBoard(boardId, entity);
     await recordActivity('entity-placed', 'Added to board', {boardId, entityId});
+    }, 'reference-added');
 }
 
 export async function setInboxState(entityId: string, inInbox: boolean): Promise<void> {
@@ -949,6 +982,7 @@ export async function updateTask(taskId: string, patch: Partial<WorkspaceTask>):
 }
 
 export async function autoLayoutBoard(boardId: string): Promise<void> {
+    await mutatePages([boardId], async () => {
     const placements = await workspaceClient.placements.where('boardId').equals(boardId).toArray();
     const entityMap = new Map((await workspaceClient.entities.bulkGet(placements.map(item => item.entityId)))
         .filter(Boolean).map(entity => [(entity as WorkspaceEntity).id, entity as WorkspaceEntity]));
@@ -967,6 +1001,7 @@ export async function autoLayoutBoard(boardId: string): Promise<void> {
         updatedAt: timestamp
     })));
     await recordActivity('board-auto-layout', 'Board auto-layout applied', {boardId});
+    }, 'auto-layout');
 }
 
 async function seedTemplate(board: BoardRecord, layout: BoardTemplateLayout): Promise<void> {
@@ -1265,6 +1300,7 @@ export async function importWorkspace(snapshot: WorkspaceExport): Promise<void> 
 }
 
 export async function restoreLatestTrash(): Promise<string> {
+    return workspaceClient.transaction('rw', workspaceClient.tables, async () => {
     const record = await workspaceClient.settings
         .where('key').startsWith('trash:').reverse().first();
     if (!record) {
@@ -1276,6 +1312,9 @@ export async function restoreLatestTrash(): Promise<string> {
         placements?: BoardPlacement[];
         pageSetting?: {key: string; value: PagePresentation; updatedAt: number};
     };
+    const boardIds = [...new Set([...(value.board ? [value.board.id] : []), ...(value.placements || []).map(p => p.boardId)])];
+    const before = new Map();
+    for (const id of boardIds) if (await workspaceClient.boards.get(id)) before.set(id, await openWorkspacePage(id));
     await workspaceClient.transaction('rw', workspaceClient.boards, workspaceClient.placements,
         workspaceClient.settings, async () => {
             if (value.kind === 'board' && value.board) {
@@ -1287,5 +1326,7 @@ export async function restoreLatestTrash(): Promise<string> {
             }
             await workspaceClient.settings.delete(record.key);
         });
+    for (const id of boardIds) await recordPageTransition(before.get(id), await openWorkspacePage(id), 'restore');
     return value.board?.id || value.placements?.[0]?.boardId || '';
+    });
 }

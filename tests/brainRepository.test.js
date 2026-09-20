@@ -26,7 +26,7 @@ async function fixture(t) {
         new Function('require', 'exports', compiled)(name => {
             if (name === './workspaceClient') return {workspaceClient: db};
             if (name === 'wxt/browser') return {browser};
-            if (name === 'react' || name === 'react/jsx-runtime') return require(name);
+            if (!name.startsWith('.')) return require(name);
             const dependency = path.resolve(path.dirname(filename), name + '.ts');
             return load(existsSync(dependency) ? dependency : dependency + 'x');
         }, exports);

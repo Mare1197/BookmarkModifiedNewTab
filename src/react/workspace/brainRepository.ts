@@ -3,6 +3,7 @@ import type {EntityType, MemoryPolicy, RelationshipRecord, WorkspaceEntity, Work
 import {validateBrainView, validateMemoryPolicy, validateTileLayout} from './brainValidation';
 import type {BrainQuery} from './brainSelectors';
 import {syncTaskReminder} from './taskReminders';
+import {captureEntityTransition} from './revisionRepository';
 
 export const BRAIN_TYPES: EntityType[] = ['project', 'conversation', 'message', 'note', 'idea', 'memory',
     'task', 'prompt', 'repository', 'file', 'image', 'automation', 'automation-run', 'feature',
@@ -46,8 +47,9 @@ export async function createBrainObject(input: {type: EntityType; title: string;
         searchTerms: terms(title + ' ' + (input.body || '')), tags: input.tags || [],
         properties: input.type === 'task' ? {} : {status: 'backlog'}, metadata: {body: input.body || '', sourceKind: 'user'},
         ...(input.type === 'memory' ? {memory: {status: 'active' as const, excludedFromAI: false, scope: 'project' as const, reviewedAt: timestamp}} : {})};
-    await db.transaction('rw', [db.entities, db.tasks, db.activities], async () => {
+    await db.transaction('rw', [db.entities, db.tasks, db.activities, db.workspaceRevisions], async () => {
         await db.entities.add(entity);
+        await captureEntityTransition(undefined, entity, 'created');
         if (entity.type === 'task') await db.tasks.add({id: id('task'), entityId: entity.id,
             status: 'backlog', dependencyIds: [], createdAt: timestamp, updatedAt: timestamp});
         await activity(entity.id, 'object-created', 'Created ' + entity.type + ': ' + title);
@@ -177,7 +179,7 @@ export async function importConversation(input: ConversationImport, options: {co
 
 export async function createSourcedMemory(sourceId: string, title: string, body: string) {
     required(body, 'Memory content');
-    return db.transaction('rw', [db.entities, db.tasks, db.relationships, db.activities], async () => {
+    return db.transaction('rw', [db.entities, db.tasks, db.relationships, db.activities, db.workspaceRevisions], async () => {
         await object(sourceId);
         const memory = await createBrainObject({type: 'memory', title, body});
         await linkBrainObjects(memory.id, sourceId, 'derived-from');

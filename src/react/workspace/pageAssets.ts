@@ -36,7 +36,7 @@ export async function addPageFile(boardId: string, file: File): Promise<{entityI
     // File bytes are canonical once. Unknown/incorrect MIME always gets a download-only blob.
     const mimeType = raster ? file.type : 'application/octet-stream';
     const blob = new Blob([file], {type: mimeType});
-    await db.transaction('rw', [db.entities, db.assets, db.placements, db.boards, db.settings, db.relationships, db.activities], async () => {
+    await db.transaction('rw', [db.entities, db.assets, db.placements, db.boards, db.settings, db.relationships, db.activities, db.workspaceRevisions], async () => {
         await openWorkspacePage(boardId);
         await db.entities.add(entity);
         await db.assets.add({id: assetId, entityId, type, name: file.name, size: file.size, mimeType, blob, createdAt: time, updatedAt: time});

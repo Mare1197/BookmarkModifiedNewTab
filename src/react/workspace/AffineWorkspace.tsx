@@ -109,7 +109,7 @@ export function AffineWorkspace(props: Props) {
             </div>}
             <div className="affineControls"><label>New note title<input value={noteTitle} onChange={e => setNoteTitle(e.target.value)} /></label>
                 <button disabled={busy || !noteTitle.trim()} onClick={() => void run(async () => {
-                    await db.transaction('rw', [db.entities, db.tasks, db.activities, db.boards, db.settings, db.relationships, db.placements], async () => {
+                    await db.transaction('rw', [db.entities, db.tasks, db.activities, db.boards, db.settings, db.relationships, db.placements, db.workspaceRevisions], async () => {
                         const note = await createBrainObject({type: 'note', title: noteTitle}); await addPageReference(props.boardId, note.id);
                     }); setNoteTitle(''); await reload();
                 })}>New note</button>

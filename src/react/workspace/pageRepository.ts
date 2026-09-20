@@ -3,6 +3,9 @@ import {openBrainCanvas} from './brainRepository';
 import {validateGeometry, validatePagePresentation, validatePlacementPresentation} from './pageValidation';
 import type {BoardPlacement, BoardRecord, RelationshipRecord, WorkspaceEntity} from '../../workspace/types';
 import type {PageCommand, PagePresentation, PageVersion, PlacementPresentation} from '../../workspace/pageTypes';
+import {captureEntityTransition, captureTransition, layoutSnapshot} from './revisionRepository';
+import {validateSnapshot} from './recoveryValidation';
+import type {LayoutSnapshot} from '../../workspace/recoveryTypes';
 
 export interface PageSnapshot {
     board: BoardRecord; owner: WorkspaceEntity; presentation: PagePresentation; version: PageVersion;
@@ -11,7 +14,7 @@ export interface PageSnapshot {
 }
 const key = (boardId: string) => 'workspace-page:' + boardId;
 const uid = (prefix: string) => prefix + ':' + crypto.randomUUID();
-const tables = () => [db.entities, db.boards, db.placements, db.relationships, db.settings, db.activities];
+const tables = () => [db.entities, db.boards, db.placements, db.relationships, db.settings, db.activities, db.workspaceRevisions];
 const defaults = (ownerEntityId: string): PagePresentation => ({version: 1, ownerEntityId, revision: 0,
     mode: 'document', viewport: {x: 0, y: 0, zoom: 1}, groups: [], connectors: []});
 export function placementPresentation(p: BoardPlacement, index = 0): PlacementPresentation {
@@ -42,6 +45,7 @@ async function createOwner(title: string) {
     const owner: WorkspaceEntity = {id: uid('document'), type: 'document', title,
         createdAt: time, updatedAt: time, searchTerms: title.toLocaleLowerCase().split(/\s+/), metadata: {workspacePage: true}};
     await db.entities.add(owner);
+    await captureEntityTransition(undefined, owner, 'created');
     return owner;
 }
 async function snapshot(boardId: string): Promise<PageSnapshot> {
@@ -67,6 +71,20 @@ async function snapshot(boardId: string): Promise<PageSnapshot> {
 export function loadPageSnapshot(boardId: string) {
     return db.transaction('r', tables(), () => snapshot(boardId));
 }
+export async function recordPageTransition(before: PageSnapshot | undefined, after: PageSnapshot, reason: string, sessionId?: string) {
+    await captureTransition(before ? {snapshot: layoutSnapshot(before), version: {kind: 'page', value: before.version}} : undefined,
+        layoutSnapshot(after), {kind: 'page', value: after.version}, reason, sessionId);
+}
+// Legacy actions use the same atomic boundary as native page commands.
+export function mutatePages<T>(boardIds: string[] | (() => Promise<string[]>), write: () => Promise<T>, reason: string): Promise<T> {
+    return db.transaction('rw', db.tables, async () => {
+        const ids = [...new Set(typeof boardIds === 'function' ? await boardIds() : boardIds)];
+        const before = await Promise.all(ids.map(id => openWorkspacePage(id)));
+        const value = await write();
+        for (const page of before) if (await db.boards.get(page.board.id)) await recordPageTransition(page, await snapshot(page.board.id), reason);
+        return value;
+    });
+}
 export function createWorkspacePage(title: string, parentEntityId?: string): Promise<PageSnapshot> {
     if (!title.trim() || title.length > 500) return Promise.reject(new Error('Page title is required (maximum 500 characters).'));
     return db.transaction('rw', tables(), async () => {
@@ -77,7 +95,9 @@ export function createWorkspacePage(title: string, parentEntityId?: string): Pro
         await putPresentation(board.id, defaults(owner.id));
         if (parentEntityId) await setPageParent(owner.id, parentEntityId);
         await activity(board.id, 'workspace-page-created');
-        return snapshot(board.id);
+        const after = await snapshot(board.id);
+        await recordPageTransition(undefined, after, 'created');
+        return after;
     });
 }
 export function openWorkspacePage(boardId: string): Promise<PageSnapshot> {
@@ -90,6 +110,7 @@ export function openWorkspacePage(boardId: string): Promise<PageSnapshot> {
             const owner = project?.type === 'project' ? project : await createOwner(board.name);
             await putPresentation(boardId, defaults(owner.id));
             await activity(boardId, 'workspace-page-opened');
+            await recordPageTransition(undefined, await snapshot(boardId), 'baseline');
         }
         return snapshot(boardId);
     });
@@ -108,7 +129,9 @@ export function refreshProjectReferences(boardId: string) {
         const before = await snapshot(boardId);
         if (before.owner.type !== 'project') throw new Error('Page is not a project.');
         await openBrainCanvas(before.owner.id);
-        return snapshot(boardId);
+        const after = await snapshot(boardId);
+        await recordPageTransition(before, after, 'references-refreshed');
+        return after;
     });
 }
 export function addPageReference(boardId: string, entityId: string) {
@@ -127,7 +150,9 @@ export function addPageReference(boardId: string, entityId: string) {
         await db.placements.add(placement);
         await putPresentation(boardId, {...before.presentation, revision: before.presentation.revision + 1});
         await activity(boardId, 'workspace-reference-added');
-        return snapshot(boardId);
+        const after = await snapshot(boardId);
+        await recordPageTransition(before, after, 'reference-added');
+        return after;
     });
 }
 export function setPageParent(pageEntityId: string, parentEntityId?: string) {
@@ -164,7 +189,7 @@ function checkVersion(current: PageVersion, expected: PageVersion) {
         throw new Error('Page conflict: another view changed this layout. Reload before retrying.');
     }
 }
-export function applyPageCommand(boardId: string, expected: PageVersion, command: PageCommand): Promise<PageSnapshot> {
+export function applyPageCommand(boardId: string, expected: PageVersion, command: PageCommand, sourceSessionId?: string): Promise<PageSnapshot> {
     return db.transaction('rw', tables(), async () => {
         const before = await snapshot(boardId);
         checkVersion(before.version, expected);
@@ -291,6 +316,7 @@ export function applyPageCommand(boardId: string, expected: PageVersion, command
         await putPresentation(boardId, p);
         await activity(boardId, 'page-' + command.type);
         const after = await snapshot(boardId);
+        await recordPageTransition(before, after, 'page-' + command.type, sourceSessionId);
         const token = uid('undo');
         undos.set(token, {boardId, before: layout(before), after: layout(after), version: after.version});
         if (undos.size > 100) undos.delete(undos.keys().next().value!);
@@ -325,7 +351,40 @@ export function undoPageCommand(boardId: string, token: string): Promise<PageSna
         await db.placements.bulkPut(undo.before.placements);
         await putPresentation(boardId, {...undo.before.presentation, revision: current.presentation.revision + 1});
         await activity(boardId, 'page-undo');
+        const after = await snapshot(boardId);
+        await recordPageTransition(current, after, 'undo');
         undos.delete(token);
-        return snapshot(boardId);
+        return after;
+    });
+}
+
+export function restorePageLayout(boardId: string, expected: PageVersion, layout: LayoutSnapshot, sourceSessionId?: string): Promise<PageSnapshot> {
+    validateSnapshot(layout);
+    if (layout.kind !== 'page' || layout.boardId !== boardId) throw new Error('Page snapshot target mismatch.');
+    return db.transaction('rw', tables(), async () => {
+        const before = await snapshot(boardId); checkVersion(before.version, expected);
+        if (layout.presentation.ownerEntityId !== before.owner.id) throw new Error('Page ownership conflict.');
+        const restored: BoardPlacement[] = [];
+        for (const item of layout.placements) {
+            if (!await db.entities.get(item.entityId)) throw new Error('Cannot restore a missing object reference.');
+            const existing = await db.placements.get(item.id);
+            if (existing && (existing.boardId !== boardId || existing.entityId !== item.entityId)) throw new Error('Placement identity conflict.');
+            const {page, ...geometry} = item;
+            restored.push({...existing, ...geometry, boardId, createdAt: existing?.createdAt ?? Date.now(), updatedAt: Date.now(),
+                metadata: {...existing?.metadata, page}});
+        }
+        for (const c of layout.presentation.connectors) {
+            const r = await db.relationships.get(c.relationshipId);
+            const from = restored.find(p => p.id === c.fromPlacementId), to = restored.find(p => p.id === c.toPlacementId);
+            if (!r || !r.confirmed || r.fromEntityId !== from?.entityId || r.toEntityId !== to?.entityId) {
+                throw new Error('Missing or changed connector relationship. Restore its source explicitly first.');
+            }
+        }
+        await db.placements.bulkDelete(before.placements.filter(p => !restored.some(next => next.id === p.id)).map(p => p.id));
+        await db.placements.bulkPut(restored);
+        await putPresentation(boardId, {...layout.presentation, revision: before.presentation.revision + 1});
+        await activity(boardId, 'page-restored');
+        const after = await snapshot(boardId); await recordPageTransition(before, after, 'restore', sourceSessionId);
+        return after;
     });
 }

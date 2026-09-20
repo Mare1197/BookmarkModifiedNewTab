@@ -89,3 +89,9 @@ export function createRevisionRepository(options: {now?: () => number; limits?: 
     return {contentSnapshot, layoutSnapshot, captureTransition, listHistory, readRevision, deleteHistory};
 }
 export const {captureTransition, listHistory, readRevision, deleteHistory} = createRevisionRepository();
+
+export async function captureEntityTransition(before: WorkspaceEntity | undefined, after: WorkspaceEntity, reason: string, sessionId?: string) {
+    if (!['note', 'document'].includes(after.type)) return;
+    await captureTransition(before ? {snapshot: contentSnapshot(before), version: {kind: 'entity', revision: before.contentRevision || 0}} : undefined,
+        contentSnapshot(after), {kind: 'entity', revision: after.contentRevision || 0}, reason, sessionId);
+}

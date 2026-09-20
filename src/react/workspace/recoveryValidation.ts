@@ -33,7 +33,9 @@ export function validateSnapshot(value: unknown): asserts value is RecoverySnaps
         for (const item of v.placements) {
             const p = object(item); only(p, ['id', 'entityId', 'kind', 'x', 'y', 'width', 'height', 'zIndex', 'page']);
             id(p.id); id(p.entityId); check(!placementIds.has(p.id)); placementIds.add(p.id);
-            check(['entity', 'note', 'page', 'image', 'file', 'group', 'frame'].includes(String(p.kind)));
+            check(['entity', 'note', 'page', 'image', 'file', 'group', 'frame', 'analysis', 'clip', 'document', 'folder', 'screenshot',
+                'task', 'project', 'conversation', 'message', 'website', 'bookmark', 'browser-visit', 'tab', 'search', 'idea', 'memory',
+                'prompt', 'repository', 'automation', 'automation-run', 'feature', 'codex-session', 'commit'].includes(String(p.kind)));
             validateGeometry(p as unknown as {x: number; y: number; width: number; height: number});
             check(typeof p.zIndex === 'number' && Number.isFinite(p.zIndex)); validatePlacementPresentation(p.page);
             check(!p.page.groupId || groups.has(p.page.groupId));
