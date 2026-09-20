@@ -1,6 +1,6 @@
 # Workspace recovery, version history and conflict comparison
 
-Status: conversational design approved by the user's September 20 "Proceed". This written specification awaits review. No implementation is included in this document.
+Status: conversational design and this written specification approved by the user's September 20 "Proceed" replies. Implementation plan: `docs/superpowers/plans/2026-09-20-workspace-recovery.md`, awaiting review; Native execution is selected under the user's discretion to proceed with the remaining suggestions. No implementation is included in this document.
 
 ## Purpose and sequence
 
