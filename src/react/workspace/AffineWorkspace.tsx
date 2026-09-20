@@ -6,7 +6,7 @@ import {addPageReference, applyPageCommand, createWorkspacePage, loadPageSnapsho
     placementPresentation, refreshProjectReferences, setPageParent, undoPageCommand, type PageSnapshot} from './pageRepository';
 import type {PageCommand, PageMode} from '../../workspace/pageTypes';
 import type {WorkspaceEntity} from '../../workspace/types';
-import type {PageEditorSession} from './pageEditorSession';
+import {hasUnsavedWork, type PageEditorSession} from './pageEditorSession';
 import './affineWorkspace.css';
 
 interface Props {
@@ -50,7 +50,7 @@ export function AffineWorkspace(props: Props) {
     }, [page?.board.id, mode, mountKey, props.boardId]);
     useEffect(() => {
         const guard = (e: BeforeUnloadEvent) => {
-            if (editor.current && editor.current.getStatus() !== 'saved') {e.preventDefault(); e.returnValue = '';}
+            if (editor.current && hasUnsavedWork(editor.current.getStatus())) {e.preventDefault(); e.returnValue = '';}
         };
         window.addEventListener('beforeunload', guard); return () => window.removeEventListener('beforeunload', guard);
     }, []);
@@ -101,11 +101,10 @@ export function AffineWorkspace(props: Props) {
                 })}>Fit cards</button>
                 <button disabled={!undoToken || busy} onClick={() => void run(async () => {await undoPageCommand(props.boardId, undoToken!); setUndoToken(undefined); await reload();})}>Undo layout</button>
             </div>
-            <p role="status">{status}</p>
+            <p role="status">{status === 'recoverable' ? 'Recoverable draft · waiting to save' : status === 'saving-local' ? 'Saving draft locally…' : status}</p>
             {/error|conflict|failed|unavailable/i.test(status) && <div className="affineControls">
                 <button onClick={() => void run(async () => {})}>Retry save</button><button onClick={downloadDraft}>Export draft</button>
                 <button onClick={() => {if (window.confirm('Discard unsaved drafts and reload canonical data?')) void editor.current?.reload().then(reload).catch(e => setStatus(String(e)));}}>Discard draft and reload</button>
-                <button disabled={!chosen} onClick={() => {if (chosen && window.confirm('Replace the latest content with your retained draft?')) void editor.current?.replaceConflictingDraft(chosen.entityId).catch(e => setStatus(String(e)));}}>Replace conflicting note</button>
             </div>}
             <div className="affineControls"><label>New note title<input value={noteTitle} onChange={e => setNoteTitle(e.target.value)} /></label>
                 <button disabled={busy || !noteTitle.trim()} onClick={() => void run(async () => {

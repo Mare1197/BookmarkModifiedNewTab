@@ -18,8 +18,9 @@ test('session flush serializes edits and retains conflicting drafts until explic
     await assert.rejects(session.flush(), /conflict/i);
     assert.equal(session.getStatus(), 'conflict');
     assert.match(session.exportDrafts(), /My draft/);
-    await session.replaceConflictingDraft(note.id);
-    assert.equal((await db.entities.get(note.id)).metadata.body, 'My draft');
+    assert.ok(session.getDraftIds().length);
+    await session.reload();
+    assert.equal((await db.entities.get(note.id)).metadata.body, 'Latest');
     session.dispose();
     assert.throws(() => session.edit(note.id, content('Late')), /closed/i);
 });

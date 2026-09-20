@@ -2,13 +2,14 @@ import type {PageCommand} from '../../workspace/pageTypes';
 
 export function createPagePersistenceQueue(deps: {
     flushContent: () => Promise<void>; hasContentDraft: () => boolean; saveCommand: (command: PageCommand) => Promise<void>;
+    coalesce?: boolean;
 }) {
     const commands: PageCommand[] = [];
     let running: Promise<void> | undefined, inFlight: PageCommand | undefined, closed = false;
     function enqueue(command: PageCommand) {
         if (closed) throw new Error('Editor session is closed.');
         const tail = commands.at(-1);
-        if (command.type === 'view' && tail?.type === 'view' && tail !== inFlight) commands[commands.length - 1] = command;
+        if (deps.coalesce !== false && command.type === 'view' && tail?.type === 'view' && tail !== inFlight) commands[commands.length - 1] = command;
         else commands.push(command);
     }
     function flush(): Promise<void> {
