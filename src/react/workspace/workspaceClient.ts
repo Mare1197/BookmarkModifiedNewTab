@@ -1,5 +1,6 @@
 import Dexie, {type EntityTable, type Table} from 'dexie';
 import {useEffect, useState} from 'react';
+import type {DraftRecord, RevisionRecord} from '../../workspace/recoveryTypes';
 
 import type {
     AssetRecord,
@@ -27,6 +28,9 @@ export interface WorkspaceSummary {
 }
 
 export class WorkspaceClient extends Dexie {
+    workspaceDrafts!: EntityTable<DraftRecord, 'id'>;
+    workspaceRevisions!: EntityTable<RevisionRecord, 'id'>;
+    reloadRequired = false;
     entities!: EntityTable<WorkspaceEntity, 'id'>;
     sourceRefs!: EntityTable<SourceReference, 'id'>;
     domains!: EntityTable<DomainRecord, 'id'>;
@@ -93,6 +97,12 @@ export class WorkspaceClient extends Dexie {
             workspaceSessions: 'id,boardId,createdAt,updatedAt',
             boardTemplates: 'id,&name,layout,updatedAt'
         });
+        this.version(4).stores({
+            workspaceDrafts: 'id,sessionId,targetKey,boardId,updatedAt',
+            workspaceRevisions: 'id,targetKey,createdAt,[targetKey+createdAt],[targetKey+createdAt+id]'
+        });
+        this.on('versionchange', () => {this.reloadRequired = true; this.close();
+            if (typeof window !== 'undefined') window.dispatchEvent(new Event('workspace-reload-required'));});
     }
 }
 

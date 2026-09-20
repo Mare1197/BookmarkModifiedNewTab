@@ -77,6 +77,12 @@
             })
         ]));
         db.version(3).stores(SCHEMA_V3);
+        db.version(4).stores({
+            workspaceDrafts: 'id,sessionId,targetKey,boardId,updatedAt',
+            workspaceRevisions: 'id,targetKey,createdAt,[targetKey+createdAt],[targetKey+createdAt+id]'
+        });
+        db.on('versionchange', () => {db.close();
+            if (typeof window !== 'undefined') window.dispatchEvent(new Event('workspace-reload-required'));});
         return db;
     };
 
@@ -223,6 +229,7 @@
             await open();
             const tables = {};
             for (const table of db.tables) {
+                if (['workspaceDrafts', 'workspaceRevisions'].includes(table.name)) continue;
                 tables[table.name] = await table.toArray();
             }
             return {

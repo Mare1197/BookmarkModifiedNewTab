@@ -6,7 +6,7 @@
         root.workspaceSchemaCore = api;
     }
 }(typeof globalThis !== 'undefined' ? globalThis : this, function() {
-    const CURRENT_SCHEMA_VERSION = 3;
+    const CURRENT_SCHEMA_VERSION = 4;
     const DOCUMENT_PREFIX = 'data:text/html;charset=UTF-8;base64,';
     const DOCUMENT_MARKER = '<!--sbd-doc-->';
     const TRACKING_PARAMETER = /^(utm_.+|fbclid|gclid|dclid|msclkid|mc_cid|mc_eid)$/i;

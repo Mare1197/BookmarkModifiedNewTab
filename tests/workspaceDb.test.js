@@ -143,7 +143,7 @@ test('upgrades version-two workspaces with workflow tables without losing entiti
     const repository = createWorkspaceRepository({name});
     try {
         await repository.open();
-        assert.equal(repository.db.verno, 3);
+        assert.equal(repository.db.verno, 4);
         assert.equal((await repository.db.entities.get('page_kept')).title, 'Kept Page');
         for (const table of ['activities', 'boardTemplates', 'savedFilters', 'tasks', 'workspaceSessions']) {
             assert.equal(await repository.db.table(table).count(), 0);

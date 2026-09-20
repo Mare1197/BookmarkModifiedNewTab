@@ -378,6 +378,12 @@ function WorkspaceAppInner({onClose}: WorkspaceAppProps) {
     const [selectedPlacementId, setSelectedPlacementId] = useState<string>();
     const [busy, setBusy] = useState(true);
     const [notice, setNotice] = useState('');
+    useEffect(() => {
+        const reloadNotice = () => setNotice('Workspace storage was upgraded in another tab. Export any unsaved draft, then reload this tab.');
+        window.addEventListener('workspace-reload-required', reloadNotice);
+        if (workspaceClient.reloadRequired) reloadNotice();
+        return () => window.removeEventListener('workspace-reload-required', reloadNotice);
+    }, []);
     const [mobilePanel, setMobilePanel] = useState<'explorer' | 'inspector'>();
     const [quickAddOpen, setQuickAddOpen] = useState(false);
     const [quickAddKind, setQuickAddKind] = useState<'clip' | 'note' | 'task' | 'web'>('web');

@@ -1017,7 +1017,7 @@ export async function createBoardFromTemplate(templateId: string): Promise<Board
 export interface WorkspaceExport {
     exportedAt: number;
     format: 'browser-os-workspace';
-    schemaVersion: 2 | 3;
+    schemaVersion: 2 | 3 | 4;
     tables: Record<string, unknown[]>;
 }
 
@@ -1158,6 +1158,7 @@ function validateRecords(tableName: string, records: unknown[]): void {
 export async function exportWorkspace(): Promise<WorkspaceExport> {
     const tables: Record<string, unknown[]> = {};
     for (const table of workspaceClient.tables) {
+        if (['workspaceDrafts', 'workspaceRevisions'].includes(table.name)) continue;
         const records = await table.toArray();
         tables[table.name] = table.name === 'assets' ?
             await Promise.all((records as AssetRecord[]).map(async asset => ({
@@ -1170,18 +1171,19 @@ export async function exportWorkspace(): Promise<WorkspaceExport> {
     return {
         exportedAt: now(),
         format: 'browser-os-workspace',
-        schemaVersion: 3,
+        schemaVersion: 4,
         tables
     };
 }
 
 export async function importWorkspace(snapshot: WorkspaceExport): Promise<void> {
     if (snapshot.format !== 'browser-os-workspace' ||
-        ![2, 3].includes(snapshot.schemaVersion) || !snapshot.tables) {
+        ![2, 3, 4].includes(snapshot.schemaVersion) || !snapshot.tables) {
         throw new Error('This is not a supported Browser OS workspace export.');
     }
     const allowed = new Set(workspaceClient.tables.map(table => table.name));
     const tableNames = Object.keys(snapshot.tables);
+    if (tableNames.some(name => ['workspaceDrafts', 'workspaceRevisions'].includes(name))) throw new Error('Recovery import is not enabled yet.');
     if (tableNames.some(name => !allowed.has(name))) {
         throw new Error('The export contains an unknown table.');
     }
