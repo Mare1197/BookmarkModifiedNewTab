@@ -225,13 +225,16 @@
             return entity || (typeof legacyFallback === 'function' ? legacyFallback() : legacyFallback);
         };
 
-        const exportSnapshot = async () => {
+        const exportSnapshot = async (options = {}) => {
             await open();
-            const tables = {};
-            for (const table of db.tables) {
-                if (['workspaceDrafts', 'workspaceRevisions'].includes(table.name)) continue;
-                tables[table.name] = await table.toArray();
-            }
+            const tables = await db.transaction('r', db.tables, async () => {
+                const records = {};
+                for (const table of db.tables) {
+                    if (!options.includeRecovery && ['workspaceDrafts', 'workspaceRevisions'].includes(table.name)) continue;
+                    records[table.name] = await table.toArray();
+                }
+                return records;
+            });
             return {
                 format: 'browser-os-workspace',
                 schemaVersion: schemaCore.CURRENT_SCHEMA_VERSION,

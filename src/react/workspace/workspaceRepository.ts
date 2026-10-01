@@ -6,7 +6,8 @@ import {richContentToPlainText, validateRichContent} from './richContent';
 import {validateAssetDataUrl, validateEffectivePageState} from './pageBackupValidation';
 import {validateGeometry, validatePagePresentation, validatePlacementPresentation} from './pageValidation';
 import {captureEntityTransition} from './revisionRepository';
-import {mutatePages, openWorkspacePage, recordPageTransition} from './pageRepository';
+import {mutatePages, openWorkspacePage, loadPageSnapshot, recordPageTransition} from './pageRepository';
+import {prepareRecoveryImport, validateRecoveryLimits} from './recoveryBackup';
 import type {PagePresentation} from '../../workspace/pageTypes';
 
 import type {
@@ -1190,19 +1191,21 @@ function validateRecords(tableName: string, records: unknown[]): void {
     });
 }
 
-export async function exportWorkspace(): Promise<WorkspaceExport> {
-    const tables: Record<string, unknown[]> = {};
-    for (const table of workspaceClient.tables) {
-        if (['workspaceDrafts', 'workspaceRevisions'].includes(table.name)) continue;
-        const records = await table.toArray();
-        tables[table.name] = table.name === 'assets' ?
-            await Promise.all((records as AssetRecord[]).map(async asset => ({
+export async function exportWorkspace(options: {includeRecovery?: boolean} = {}): Promise<WorkspaceExport> {
+    const tables = await workspaceClient.transaction('r', workspaceClient.tables, async () => {
+        const records: Record<string, unknown[]> = {};
+        for (const table of workspaceClient.tables) {
+            if (!options.includeRecovery && ['workspaceDrafts', 'workspaceRevisions'].includes(table.name)) continue;
+            records[table.name] = await table.toArray();
+        }
+        return records;
+    });
+    // FileReader work is outside IndexedDB's transaction lifetime.
+    if (tables.assets) tables.assets = await Promise.all((tables.assets as AssetRecord[]).map(async asset => ({
                 ...asset,
                 blobDataUrl: await blobToDataUrl(asset.blob),
                 blob: undefined
-            }))) :
-            records;
-    }
+            })));
     return {
         exportedAt: now(),
         format: 'browser-os-workspace',
@@ -1218,7 +1221,6 @@ export async function importWorkspace(snapshot: WorkspaceExport): Promise<void> 
     }
     const allowed = new Set(workspaceClient.tables.map(table => table.name));
     const tableNames = Object.keys(snapshot.tables);
-    if (tableNames.some(name => ['workspaceDrafts', 'workspaceRevisions'].includes(name))) throw new Error('Recovery import is not enabled yet.');
     if (tableNames.some(name => !allowed.has(name))) {
         throw new Error('The export contains an unknown table.');
     }
@@ -1227,8 +1229,10 @@ export async function importWorkspace(snapshot: WorkspaceExport): Promise<void> 
         if (!Array.isArray(records)) {
             throw new Error('Invalid ' + tableName + ' table.');
         }
-        validateRecords(tableName, records);
+        if (!['workspaceDrafts', 'workspaceRevisions'].includes(tableName)) validateRecords(tableName, records);
     });
+    const recovery = prepareRecoveryImport(snapshot.tables);
+    const canonicalTables = tableNames.filter(name => !['workspaceDrafts', 'workspaceRevisions'].includes(name));
     const [existingEntityIds, existingBoardIds] = await Promise.all([
         workspaceClient.entities.toCollection().primaryKeys(),
         workspaceClient.boards.toCollection().primaryKeys()
@@ -1275,8 +1279,16 @@ export async function importWorkspace(snapshot: WorkspaceExport): Promise<void> 
         }));
     }
     await workspaceClient.transaction('rw', workspaceClient.tables, async () => {
+        const checkLimits = async () => validateRecoveryLimits(
+            [...await workspaceClient.workspaceDrafts.toArray(), ...recovery.workspaceDrafts],
+            [...await workspaceClient.workspaceRevisions.toArray(), ...recovery.workspaceRevisions]);
+        await checkLimits();
         await validateEffectivePageState(preparedTables);
-        for (const tableName of tableNames) {
+        const beforePages = new Map();
+        for (const setting of await workspaceClient.settings.where('key').startsWith('workspace-page:').toArray()) {
+            const id = setting.key.slice('workspace-page:'.length); beforePages.set(id, await loadPageSnapshot(id));
+        }
+        for (const tableName of canonicalTables) {
             let records = preparedTables[tableName];
             if (Array.isArray(records) && records.length) {
                 if (tableName === 'entities') {
@@ -1291,11 +1303,19 @@ export async function importWorkspace(snapshot: WorkspaceExport): Promise<void> 
                             record.searchTerms = searchTerms(record.title, record.canonicalUrl, String(record.metadata.body));
                         }
                         if (existing) record.contentRevision = Math.max(existing.contentRevision || 0, record.contentRevision || 0) + 1;
+                        await captureEntityTransition(existing, record, 'import');
                     }
                 }
                 await workspaceClient.table(tableName).bulkPut(records);
             }
         }
+        for (const setting of await workspaceClient.settings.where('key').startsWith('workspace-page:').toArray()) {
+            const id = setting.key.slice('workspace-page:'.length);
+            await recordPageTransition(beforePages.get(id), await loadPageSnapshot(id), 'import');
+        }
+        await checkLimits();
+        await workspaceClient.workspaceDrafts.bulkAdd(recovery.workspaceDrafts);
+        await workspaceClient.workspaceRevisions.bulkAdd(recovery.workspaceRevisions);
     });
 }
 

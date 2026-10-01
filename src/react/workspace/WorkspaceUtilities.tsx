@@ -207,9 +207,10 @@ export function AnalysisView({
 
 export function SettingsView({onImported}: {onImported: () => Promise<void>}) {
     const [status, setStatus] = useState('');
+    const [includeRecovery, setIncludeRecovery] = useState(false);
     const importRef = useRef<HTMLInputElement>(null);
     const exportData = async () => {
-        const snapshot = await exportWorkspace();
+        const snapshot = await exportWorkspace({includeRecovery});
         const url = URL.createObjectURL(new Blob([JSON.stringify(snapshot)], {type: 'application/json'}));
         const link = document.createElement('a');
         link.href = url;
@@ -239,8 +240,10 @@ export function SettingsView({onImported}: {onImported: () => Promise<void>}) {
             <div className="workspaceUtility__panel">
                 <h3>Versioned backup</h3>
                 <p>Export includes boards, placements, relationships, settings, and original asset blobs.</p>
+                <label><input type="checkbox" checked={includeRecovery} onChange={event => setIncludeRecovery(event.target.checked)} /> Include private recovery drafts and history</label>
+                <p>Recovery may contain removed or private text. Keep this backup secure. Imported drafts remain inactive until explicitly reviewed.</p>
                 <div className="workspaceUtility__buttons">
-                    <button type="button" className="primaryButton" onClick={() => void exportData()}>
+                    <button type="button" className="primaryButton" onClick={() => void exportData().catch(error => setStatus(String(error)))}>
                         Export workspace
                     </button>
                     <button type="button" onClick={() => importRef.current?.click()}>

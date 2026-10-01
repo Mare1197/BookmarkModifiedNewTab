@@ -10,6 +10,16 @@ const {SCHEMA_V1, SCHEMA_V2, createWorkspaceRepository} = require('../src/worksp
 const Dexie = DexieModule.Dexie || DexieModule.default || DexieModule;
 const uniqueName = label => `browser-os-test-${label}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
+test('legacy backup excludes private recovery unless explicitly opted in', async () => {
+    const repository = createWorkspaceRepository({name: uniqueName('private-backup')});
+    try {
+        await repository.open();
+        await repository.db.workspaceDrafts.put(require('./helpers/recoveryFixture').draft());
+        assert.equal('workspaceDrafts' in (await repository.exportSnapshot()).tables, false);
+        assert.equal((await repository.exportSnapshot({includeRecovery: true})).tables.workspaceDrafts.length, 1);
+    } finally {await repository.deleteDatabase();}
+});
+
 test('migrates a fresh legacy fixture without deleting the source state', async () => {
     const repository = createWorkspaceRepository({name: uniqueName('fresh')});
     const legacyData = {icons: {'103': {x: 2, y: 3}}, locations: {'2,3': '103'}};
