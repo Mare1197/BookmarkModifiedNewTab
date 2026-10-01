@@ -11,7 +11,7 @@ function object(value: unknown): Record<string, unknown> {check(value && typeof 
 function only(value: Record<string, unknown>, keys: string[]) {check(Object.keys(value).every(key => keys.includes(key)));}
 function id(value: unknown): asserts value is string {check(typeof value === 'string' && value.length > 0 && value.length <= 500);}
 function integer(value: unknown) {check(Number.isSafeInteger(value) && Number(value) >= 0);}
-function ids(value: unknown) {check(Array.isArray(value) && value.length <= 10000); value.forEach(id); check(new Set(value).size === value.length);}
+function ids(value: unknown) {check(Array.isArray(value) && value.length <= 10000); value.forEach(id); check(new Set(value).size === value.length, 'Duplicate ID in command order.');}
 export function validateTarget(value: unknown): asserts value is Target {
     const v = object(value); only(v, ['kind', 'id']); check(v.kind === 'entity' || v.kind === 'page'); id(v.id);
 }

@@ -1,0 +1,21 @@
+const assert = require('node:assert/strict');
+const test = require('node:test');
+const {workspaceFixture} = require('./helpers/workspaceFixture');
+const {content} = require('./helpers/recoveryFixture');
+test('content comparison preserves Unicode, repeated text, formatting and explicit block order', async t => {
+    const {load} = await workspaceFixture(t), diff = load('recoveryDiff.ts');
+    const before = content('A 😀 A'), after = content('A 😀 B A');
+    const result = diff.diffContent(before, after)[0];
+    assert.equal(result.text.filter(p => p.kind !== 'added').map(p => p.text).join(''), 'A 😀 A');
+    assert.equal(result.text.filter(p => p.kind !== 'removed').map(p => p.text).join(''), 'A 😀 B A');
+    const formatted = structuredClone(before); formatted.content.blocks[0].runs[0].attributes = {bold: true};
+    assert.equal(diff.diffContent(before, formatted)[0].formattingChanged, true);
+    const extra = {id: 'new', kind: 'paragraph', runs: [{insert: 'Other'}]};
+    after.content.blocks.unshift(extra);
+    const combined = diff.chooseBlocks(before, after, [{id: 'new', from: 'draft'}, {id: 'b', from: 'current'}], 'Combined');
+    assert.deepEqual(combined.content.blocks.map(b => b.id), ['new', 'b']);
+    assert.throws(() => diff.chooseBlocks(before, after, [{id: 'missing', from: 'current'}], 'Bad'), /missing/i);
+    assert.throws(() => diff.chooseBlocks(before, after, [{id: 'b', from: 'current'}, {id: 'b', from: 'draft'}], 'Bad'), /duplicate/i);
+    const large = diff.diffContent(content('a'.repeat(1000)), content('b'.repeat(1000)))[0];
+    assert.deepEqual(large.text.map(p => p.kind), ['removed', 'added']);
+});

@@ -6,6 +6,7 @@ import type {PageCommand, PagePresentation, PageVersion, PlacementPresentation} 
 import {captureEntityTransition, captureTransition, layoutSnapshot} from './revisionRepository';
 import {validateSnapshot} from './recoveryValidation';
 import type {LayoutSnapshot} from '../../workspace/recoveryTypes';
+import {projectPresentation} from './pagePresentationCommands';
 
 export interface PageSnapshot {
     board: BoardRecord; owner: WorkspaceEntity; presentation: PagePresentation; version: PageVersion;
@@ -205,55 +206,7 @@ export function applyPageCommand(boardId: string, expected: PageVersion, command
             if (!result) throw new Error('Missing page connector.');
             return result;
         };
-        const present = (id: string, patch: Partial<PlacementPresentation>) => {
-            const item = placement(id);
-            const value = {...placementPresentation(item, state.placements.indexOf(item)), ...patch};
-            validatePlacementPresentation(value);
-            item.metadata = {...item.metadata, page: value};
-        };
         switch (command.type) {
-            case 'move-resize':
-                for (const change of command.placements) {
-                    validateGeometry(change);
-                    Object.assign(placement(change.id), {x: change.x, y: change.y, width: change.width, height: change.height});
-                }
-                break;
-            case 'reorder':
-                if (command.placementIds.length !== state.placements.length || new Set(command.placementIds).size !== state.placements.length) {
-                    throw new Error('Order must contain each placement exactly once.');
-                }
-                command.placementIds.forEach((id, order) => present(id, {order}));
-                break;
-            case 'group':
-                p.groups = [...p.groups.filter(g => g.id !== command.group.id), structuredClone(command.group)];
-                command.placementIds.forEach(id => present(id, {groupId: command.group.id}));
-                break;
-            case 'ungroup': {
-                const group = p.groups.find(g => g.id === command.groupId);
-                if (!group) throw new Error('Missing group.');
-                p.groups = p.groups.filter(g => g.id !== group.id).map(g => g.parentId === group.id ? {...g, parentId: group.parentId} : g);
-                state.placements.filter(item => placementPresentation(item).groupId === group.id)
-                    .forEach(item => present(item.id, {groupId: group.parentId}));
-                break;
-            }
-            case 'collapse':
-                if (Boolean(command.placementId) === Boolean(command.groupId)) throw new Error('Choose one collapse target.');
-                if (command.placementId) present(command.placementId, {collapsed: command.collapsed});
-                else {
-                    const group = p.groups.find(g => g.id === command.groupId);
-                    if (!group) throw new Error('Missing group.');
-                    group.collapsed = command.collapsed;
-                }
-                break;
-            case 'style': command.placementIds.forEach(id => present(id, {color: command.color})); break;
-            case 'view': p.mode = command.mode; p.viewport = structuredClone(command.viewport); break;
-            case 'remove-reference': {
-                command.placementIds.forEach(placement);
-                const removed = new Set(command.placementIds);
-                state.placements = state.placements.filter(item => !removed.has(item.id));
-                p.connectors = p.connectors.filter(c => !removed.has(c.fromPlacementId) && !removed.has(c.toPlacementId));
-                break;
-            }
             case 'connect': {
                 const from = placement(command.fromPlacementId), to = placement(command.toPlacementId);
                 if (from.entityId === to.entityId) throw new Error('Cannot connect an object to itself.');
@@ -275,11 +228,6 @@ export function applyPageCommand(boardId: string, expected: PageVersion, command
                     points: [], color: '#64748b', dashed: false, mode: 'orthogonal'});
                 break;
             }
-            case 'connector-style': {
-                const c = connector(command.connectorId);
-                Object.assign(c, {points: command.points, color: command.color, dashed: command.dashed, mode: command.mode});
-                break;
-            }
             case 'remove-connector': {
                 if (!['page', 'everywhere'].includes(command.scope)) throw new Error('Invalid connector removal scope.');
                 const c = connector(command.connectorId);
@@ -297,7 +245,14 @@ export function applyPageCommand(boardId: string, expected: PageVersion, command
                 } else p.connectors = p.connectors.filter(item => item.id !== c.id);
                 break;
             }
-            default: throw new Error('Unsupported page command.');
+            default: {
+                const projected = projectPresentation(layoutSnapshot(before), [command]);
+                Object.assign(p, projected.presentation);
+                state.placements = projected.placements.map(item => {
+                    const original = placement(item.id), {page, ...geometry} = item;
+                    return {...original, ...geometry, metadata: {...original.metadata, page}};
+                });
+            }
         }
         p.revision++;
         validatePagePresentation(p);
