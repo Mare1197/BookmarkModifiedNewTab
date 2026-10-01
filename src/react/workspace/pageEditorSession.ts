@@ -11,7 +11,7 @@ export type SaveStatus = 'saved' | 'saving' | 'unsaved' | 'saving-local' | 'reco
 export const hasUnsavedWork = (status: SaveStatus) => status !== 'saved';
 export interface PageEditorSession {
     flush(): Promise<void>; flushJournal(): Promise<void>; reload(): Promise<void>; getDraftIds(): string[];
-    getStatus(): SaveStatus; exportDrafts(): string; dispose(): void;
+    getStatus(): SaveStatus; exportDrafts(): string; dispose(): void; reconcileRecovery(): Promise<void>;
 }
 export function createPageEditorSession(initial: WorkspaceEntity[], dependencies: {
     save: typeof saveRichContent; read: (id: string) => Promise<WorkspaceEntity | undefined>; journal?: JournalRepository;
@@ -103,6 +103,17 @@ export function createPageEditorSession(initial: WorkspaceEntity[], dependencies
         } catch (error) {errorStatus(error); throw error;}
     }
     return {read, edit, flush, flushJournal: journal.flushJournal, reload, undo, getDraftIds: journal.getDraftIds, dirtyCount: () => drafts.size,
+        async reconcileRecovery() {
+            await running?.catch(() => {});
+            for (const target of await journal.settleResolved()) {
+                if (target.kind !== 'entity') continue;
+                drafts.delete(target.id); history.delete(target.id);
+                const current = await dependencies.read(target.id);
+                if (current) entities.set(target.id, current);
+                notify(target.id);
+            }
+            if (!drafts.size) {lastError = undefined; setStatus('saved');}
+        },
         acceptExternal(entity: WorkspaceEntity) {
             if (closed || drafts.has(entity.id)) return;
             const before = entities.get(entity.id);

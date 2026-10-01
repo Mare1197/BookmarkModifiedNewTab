@@ -1,0 +1,17 @@
+.recoveryDialog {box-sizing: border-box; width: min(1100px, 94vw); max-height: 90vh; padding: 24px; border: 1px solid #536077; border-radius: 12px; color: #e8edf5; background: #17202e; overflow: auto;}
+.recoveryDialog::backdrop {background: #050a13bb;}
+.recoveryDialog button, .recoveryDialog input, .recoveryDialog select {color: inherit; background: #28364b; border: 1px solid #697991; border-radius: 5px; padding: 8px; margin: 4px; max-width: 100%;}
+.recoveryDialog button:disabled {opacity: .5;}
+.recoveryDialog button:focus-visible, .recoveryDialog input:focus-visible, .recoveryDialog select:focus-visible {outline: 2px solid #7bd8fa; outline-offset: 2px;}
+.recoveryClose {float: right;}
+.recoveryColumns {display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px;}
+.recoveryColumns article, .recoveryRow, .recoveryBlock {min-width: 0; overflow-wrap: anywhere;}
+.recoveryColumns > article, .recoveryRow {padding: 12px; border: 1px solid #45566e; border-radius: 6px; margin-bottom: 12px;}
+.recoveryRow span {display: block; margin: 8px 0;}
+.recoveryBlock p, .recoveryDialog pre {white-space: pre-wrap; overflow-wrap: anywhere;}
+.recoveryBlock small {color: #a8bbd5;}
+.recoveryActions {display: flex; flex-wrap: wrap; gap: 6px; margin-top: 16px;}
+.diff-added {background: #175445;}
+.diff-removed {background: #673344; text-decoration: line-through;}
+.recoveryDialog label {display: block;}
+@media (max-width: 700px) {.recoveryColumns {grid-template-columns: 1fr;} .recoveryDialog {padding: 12px;} .recoveryClose {float: none;}}

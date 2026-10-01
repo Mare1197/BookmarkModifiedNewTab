@@ -1,4 +1,6 @@
-import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import type {Target} from '../../workspace/recoveryTypes';
+const RecoveryDialog = lazy(() => import('./RecoveryDialog').then(module => ({default: module.RecoveryDialog})));
 import {liveQuery} from 'dexie';
 import {workspaceClient} from './workspaceClient';
 import type {AssetRecord} from '../../workspace/types';
@@ -370,6 +372,17 @@ function WorkspaceAppInner({onClose}: WorkspaceAppProps) {
     const [activeBoardId, setActiveBoardId] = useState('');
     const [view, setViewState] = useState<WorkspaceView>('canvas');
     const editorSession = useRef<PageEditorSession | undefined>(undefined);
+    const [recoveryOpen, setRecoveryOpen] = useState(false), [historyTarget, setHistoryTarget] = useState<Target>();
+    const [editorEpoch, setEditorEpoch] = useState(0);
+    const openRecovery = async (target?: Target) => {
+        try {await editorSession.current?.flushJournal();} catch (e) {setNotice('Some edits are not stored locally; export your unsaved draft. ' + String(e));}
+        setHistoryTarget(target); setRecoveryOpen(true);
+    };
+    const recoveryChanged = async () => {
+        await editorSession.current?.reconcileRecovery();
+        if (!editorSession.current || editorSession.current.getStatus() === 'saved') setEditorEpoch(n => n + 1);
+        await refresh();
+    };
     const leaveEditor = async (next: () => void | Promise<void>) => {
         try {await editorSession.current?.flush(); await next();} catch (e) {setNotice(String(e));}
     };
@@ -576,6 +589,7 @@ function WorkspaceAppInner({onClose}: WorkspaceAppProps) {
                 />
                 <main className="workspaceMain">
                     <nav className="workspaceToolbar" aria-label="Workspace views">
+                        <button onClick={() => void openRecovery()}>Recovery</button>
                         <div className="workspaceViewTabs">
                             {(['brain', 'editor', 'canvas', 'mindmap', 'graph', 'search', 'tasks', 'activity', 'assets'] as WorkspaceView[]).map(item => (
                                 <button
@@ -652,7 +666,8 @@ function WorkspaceAppInner({onClose}: WorkspaceAppProps) {
                         {view === 'graph' && <p role="status">Graph shows {Math.min(200, graphScopeCount)} of {graphScopeCount} objects in the current scope ({Math.max(0, graphScopeCount - 200)} omitted). Select an object and use Show in Graph to focus its relationships.</p>}
                         {view === 'brain' && <BrainWorkspace initialMode={brainMode} navigationKey={brainNavigationKey} snapshot={snapshot} onSelect={selectEntity}
                             onCanvas={openObjectCanvas} onWorkspace={openObjectWorkspace} onRefresh={() => refresh()} onStatus={setNotice} />}
-                        {view === 'editor' && activeBoardId && <AffineWorkspace boardId={activeBoardId} entities={snapshot.entities}
+                        {view === 'editor' && activeBoardId && <AffineWorkspace key={activeBoardId + ':' + editorEpoch} boardId={activeBoardId} entities={snapshot.entities}
+                            onHistory={() => void openRecovery({kind: 'page', id: activeBoardId})} onRecovery={() => void openRecovery()}
                             onSession={session => {editorSession.current = session;}} onSelect={selectEntity}
                             onOpenPage={boardId => {void leaveEditor(() => refresh(boardId));}}
                             onAction={(id, action) => {void leaveEditor(async () => {
@@ -768,6 +783,7 @@ function WorkspaceAppInner({onClose}: WorkspaceAppProps) {
                         }
                     }}
                     onOpenRichText={id => {void openObjectWorkspace(id).catch(e => setNotice(String(e)));}}
+                    onHistory={id => void openRecovery({kind: 'entity', id})}
                     onTaskSave={async (taskId, patch) => {
                         await updateTask(taskId, patch);
                         await refresh();
@@ -808,6 +824,8 @@ function WorkspaceAppInner({onClose}: WorkspaceAppProps) {
                 open={quickAddOpen}
                 selectedEntity={selectedEntity}
             />
+            {recoveryOpen && <Suspense fallback={<p role="status">Loading recovery…</p>}><RecoveryDialog target={historyTarget}
+                onClose={() => setRecoveryOpen(false)} onChanged={recoveryChanged} /></Suspense>}
         </section>
     );
 }

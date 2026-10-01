@@ -71,6 +71,17 @@ export function createSessionJournal(sessionId = crypto.randomUUID(), repo: Jour
         void serial(() => repo.touchSession(sessionId, Date.now())).catch(() => {});
     }, 15000);
     return {sessionId, enqueue, flushJournal, applyNext,
+        settleResolved: () => serial(async () => {
+            const settled: Target[] = [];
+            for (const [key, state] of states) {
+                if (state.storedGeneration === null || state.record.generation !== state.storedGeneration) continue;
+                const stored = await repo.readDraft(state.record.id);
+                if (!stored || (stored.generation === state.storedGeneration && stored.recoveredGeneration === stored.generation)) {
+                    states.delete(key); settled.push(state.record.target);
+                }
+            }
+            report(); return settled;
+        }),
         pending: () => [...states.values()].filter(s => s.record.operations.length).map(s => s.record.targetKey),
         count: () => [...states.values()].reduce((n, s) => n + s.record.operations.length, 0),
         getDraftIds: () => [...states.values()].map(s => s.record.id),

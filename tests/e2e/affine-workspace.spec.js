@@ -118,7 +118,10 @@ test('conflicting note draft blocks navigation and supports explicit replacement
     await expect(ws).toBeVisible();
     await expect(ws.getByRole('status').first()).toContainText('conflict');
     await expect(ws).toContainText('Keep this conflict draft');
+    await page.getByRole('button', {name: 'Recovery', exact: true}).click();
+    await page.getByRole('button', {name: 'Preview draft', exact: true}).first().click();
     page.once('dialog', d => d.accept());
-    await ws.getByRole('button', {name: 'Replace conflicting note', exact: true}).click();
+    await page.getByRole('button', {name: 'Use draft', exact: true}).click();
+    await page.getByRole('button', {name: 'Close recovery', exact: true}).click();
     await expect(ws.getByRole('status').first()).toContainText('saved');
 });

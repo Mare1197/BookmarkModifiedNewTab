@@ -15,6 +15,7 @@ interface Props {
     onOpenPage: (boardId: string) => void;
     onAction: (id: string, action: 'source' | 'inspector' | 'graph' | 'ai') => void;
     onSession: (session?: PageEditorSession) => void;
+    onHistory: () => void; onRecovery: () => void;
 }
 export function AffineWorkspace(props: Props) {
     const host = useRef<HTMLDivElement>(null), editor = useRef<PageEditorSession | undefined>(undefined);
@@ -91,6 +92,7 @@ export function AffineWorkspace(props: Props) {
                     setPage(next); setMode(value);
                 })}>{value[0]!.toUpperCase() + value.slice(1)}</button>)}
                 <button onClick={() => void run(async () => {})}>Save now</button>
+                <button onClick={props.onHistory}>Page history</button>
                 <button onClick={() => void run(async () => {
                     const current = await loadPageSnapshot(props.boardId); if (!current.placements.length) return;
                     const minX = Math.min(...current.placements.map(p => p.x)), minY = Math.min(...current.placements.map(p => p.y));
@@ -103,6 +105,7 @@ export function AffineWorkspace(props: Props) {
             </div>
             <p role="status">{status === 'recoverable' ? 'Recoverable draft · waiting to save' : status === 'saving-local' ? 'Saving draft locally…' : status}</p>
             {/error|conflict|failed|unavailable/i.test(status) && <div className="affineControls">
+                <button onClick={props.onRecovery}>Review conflicting draft</button>
                 <button onClick={() => void run(async () => {})}>Retry save</button><button onClick={downloadDraft}>Export draft</button>
                 <button onClick={() => {if (window.confirm('Discard unsaved drafts and reload canonical data?')) void editor.current?.reload().then(reload).catch(e => setStatus(String(e)));}}>Discard draft and reload</button>
             </div>}

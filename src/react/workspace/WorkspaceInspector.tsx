@@ -31,6 +31,7 @@ interface WorkspaceInspectorProps {
     onInboxChange: (inInbox: boolean) => Promise<void>;
     onSave: (patch: Partial<WorkspaceEntity>) => Promise<void>;
     onOpenRichText?: (entityId: string) => void;
+    onHistory?: (entityId: string) => void;
     onTaskSave: (taskId: string, patch: Partial<WorkspaceTask>) => Promise<void>;
 }
 
@@ -69,6 +70,7 @@ export function WorkspaceInspector({
     onInboxChange,
     onSave,
     onOpenRichText,
+    onHistory,
     onTaskSave
 }: WorkspaceInspectorProps) {
     const [drafts, setDrafts] = useState<Record<string, {title: string; body: string}>>({});
@@ -174,6 +176,7 @@ export function WorkspaceInspector({
                     </label>
                 )}
                 {entity.richContent && <button type="button" disabled={!onOpenRichText} onClick={() => onOpenRichText?.(entity.id)}>Edit rich text</button>}
+                {(entity.type === 'note' || entity.type === 'document') && <button type="button" disabled={!onHistory} onClick={() => onHistory?.(entity.id)}>Content history</button>}
             </section>
             {children}
             <section className="workspaceInspector__facts">

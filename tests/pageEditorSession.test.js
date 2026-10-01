@@ -2,6 +2,27 @@ const assert = require('node:assert/strict');
 const test = require('node:test');
 const {workspaceFixture} = require('./helpers/workspaceFixture');
 
+test('recovery reconciliation settles only reviewed targets and preserves other local drafts', async t => {
+    const {db, load} = await workspaceFixture(t);
+    const create = load('brainRepository.ts').createBrainObject;
+    const a = await create({type: 'note', title: 'A'}), b = await create({type: 'note', title: 'B'});
+    const session = load('pageEditorSession.ts').createPageEditorSession([a, b]);
+    const rich = load('richContent.ts').plainToRichContent;
+    session.edit(a.id, rich('Reviewed')); session.edit(b.id, rich('Still pending'));
+    await session.flushJournal();
+    const recovery = load('recoveryPreview.ts');
+    const record = (await db.workspaceDrafts.toArray()).find(r => r.target.id === a.id);
+    await recovery.resolveDraft(await recovery.previewDraft(record.id), {kind: 'use-draft'});
+    await session.reconcileRecovery();
+    assert.equal(session.dirtyCount(), 1);
+    assert.match(session.exportDrafts(), /Still pending/);
+    assert.doesNotMatch(session.exportDrafts(), /Reviewed/);
+    await session.flush();
+    assert.equal((await db.entities.get(a.id)).metadata.body, 'Reviewed');
+    assert.equal((await db.entities.get(b.id)).metadata.body, 'Still pending');
+    await session.dispose();
+});
+
 test('session flush serializes edits and retains conflicting drafts until explicit recovery', async t => {
     const {db, load} = await workspaceFixture(t);
     const note = await load('brainRepository.ts').createBrainObject({type: 'note', title: 'Note'});

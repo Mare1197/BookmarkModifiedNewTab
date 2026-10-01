@@ -1,9 +1,21 @@
 import {RichText} from '@blocksuite/blocks';
 import {DocCollection} from '@blocksuite/store';
-import type {RichBlock, RichKind, RichRun} from '../../workspace/pageTypes';
+import type {RichBlock, RichKind, RichRun, RichContent} from '../../workspace/pageTypes';
 import type {ContentSession} from './pageEditorSession';
+import {validateRichContent} from './richContent';
 
-export function mountCanonicalRichText(host: HTMLElement, entityId: string, session: ContentSession, onError: (e: unknown) => void) {
+export function mountManualRichText(host: HTMLElement, initial: RichContent, onChange: (value: RichContent) => void, onError: (e: unknown) => void) {
+    let value = structuredClone(initial);
+    const history: RichContent[] = [], listeners = new Set<(id: string) => void>();
+    const notify = () => {onChange(structuredClone(value)); listeners.forEach(fn => fn('manual'));};
+    return mountCanonicalRichText(host, 'manual', {
+        read: () => structuredClone(value),
+        edit: (_id, next) => {validateRichContent(next); history.push(value); value = structuredClone(next); notify();},
+        undo: async () => {const previous = history.pop(); if (previous) {value = previous; notify();}},
+        subscribe: fn => {listeners.add(fn); return () => listeners.delete(fn);}
+    }, onError);
+}
+export function mountCanonicalRichText(host: HTMLElement, entityId: string, session: Pick<ContentSession, 'read' | 'edit' | 'undo' | 'subscribe'>, onError: (e: unknown) => void) {
     const ydoc = new DocCollection.Y.Doc();
     let hydrating = false, disposed = false;
     const rows = new Map<string, {element: HTMLElement; editor: RichText; block: RichBlock}>();

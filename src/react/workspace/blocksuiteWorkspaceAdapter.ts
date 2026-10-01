@@ -71,6 +71,14 @@ export async function mountWorkspaceEditor(host: HTMLElement, input: WorkspaceEd
         return queue.pending().length ? (layoutStatus === 'saved' ? 'saving' : layoutStatus) : content;
     }
     return {flush,
+        async reconcileRecovery() {
+            clearTimeout(timer); await flushing?.catch(() => {});
+            await session.reconcileRecovery();
+            const settled = await layoutJournal.settleResolved();
+            if (settled.length) {queue.clear(); snapshot = await loadPageSnapshot(snapshot.board.id); projection.reconcileConnectors(snapshot);}
+            if (!session.dirtyCount() && !queue.pending().length) {error = undefined; status = 'saved';}
+            input.onStatus(getStatus());
+        },
         async flushJournal() {projection.flushGeometry(); await Promise.all([session.flushJournal(), layoutJournal.flushJournal()]);},
         getDraftIds: () => [...session.getDraftIds(), ...layoutJournal.getDraftIds()],
         async reload() {await flushing?.catch(() => {}); await session.reload(); await layoutJournal.discard(); queue.clear(); snapshot = await loadPageSnapshot(snapshot.board.id); error = undefined; status = 'saved'; input.onStatus(status);},
