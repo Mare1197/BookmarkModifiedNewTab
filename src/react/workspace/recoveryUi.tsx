@@ -7,11 +7,12 @@ export function downloadRecovery(value: unknown, filename: string) {
 export function SnapshotView({snapshot}: {snapshot?: RecoverySnapshot}) {
     if (!snapshot) return <p>Unavailable. Export the draft or restore its board from Trash.</p>;
     if (snapshot.kind === 'page') return <div><p>{snapshot.placements.length} references · {snapshot.presentation.groups.length} groups · {snapshot.presentation.connectors.length} connectors · {snapshot.presentation.mode}</p>
-        <ul>{snapshot.placements.map(p => <li key={p.id}>{p.entityId} · ({p.x}, {p.y}) · {p.width} × {p.height}</li>)}</ul></div>;
+        <ul>{snapshot.placements.map(p => <li key={p.id}>{p.entityId} · ({p.x}, {p.y}) · {p.width} × {p.height}</li>)}</ul>
+        <details><summary>Layout and connector details</summary><pre>{JSON.stringify(snapshot, null, 2)}</pre></details></div>;
     return <div><h4>{snapshot.title}</h4>{snapshot.content.blocks.map(block => <div className={'recoveryBlock ' + block.kind} key={block.id}>
-        <small>{block.kind}{block.checked ? ' · checked' : ''}</small>
+        <small>{block.kind}{block.checked ? ' · checked' : ''}{block.level ? ' · level ' + block.level : ''}{block.language ? ' · ' + block.language : ''}</small>
         <p>{block.runs.map((run, i) => <span key={i} style={{fontWeight: run.attributes?.bold ? 700 : undefined,
             fontStyle: run.attributes?.italic ? 'italic' : undefined, textDecoration: [run.attributes?.underline ? 'underline' : '', run.attributes?.strike ? 'line-through' : ''].join(' '),
-            fontFamily: run.attributes?.code || block.kind === 'code' ? 'monospace' : undefined}}>{run.insert}</span>)}</p>
+            fontFamily: run.attributes?.code || block.kind === 'code' ? 'monospace' : undefined}}>{run.insert}{run.attributes?.link && <small> [Link: {run.attributes.link}]</small>}</span>)}</p>
     </div>)}</div>;
 }

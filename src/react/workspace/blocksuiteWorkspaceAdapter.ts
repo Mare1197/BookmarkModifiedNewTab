@@ -74,8 +74,9 @@ export async function mountWorkspaceEditor(host: HTMLElement, input: WorkspaceEd
         async reconcileRecovery() {
             clearTimeout(timer); await flushing?.catch(() => {});
             await session.reconcileRecovery();
+            const reviewedCount = queue.pending().length;
             const settled = await layoutJournal.settleResolved();
-            if (settled.length) {queue.clear(); snapshot = await loadPageSnapshot(snapshot.board.id); projection.reconcileConnectors(snapshot);}
+            if (settled.length) {queue.clearRecovered(reviewedCount); snapshot = await loadPageSnapshot(snapshot.board.id); projection.reconcileConnectors(snapshot);}
             if (!session.dirtyCount() && !queue.pending().length) {error = undefined; status = 'saved';}
             input.onStatus(getStatus());
         },

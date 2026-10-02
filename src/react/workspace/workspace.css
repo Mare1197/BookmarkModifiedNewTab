@@ -226,9 +226,11 @@
 .workspaceToolbar {
     display: flex;
     min-height: 58px;
-    align-items: center;
+    flex-direction: column;
+    flex-shrink: 0;
+    align-items: stretch;
     justify-content: space-between;
-    gap: 10px;
+    gap: 4px;
     padding: 0 12px;
     border-bottom: 1px solid #dce0e5;
     background: #fff;
@@ -237,6 +239,10 @@
 .workspaceViewTabs,
 .workspaceActions {
     display: flex;
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: auto;
+    flex-shrink: 0;
     align-items: center;
     gap: 3px;
 }

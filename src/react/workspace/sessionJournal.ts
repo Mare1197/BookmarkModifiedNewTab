@@ -75,7 +75,9 @@ export function createSessionJournal(sessionId = crypto.randomUUID(), repo: Jour
             const settled: Target[] = [];
             for (const [key, state] of states) {
                 if (state.storedGeneration === null || state.record.generation !== state.storedGeneration) continue;
+                const generation = state.record.generation, storedGeneration = state.storedGeneration;
                 const stored = await repo.readDraft(state.record.id);
+                if (states.get(key) !== state || state.record.generation !== generation || state.storedGeneration !== storedGeneration) continue;
                 if (!stored || (stored.generation === state.storedGeneration && stored.recoveredGeneration === stored.generation)) {
                     states.delete(key); settled.push(state.record.target);
                 }

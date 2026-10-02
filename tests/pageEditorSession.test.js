@@ -2,6 +2,28 @@ const assert = require('node:assert/strict');
 const test = require('node:test');
 const {workspaceFixture} = require('./helpers/workspaceFixture');
 
+test('an edit arriving during recovery reconciliation is never cleared or reported saved', async t => {
+    const {db, load} = await workspaceFixture(t);
+    const note = await load('brainRepository.ts').createBrainObject({type: 'note', title: 'Note'});
+    const rich = load('richContent.ts').plainToRichContent, repo = load('recoveryRepository.ts');
+    let inject = false, session;
+    session = load('pageEditorSession.ts').createPageEditorSession([note], {
+        save: load('richContentRepository.ts').saveRichContent, read: id => db.entities.get(id),
+        journal: {...repo, readDraft: async id => {
+            const record = await repo.readDraft(id);
+            if (inject) {inject = false; session.edit(note.id, rich('Newer must survive'));}
+            return record;
+        }}
+    });
+    session.edit(note.id, rich('Reviewed generation')); await session.flushJournal();
+    await repo.discardDraft(session.getDraftIds()[0], 1);
+    inject = true; await session.reconcileRecovery();
+    assert.equal(session.dirtyCount(), 1);
+    assert.match(session.exportDrafts(), /Newer must survive/);
+    assert.notEqual(session.getStatus(), 'saved');
+    await session.dispose();
+});
+
 test('recovery reconciliation settles only reviewed targets and preserves other local drafts', async t => {
     const {db, load} = await workspaceFixture(t);
     const create = load('brainRepository.ts').createBrainObject;

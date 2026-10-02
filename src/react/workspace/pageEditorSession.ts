@@ -105,8 +105,10 @@ export function createPageEditorSession(initial: WorkspaceEntity[], dependencies
     return {read, edit, flush, flushJournal: journal.flushJournal, reload, undo, getDraftIds: journal.getDraftIds, dirtyCount: () => drafts.size,
         async reconcileRecovery() {
             await running?.catch(() => {});
+            const reviewedDrafts = new Map(drafts);
             for (const target of await journal.settleResolved()) {
                 if (target.kind !== 'entity') continue;
+                if (drafts.get(target.id) !== reviewedDrafts.get(target.id)) continue;
                 drafts.delete(target.id); history.delete(target.id);
                 const current = await dependencies.read(target.id);
                 if (current) entities.set(target.id, current);

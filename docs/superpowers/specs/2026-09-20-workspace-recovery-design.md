@@ -1,6 +1,6 @@
 # Workspace recovery, version history and conflict comparison
 
-Status: conversational design and this written specification approved by the user's September 20 "Proceed" replies. Implementation plan: `docs/superpowers/plans/2026-09-20-workspace-recovery.md`, awaiting review; Native execution is selected under the user's discretion to proceed with the remaining suggestions. No implementation is included in this document.
+Status: conversational design and this written specification approved by the user's September 20 "Proceed" replies. The subsequent continuation requests authorized the implementation plan at `docs/superpowers/plans/2026-09-20-workspace-recovery.md`. Upgrade one completed its verification gate on October 2: 123 unit/integration tests and 17 browser tests passed, with lint, formatting, type checks and production build. This document remains the design authority; [the verification report](../../WORKSPACE_RECOVERY_VERIFICATION.md) records implemented boundaries, deviations and deferred follow-ups.
 
 ## Purpose and sequence
 

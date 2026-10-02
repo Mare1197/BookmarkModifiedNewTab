@@ -3,6 +3,15 @@ const test = require('node:test');
 const {workspaceFixture} = require('./helpers/workspaceFixture');
 const deferred = () => {let resolve; const promise = new Promise(r => {resolve = r;}); return {promise, resolve};};
 
+test('recovery clears only reviewed layout commands, preserving later enqueues', async t => {
+    const {load} = await workspaceFixture(t);
+    const queue = load('pagePersistenceQueue.ts').createPagePersistenceQueue({flushContent: async () => {}, hasContentDraft: () => false, saveCommand: async () => {}, coalesce: false});
+    const view = x => ({type: 'view', mode: 'canvas', viewport: {x, y: 0, zoom: 1}});
+    queue.enqueue(view(1)); const reviewed = queue.pending().length;
+    queue.enqueue(view(2)); queue.clearRecovered(reviewed);
+    assert.deepEqual(queue.pending(), [view(2)]);
+});
+
 test('navigation flush drains note edits arriving during a layout save', async t => {
     const {load} = await workspaceFixture(t), started = deferred(), release = deferred();
     let draft = false, saved = false;

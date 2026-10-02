@@ -6,7 +6,7 @@ import {richContentToPlainText, validateRichContent} from './richContent';
 import {validateAssetDataUrl, validateEffectivePageState} from './pageBackupValidation';
 import {validateGeometry, validatePagePresentation, validatePlacementPresentation} from './pageValidation';
 import {captureEntityTransition} from './revisionRepository';
-import {mutatePages, openWorkspacePage, loadPageSnapshot, recordPageTransition} from './pageRepository';
+import {mutatePages, openWorkspacePage, recordPageTransition} from './pageRepository';
 import {prepareRecoveryImport, validateRecoveryLimits} from './recoveryBackup';
 import type {PagePresentation} from '../../workspace/pageTypes';
 
@@ -1285,9 +1285,16 @@ export async function importWorkspace(snapshot: WorkspaceExport): Promise<void> 
         await checkLimits();
         await validateEffectivePageState(preparedTables);
         const beforePages = new Map();
-        for (const setting of await workspaceClient.settings.where('key').startsWith('workspace-page:').toArray()) {
-            const id = setting.key.slice('workspace-page:'.length); beforePages.set(id, await loadPageSnapshot(id));
+        const affectedBoards = new Set<string>((preparedTables.boards as BoardRecord[] || []).map(board => board.id));
+        for (const placement of preparedTables.placements as BoardPlacement[] || []) {
+            affectedBoards.add(placement.boardId);
+            const previous = await workspaceClient.placements.get(placement.id);
+            if (previous) affectedBoards.add(previous.boardId);
         }
+        for (const setting of await workspaceClient.settings.where('key').startsWith('workspace-page:').toArray()) {
+            affectedBoards.add(setting.key.slice('workspace-page:'.length));
+        }
+        for (const id of affectedBoards) if (await workspaceClient.boards.get(id)) beforePages.set(id, await openWorkspacePage(id));
         for (const tableName of canonicalTables) {
             let records = preparedTables[tableName];
             if (Array.isArray(records) && records.length) {
@@ -1309,10 +1316,8 @@ export async function importWorkspace(snapshot: WorkspaceExport): Promise<void> 
                 await workspaceClient.table(tableName).bulkPut(records);
             }
         }
-        for (const setting of await workspaceClient.settings.where('key').startsWith('workspace-page:').toArray()) {
-            const id = setting.key.slice('workspace-page:'.length);
-            await recordPageTransition(beforePages.get(id), await loadPageSnapshot(id), 'import');
-        }
+        for (const setting of await workspaceClient.settings.where('key').startsWith('workspace-page:').toArray()) affectedBoards.add(setting.key.slice('workspace-page:'.length));
+        for (const id of affectedBoards) if (await workspaceClient.boards.get(id)) await recordPageTransition(beforePages.get(id), await openWorkspacePage(id), 'import');
         await checkLimits();
         await workspaceClient.workspaceDrafts.bulkAdd(recovery.workspaceDrafts);
         await workspaceClient.workspaceRevisions.bulkAdd(recovery.workspaceRevisions);

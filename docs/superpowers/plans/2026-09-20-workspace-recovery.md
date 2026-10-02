@@ -8,7 +8,11 @@
 
 **Tech Stack:** Existing TypeScript, React, Dexie, BlockSuite 0.19.5, Node test runner, fake-indexeddb and isolated Chromium MV3 Playwright fixtures. No new runtime dependencies.
 
-**Spec:** `docs/superpowers/specs/2026-09-20-workspace-recovery-design.md`, approved by the user's latest "Proceed". This implementation plan awaits review. The user's follow-up authorizes implementing the remaining suggestions with judgment; Native execution is selected under that discretion.
+**Spec:** `docs/superpowers/specs/2026-09-20-workspace-recovery-design.md`, approved by the user's "Proceed". The subsequent continuation requests authorized this plan's Native execution.
+
+## Completion record — October 2, 2026
+
+Tasks 1–9 implemented and verified. The original step checklists below are retained as the execution recipe; this completion record and [verification report](../../WORKSPACE_RECOVERY_VERIFICATION.md) supersede their unchecked status. Final gates: lint/formatting, both TypeScript checks, 123/123 unit/integration tests, production build, 17/17 isolated Chromium tests and diff check passed. Dependency audit has one low-severity advisory and no high-severity findings. The independent review's three Important findings were reproduced and fixed; its two minors remain explicitly deferred. Decisions, costs, privacy and guarantee limits are recorded in the report. Upgrade two and three remain queued. Preserve the local feature branch; no merge or push is included.
 
 ## Global Constraints
 

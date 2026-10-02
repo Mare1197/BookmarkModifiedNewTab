@@ -589,7 +589,6 @@ function WorkspaceAppInner({onClose}: WorkspaceAppProps) {
                 />
                 <main className="workspaceMain">
                     <nav className="workspaceToolbar" aria-label="Workspace views">
-                        <button onClick={() => void openRecovery()}>Recovery</button>
                         <div className="workspaceViewTabs">
                             {(['brain', 'editor', 'canvas', 'mindmap', 'graph', 'search', 'tasks', 'activity', 'assets'] as WorkspaceView[]).map(item => (
                                 <button
@@ -605,6 +604,7 @@ function WorkspaceAppInner({onClose}: WorkspaceAppProps) {
                             ))}
                         </div>
                         <div className="workspaceActions">
+                            <button type="button" onClick={() => void openRecovery()}>Recovery</button>
                             <button
                                 type="button"
                                 className="mobilePanelButton"
@@ -625,14 +625,14 @@ function WorkspaceAppInner({onClose}: WorkspaceAppProps) {
                                 setQuickAddKind('web');
                                 setQuickAddOpen(true);
                             }}>＋ Quick Add</button>
-                            <button type="button" onClick={() => void run(
+                            <button type="button" disabled={busy || !activeBoardId} onClick={() => void run(
                                 () => captureWindowSession(activeBoardId).then(() => undefined),
                                 'Window session captured')}>Capture window</button>
-                            <button type="button" onClick={() => void run(
+                            <button type="button" disabled={busy || !activeBoardId} onClick={() => void run(
                                 () => autoLayoutBoard(activeBoardId),
                                 'Board auto-layout applied')}>Auto-layout</button>
-                            <button type="button" onClick={() => void run(() => addNote(activeBoardId).then(() => undefined), 'Note added')}>＋ Note</button>
-                            <button type="button" onClick={() => void run(() => addCurrentTab(activeBoardId).then(() => undefined), 'Recent web tab added')}>＋ Recent web tab</button>
+                            <button type="button" disabled={busy || !activeBoardId} onClick={() => void run(() => addNote(activeBoardId).then(() => undefined), 'Note added')}>＋ Note</button>
+                            <button type="button" disabled={busy || !activeBoardId} onClick={() => void run(() => addCurrentTab(activeBoardId).then(() => undefined), 'Recent web tab added')}>＋ Recent web tab</button>
                             <button
                                 type="button"
                                 disabled={!selectedPlacementId}

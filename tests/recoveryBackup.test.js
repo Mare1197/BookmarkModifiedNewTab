@@ -3,6 +3,19 @@ const test = require('node:test');
 const {workspaceFixture} = require('./helpers/workspaceFixture');
 const {draft} = require('./helpers/recoveryFixture');
 
+test('import versions unopened legacy board layouts before replacing placements', async t => {
+    const {db, load} = await workspaceFixture(t), repo = load('workspaceRepository.ts');
+    const note = await load('brainRepository.ts').createBrainObject({type: 'note', title: 'Legacy'});
+    await db.boards.put({id: 'legacy-board', name: 'Legacy board', createdAt: 1, updatedAt: 1});
+    await db.placements.put({id: 'legacy-placement', boardId: 'legacy-board', entityId: note.id,
+        kind: 'note', x: 1, y: 1, width: 300, height: 200, zIndex: 0, createdAt: 1, updatedAt: 1});
+    const backup = await repo.exportWorkspace(); backup.tables.placements[0].x = 999;
+    await repo.importWorkspace(backup);
+    const history = (await db.workspaceRevisions.toArray()).filter(r => r.target.id === 'legacy-board');
+    assert.ok(history.some(r => r.snapshot.placements[0].x === 1));
+    assert.ok(history.some(r => r.snapshot.placements[0].x === 999));
+});
+
 test('private backups are opt-in, remap identities and import inactive without applying drafts', async t => {
     const {db, load} = await workspaceFixture(t), repo = load('workspaceRepository.ts');
     await load('recoveryRepository.ts').writeDraft(draft(), null);

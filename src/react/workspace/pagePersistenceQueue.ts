@@ -31,6 +31,10 @@ export function createPagePersistenceQueue(deps: {
         return running;
     }
     return {enqueue, flush, pending: () => structuredClone(commands),
+        clearRecovered(count: number) {
+            if (running) throw new Error('Wait for the pending save before reconciling recovery.');
+            commands.splice(0, count);
+        },
         clear() {if (running) throw new Error('Wait for the pending save before discarding.'); commands.length = 0;},
         dispose() {closed = true;}};
 }
