@@ -20,7 +20,10 @@ export function ConflictPanel({preview, onClose, onResolved}: {preview: DraftPre
     const current = preview.current?.kind === 'entity' ? preview.current : undefined, draft = preview.proposed?.kind === 'entity' ? preview.proposed : undefined;
     const differences = useMemo(() => current && draft ? diffContent(current, draft) : [], [current, draft]);
     const resolve = async (decision: Resolution) => {
-        if (preview.activeElsewhere && !window.confirm('This draft belongs to a session that may still be editing. Apply or discard only the reviewed generation?')) return;
+        const warning = preview.activeElsewhere ? 'This draft belongs to a session that may still be editing. ' : '';
+        const confirmation = decision.kind === 'keep-current' ? warning + 'Discard the reviewed draft and keep the current saved content? This cannot be undone.' :
+            preview.activeElsewhere ? warning + 'Apply only the reviewed generation?' : '';
+        if (confirmation && !window.confirm(confirmation)) return;
         setBusy(true); try {await resolveDraft(preview, decision); await onResolved();} catch (e) {setStatus(String(e) + ' Return to recovery and preview again before applying.'); setStale(true);} finally {setBusy(false);}
     };
     return <section aria-label="Conflict comparison"><h2>Review draft</h2><p>Compare before deciding. Nothing is changed until you choose an action.</p>

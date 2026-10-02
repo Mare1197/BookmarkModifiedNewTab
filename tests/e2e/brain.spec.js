@@ -15,6 +15,33 @@ async function openBrain(context, extensionId) {
     return page;
 }
 
+test('conversation cards follow provider sequence after reimport and reload', async ({context, extensionId}) => {
+    const page = await openBrain(context, extensionId), errors = [];
+    page.on('pageerror', error => errors.push(error.message));
+    const brain = page.getByRole('region', {name: 'Unified Brain', exact: true});
+    await brain.getByText('Create an object or import a conversation', {exact: true}).click();
+    const panel = page.getByRole('region', {name: 'Conversation export import'});
+    const first = {id: 'first', role: 'user', text: 'First question'}, last = {id: 'last', role: 'assistant', text: 'Last answer'};
+    for (const messages of [[first, last], [first, {id: 'middle', role: 'user', text: 'Middle clarification'}, last]]) {
+        await panel.getByLabel('Paste conversation export JSON').fill(JSON.stringify({provider: 'chatgpt', sourceId: 'ordered-chat', title: 'Ordered conversation', messages}));
+        await panel.getByRole('button', {name: 'Preview import', exact: true}).click();
+        await panel.getByRole('button', {name: 'Import conversations', exact: true}).click();
+        await expect(page.getByText('Imported 1 conversation.', {exact: true})).toBeVisible();
+    }
+    const block = page.locator('workspace-reference-block').filter({hasText: 'Ordered conversation'});
+    for (const reload of [false, true]) {
+        if (reload) {
+            await page.reload();
+            await page.frameLocator('iframe[title="Browser OS desktop"]').getByRole('button', {name: 'Boards', exact: true}).click();
+            await page.getByRole('button', {name: 'Brain', exact: true}).click();
+        }
+        await brain.getByRole('button', {name: 'Ordered conversation', exact: true}).click();
+        await page.getByRole('complementary', {name: 'Inspector'}).getByRole('button', {name: 'Open in workspace', exact: true}).click();
+        await expect(block).toContainText(/First question[\s\S]*Middle clarification[\s\S]*Last answer/);
+    }
+    expect(errors).toEqual([]);
+});
+
 test('provider import, memory controls, project resume and cross-tab changes share canonical objects', async ({context, extensionId}) => {
     const page = await openBrain(context, extensionId);
     const errors = [];

@@ -370,18 +370,21 @@ export async function addCurrentTab(boardId: string): Promise<BoardPlacement> {
     const timestamp = now();
     const url = canonicalizeUrl(tab.url);
     const entityId = pageEntityId(url);
-    const existing = await workspaceClient.entities.get(entityId);
     const position = await findOpenPosition(boardId, 280, 150);
+    await workspaceClient.transaction('rw', workspaceClient.entities, async () => {
+    const existing = await workspaceClient.entities.get(entityId);
+    const title = existing?.metadata?.workspaceEditedAt ? existing.title : tab.title || existing?.title || url;
     await workspaceClient.entities.put({
         ...existing,
         id: entityId,
         type: 'page',
-        title: tab.title || existing?.title || url,
+        title,
         canonicalUrl: url,
         createdAt: existing?.createdAt || timestamp,
         updatedAt: timestamp,
-        searchTerms: searchTerms(tab.title, url),
+        searchTerms: searchTerms(title, url, String(existing?.metadata?.body || '')),
         metadata: {...existing?.metadata, sourceKind: 'tab', tabId: tab.id, live: true}
+    });
     });
     const placement: BoardPlacement = {
         id: makeId('placement'),
@@ -755,9 +758,11 @@ export async function quickAdd(input: QuickAddInput): Promise<WorkspaceEntity> {
     const type: WorkspaceEntity['type'] = input.kind === 'web' ? 'page' : input.kind;
     const entityId = input.kind === 'web' ? pageEntityId(canonicalUrl) : makeId(input.kind);
     const existing = await workspaceClient.entities.get(entityId);
-    const title = input.title?.trim() || existing?.title ||
+    const preserveEdits = Boolean(existing?.metadata?.workspaceEditedAt);
+    const title = preserveEdits ? existing!.title : input.title?.trim() || existing?.title ||
         (input.kind === 'clip' ? 'Web clip' : input.kind === 'task' ? 'New task' :
             input.kind === 'note' ? 'New note' : new URL(canonicalUrl).hostname);
+    const body = preserveEdits ? existing?.metadata?.body || '' : input.body?.trim() || existing?.metadata?.body || '';
     const entity: WorkspaceEntity = {
         ...existing,
         id: entityId,
@@ -767,10 +772,10 @@ export async function quickAdd(input: QuickAddInput): Promise<WorkspaceEntity> {
         inboxAt: input.inbox ? existing?.inboxAt || timestamp : existing?.inboxAt,
         createdAt: existing?.createdAt || timestamp,
         updatedAt: timestamp,
-        searchTerms: searchTerms(title, canonicalUrl, input.body),
+        searchTerms: searchTerms(title, canonicalUrl, String(body)),
         metadata: {
             ...existing?.metadata,
-            body: input.body?.trim() || existing?.metadata?.body || '',
+            body,
             capturedAt: input.kind === 'clip' ? timestamp : existing?.metadata?.capturedAt,
             sourceKind: input.kind === 'web' || input.kind === 'clip' ? 'user' : 'workspace'
         }

@@ -2,6 +2,8 @@
 
 Updated October 2, 2026. The shared-Brain improvements, persistent BlockSuite workspace, and local recovery upgrade are implemented and verified as the bounded slice below. The full five-reference product specification is **not finished**.
 
+Latest local follow-up: draft-disposal confirmation, recapture preservation, provider-sequence conversation rendering and DOMPurify 3.4.16. Verification is now 131 unit/integration tests and 20 browser tests, with clean-install/build checks; see [the reliability report](RELIABILITY_BATCH_VERIFICATION.md). Earlier verification details below describe the preceding recovery checkpoint.
+
 ## Use the new features
 
 Open **Boards → Brain**. The existing desktop, browser capture, Explorer, React Flow canvas and Dexie database remain in place.
@@ -47,10 +49,10 @@ Final browser run: **17/17 passed** against the production MV3 build. The native
 
 A fresh independent recovery review completed with three Important findings and no Critical findings. Unopened-board import preimages, asynchronous recovery reconciliation, and inspectable formatting/layout comparisons were fixed with failing-then-passing regression tests. Earlier save-queue race tests also remain green. The reviewer did not re-review the fixes; final author-run verification is documented in [the recovery verification report](WORKSPACE_RECOVERY_VERIFICATION.md), together with deferred minors and decision costs.
 
-Local checkpoint commits preserve the pre-upgrade state and the canonical page, rich-content and asset layers. The earlier baseline through `f68f042` was published on `feature/browser-resources-inspector`; this recovery upgrade is local on that branch and has not been pushed. No deployment or installation into the user's browser is included. The built unpacked extension is in `dist/`; generated build output is not committed.
+Local checkpoint commits preserve the pre-upgrade state and the canonical page, rich-content and asset layers. The recovery upgrade and CI-install fix through `d5caef3` are recorded on `origin/feature/browser-resources-inspector`; this newer reliability follow-up is local only. No deployment or installation into the user's browser is included. The built unpacked extension is in `dist/`; generated build output is not committed.
 
 ## Recommended next upgrades
 
-1. Recovery follow-ups: lightweight indexed draft-summary pagination and confirmation before inactive Keep current discards. The initial durable journal/history/comparison implementation passed the final verification gate above.
+1. Recovery follow-ups: lightweight indexed draft-summary pagination. Confirmation before inactive Keep current discards, recapture preservation, conversation ordering and the scoped DOMPurify patch are covered by the later [reliability follow-up](RELIABILITY_BATCH_VERIFICATION.md).
 2. Complete connector routing and native operation persistence, richer block controls and a searchable nested-page outline; add end-to-end gesture coverage.
 3. Large-library benchmarks, indexed/paged queries and editor bundle reduction before expanding live provider integrations.

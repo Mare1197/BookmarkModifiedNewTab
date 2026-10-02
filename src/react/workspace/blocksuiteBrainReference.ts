@@ -7,8 +7,8 @@ import {mountCanonicalRichText} from './blocksuiteRichText';
 import {isSafeRaster, loadPageAsset} from './pageAssets';
 import {setMemoryPolicy} from './brainRepository';
 import {updateTask} from './workspaceRepository';
+import {loadConversationMessages} from './conversationMessages';
 import type {ContentSession} from './pageEditorSession';
-import type {WorkspaceEntity} from '../../workspace/types';
 
 export const PageReferenceSchema = defineBlockSchema({
     flavour: 'affine:embed-workspace-object', props: () => ({entityId: '', placementId: ''}),
@@ -59,9 +59,7 @@ export class WorkspaceReferenceBlock extends BlockComponent<ReferenceModel> {
         this.body.hidden = ctx.collapsed.has(this.model.placementId);
         this.subscription = liveQuery(async () => {
             const entity = await db.entities.get(this.model.entityId);
-            const links = await db.relationships.where('toEntityId').equals(this.model.entityId).toArray();
-            const messages = entity?.type === 'conversation' ? (await db.entities.bulkGet(links.filter(r => r.confirmed && r.type === 'message-of').map(r => r.fromEntityId)))
-                .filter((e): e is WorkspaceEntity => Boolean(e)).sort((a, b) => a.createdAt - b.createdAt) : [];
+            const messages = entity?.type === 'conversation' ? await loadConversationMessages(entity.id) : [];
             const task = entity?.type === 'task' ? await db.tasks.where('entityId').equals(entity.id).first() : undefined;
             return {entity, messages, task};
         }).subscribe({next: ({entity, messages, task}) => {

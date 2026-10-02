@@ -1,5 +1,7 @@
 # Workspace recovery verification
 
+This is the original recovery checkpoint report. Its deferred confirmation, recapture, conversation-order and DOMPurify items are addressed in the later [reliability follow-up](RELIABILITY_BATCH_VERIFICATION.md); use that report for the newer verification boundary.
+
 October 2, 2026. Scope: recovery upgrade one, extending the existing Brain and BlockSuite adapter. No new database backend, cloud service, deployment, or personal browser installation.
 
 ## Verification record

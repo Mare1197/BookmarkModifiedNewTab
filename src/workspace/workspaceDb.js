@@ -108,12 +108,22 @@
             const now = source.updatedAt || Date.now();
             const entity = schemaCore.makePageEntity(source, now);
             const sourceRef = schemaCore.makeSourceReference(source, entity.id, now);
+            let saved;
             await db.transaction('rw', db.entities, db.sourceRefs, db.domains, async () => {
                 const existing = await db.entities.get(entity.id);
-                await db.entities.put(Object.assign({}, existing || {}, entity, {
+                const edited = existing && existing.metadata && existing.metadata.workspaceEditedAt;
+                saved = Object.assign({}, existing || {}, entity, {
+                    title: edited ? existing.title : entity.title,
                     createdAt: existing ? existing.createdAt : entity.createdAt,
                     metadata: Object.assign({}, existing && existing.metadata, entity.metadata)
-                }));
+                });
+                if (edited) {
+                    saved.metadata.body = existing.metadata.body;
+                    saved.metadata.workspaceEditedAt = existing.metadata.workspaceEditedAt;
+                }
+                saved.searchTerms = schemaCore.normalizeSearchTerms(saved.title, saved.canonicalUrl,
+                    schemaCore.getHost(saved.canonicalUrl), String(saved.metadata.body || ''));
+                await db.entities.put(saved);
                 await db.sourceRefs.put(sourceRef);
                 if (entity.domainId) {
                     const host = schemaCore.getHost(entity.canonicalUrl);
@@ -126,7 +136,7 @@
                     });
                 }
             });
-            return entity;
+            return saved;
         };
 
         const migrateLegacy = async ({legacyData = {}, bookmarkTree = [], dryRun = true, beforeCommit} = {}) => {

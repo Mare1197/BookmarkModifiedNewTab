@@ -27,6 +27,6 @@ async function workspaceFixture(t) {
         }, exports);
         return exports;
     }
-    return {db, load: relative => module(path.resolve(__dirname, '../../src/react/workspace', relative))};
+    return {db, browser, load: relative => module(path.resolve(__dirname, '../../src/react/workspace', relative))};
 }
 module.exports = {workspaceFixture};

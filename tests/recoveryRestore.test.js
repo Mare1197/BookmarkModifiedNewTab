@@ -29,6 +29,18 @@ test('missing targets remain exportable, never silently recreated', async t => {
     await assert.rejects(api.resolveDraft(preview, {kind: 'use-draft'}), /missing|exists|unavailable/i);
     assert.equal(await db.entities.get(note.id), undefined); assert.ok(preview.record.base);
 });
+test('keeping current refuses a newer draft generation and discards only the reviewed draft', async t => {
+    const {db, load} = await workspaceFixture(t), {note, id} = await pending(load), api = load('recoveryPreview.ts');
+    const preview = await api.previewDraft(id), before = await db.entities.get(note.id);
+    const other = await pending(load);
+    await db.workspaceDrafts.update(id, {generation: preview.record.generation + 1});
+    await assert.rejects(api.resolveDraft(preview, {kind: 'keep-current'}), /conflict/i);
+    assert.ok(await db.workspaceDrafts.get(id));
+    await api.resolveDraft(await api.previewDraft(id), {kind: 'keep-current'});
+    assert.equal(await db.workspaceDrafts.get(id), undefined);
+    assert.ok(await db.workspaceDrafts.get(other.id));
+    assert.deepEqual(await db.entities.get(note.id), before);
+});
 test('history restore refuses pending drafts and stale versions, then creates a new revision', async t => {
     const {db, load} = await workspaceFixture(t), {note, id} = await pending(load), history = load('revisionRepository.ts');
     const revision = (await history.listHistory({kind: 'entity', id: note.id})).items[0];
