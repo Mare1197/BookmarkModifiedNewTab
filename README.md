@@ -2,6 +2,11 @@
 
 A local-first Chrome/Chromium Manifest V3 new-tab desktop built on Super Bookmark Desktop.
 
+The New Tab desktop remains the entry point. Browser research, projects, notes, tasks,
+imported AI chats and reviewed AI memory share one canonical Brain; switching views
+does not create separate copies. This is a working incremental build, not a claim of
+complete AFFiNE parity or completion of the entire product specification.
+
 ## Current features
 
 - Desktop bookmark, folder, and rich-document icons.
@@ -21,8 +26,35 @@ A local-first Chrome/Chromium Manifest V3 new-tab desktop built on Super Bookmar
 - Local page-text clips with review-before-save, built-in board templates, and non-destructive board auto-layout.
 - Optional Gemini analysis that is disabled until configured and explicitly invoked.
 - User-facing browser metadata timestamps in `DD/MM/YYYY HH:mm` format.
+- Unified Brain with Table, Kanban, Tiles, Timeline, Graph, project homepages and saved views.
+- Preview-first local ChatGPT, Claude and normalized JSON conversation imports, stable
+  message identity, provider-sequence display, and preserve-local conflict handling.
+- Sourced AI memory with exclusion, private/project scope, review dates, forgetting and
+  exact-context previews before optional provider requests.
+- Real locally bundled BlockSuite document, edgeless and mixed workspaces over canonical
+  object references, with rich notes, local files/images, child pages and persistent layouts.
+- Private local draft recovery, Base/Current/Draft comparison, manual rich-text combination,
+  generation-checked disposal with confirmation, and guarded content/page history restore.
+- Browser recapture preserves workspace-edited titles and notes and keeps retained text searchable.
 
 The extension does not calculate accumulated total-open time and does not require an AI provider.
+
+## Brain, workspace and recovery
+
+Open **Boards → Brain** to create objects or preview conversation exports. Select an object
+to access its Inspector, projects, backlinks, source, shared views or optional **Ask AI**.
+AI Inbox suggestions currently use local keywords and require explicit acceptance;
+opening a chat or memory never triggers a provider request.
+
+Use **Open in workspace** or **Boards → Workspace** for document/canvas/mixed editing.
+Notes and files remain canonical Brain objects; BlockSuite's transient document stores
+reference IDs, not a second persistent content database. AppFlowy, Anytype, Logseq and
+xTiles are interaction/data-model references, not additional backends.
+
+**Recovery**, **Page history** and Inspector **Content history** support reviewed local
+recovery and restoration. Only successfully acknowledged local journal writes are
+recoverable. Ordinary backups exclude private drafts/history; including them is explicit.
+Recovery does not protect against erased storage, extension uninstall or disk failure.
 
 ## Organize workspace folders
 
@@ -52,17 +84,38 @@ recent recorded workspace activity, and incoming backlinks for the selected obje
   browser-history reconstruction. Unobserved provenance is shown as Unknown.
 - Full Tab / Session, Domain and AI inspector parity, rich/file/frame Canvas breadth,
   large-graph profiling and credentialed provider acceptance remain separate work.
+- Native connector rerouting, comprehensive rich-block controls and a full nested-page
+  outline are follow-up editor work; large-library indexing and editor bundle reduction
+  are also pending. Supported workspace controls are not full native-editor parity.
+- Live provider synchronization, authenticated GitHub/Codex connectors, multi-user
+  collaboration, universal undo and model-powered organization are not implemented.
+
+## Verification checkpoint
+
+The October 2 reliability batch (`eb9f132`) passed lint, formatting, both TypeScript
+checks, **131 unit/integration tests**, **20 isolated Chromium browser tests**, a clean
+npm 10.9.9 install and the production MV3 build. See the
+[verification report](docs/RELIABILITY_BATCH_VERIFICATION.md) for scope and review evidence.
+These are dated test results, not a guarantee of future CI or every planned feature.
+
+The checkpoint's production dependency audit reported zero vulnerabilities after the
+DOMPurify 3.4.16 patch. The full audit still reported a development-only `brace-expansion`
+advisory. Existing legacy-tool deprecations, the older BlockSuite icons engine warning
+and the large lazy editor chunk remain known limitations.
 
 ## Development
 
 ```powershell
-npm install
+npx --yes npm@10.9.9 ci
 npm test
 npm run build
 npm run test:smoke
 ```
 
 Load the generated `dist/` folder from `chrome://extensions` with Developer mode enabled.
+CI uses Node 22 and npm 10.9.9; local verification also passed on Node 24.13.0.
+For serial browser verification use `npx playwright test tests/e2e --workers=1`.
+The browser suite uses disposable profiles, not your personal Chrome profile.
 
 ## Permissions
 
@@ -84,6 +137,11 @@ Analysis view.
 
 ## Project documents
 
+- [Current Unified Brain implementation and limitations](docs/UNIFIED_BRAIN_STATUS.md)
+- [Reliability batch verification](docs/RELIABILITY_BATCH_VERIFICATION.md)
+- [Workspace recovery verification](docs/WORKSPACE_RECOVERY_VERIFICATION.md)
+- [Complete product handoff](docs/AI_BUILDER_PRODUCT_HANDOFF.md)
+- [Connected knowledge specification](docs/CONNECTED_KNOWLEDGE_ADDENDUM.md)
 - [Shared workspace schema](docs/SHARED_WORKSPACE_SCHEMA.md)
 - [GBrain integration decision](docs/GBRAIN_INTEGRATION_DECISION.md)
 - [`docs/MASTER_PROJECT_SPEC.md`](docs/MASTER_PROJECT_SPEC.md)
