@@ -7,6 +7,8 @@ import {addPageReference, applyPageCommand, createWorkspacePage, loadPageSnapsho
 import type {PageCommand, PageMode} from '../../workspace/pageTypes';
 import type {WorkspaceEntity} from '../../workspace/types';
 import {hasUnsavedWork, type PageEditorSession} from './pageEditorSession';
+import {WorkspaceConnectorControls} from './WorkspaceConnectorControls';
+import {WorkspacePages} from './WorkspacePages';
 import './affineWorkspace.css';
 
 interface Props {
@@ -84,6 +86,7 @@ export function AffineWorkspace(props: Props) {
         void run(async () => {await addPageReference(props.boardId, id); await reload();});
     }}>
         <header><h2>{page?.owner.title || 'Workspace'}</h2>
+            <WorkspacePages boardId={props.boardId} busy={busy} onOpen={id => void run(async () => {callbacks.current.onOpenPage(id);})} />
             {page?.parent && <button onClick={() => void run(() => openParent(page.parent!.id))}>↑ {page.parent.title}</button>}
             <div className="affineControls">{(['document', 'canvas', 'mixed'] as PageMode[]).map(value => <button key={value} disabled={busy}
                 aria-pressed={mode === value} onClick={() => void run(async () => {
@@ -153,9 +156,10 @@ export function AffineWorkspace(props: Props) {
                 <div className="affineControls"><label>Connect to<select value={targetId} onChange={e => setTargetId(e.target.value)}><option value="">Choose a card</option>
                     {page?.placements.filter(p => p.id !== chosen?.id).map(p => <option key={p.id} value={p.id}>{page.entities.find(e => e.id === p.entityId)?.title}</option>)}</select></label>
                     <button disabled={!chosen || !targetId} onClick={() => chosen && void command({type: 'connect', fromPlacementId: chosen.id, toPlacementId: targetId, relationType: 'related'})}>Connect cards</button>
-                    {page?.presentation.connectors.map(c => <span key={c.id}>Link<button onClick={() => void command({type: 'remove-connector', connectorId: c.id, scope: 'page'})}>Remove from page</button>
-                        <button onClick={() => {if (window.confirm('Unlink these objects everywhere?')) void command({type: 'remove-connector', connectorId: c.id, scope: 'everywhere'});}}>Unlink everywhere</button></span>)}
                 </div>
+                {page?.presentation.connectors.map(c => <WorkspaceConnectorControls key={c.id} connector={c} busy={busy} onCommand={command}
+                    label={(page.entities.find(e => e.id === page.placements.find(p => p.id === c.fromPlacementId)?.entityId)?.title || 'Missing object') + ' → ' +
+                        (page.entities.find(e => e.id === page.placements.find(p => p.id === c.toPlacementId)?.entityId)?.title || 'Missing object')} />)}
             </details>
         </header>
         <div ref={host} className={'affineNativeHost ' + mode} />

@@ -9,6 +9,12 @@
 .affineControls label {display:flex;flex-direction:column;gap:4px;max-width:240px;}
 .affineControls input,.affineControls select {max-width:100%;min-width:0;}
 .affineControls input[type=number] {width:90px;}
+.affineWorkspace fieldset {min-width:0;border:1px solid #cbd5e1;margin:8px 0;}
+.workspacePages ol,.workspacePages ul {list-style:none;padding:0;margin:8px 0;}
+.workspacePages ol {display:flex;flex-wrap:wrap;gap:6px;}
+.workspacePages li {min-width:0;}
+.workspacePages button {max-width:100%;overflow-wrap:anywhere;text-align:start;}
+.workspacePages nav[aria-label="Workspace pages"] {max-height:280px;overflow:auto;}
 .affineNativeHost {display:flex;gap:8px;min-height:620px;background:#fff;color:#17212c;}
 .brainNativePane {flex:1;min-width:0;height:650px;overflow:auto;position:relative;}
 .brainNativeEditor {display:block;width:100%;height:100%;min-height:600px;background:white;color:#17212c;}
@@ -20,10 +26,12 @@
 .brainRichToolbar {display:flex;flex-wrap:wrap;gap:2px;margin:6px 0;}
 .brainRichBlock rich-text {display:block;min-height:30px;padding:5px;outline:1px solid #d9e2ea;}
 .brainRichBlock[data-kind=heading] rich-text {font-size:24px;font-weight:600;}
+.brainRichBlock[data-kind=heading][data-level="1"] rich-text {font-size:28px;}
+.brainRichBlock[data-kind=heading][data-level="3"] rich-text {font-size:20px;}
 .brainRichBlock[data-kind=quote] rich-text {border-left:4px solid #8195ab;padding-left:12px;}
 .brainRichBlock[data-kind=code] rich-text {font-family:monospace;background:#edf1f5;}
 .brainRichBlock[data-kind=bullet] rich-text:before {content:'• ';}
-.brainRichBlock[data-kind=numbered] rich-text:before {content:'1. ';}
+.brainRichBlock[data-kind=numbered] rich-text:before {content:attr(data-list-number) '. ';}
 .brainRichBlock[data-kind=check] rich-text:before {content:'☐ ';}
 .brainRichBlock[data-kind=check][data-checked=true] rich-text:before {content:'☑ ';}
 @media(max-width:700px) {.affineNativeHost.mixed {flex-direction:column;}.brainNativePane {flex:none;width:100%;}.affineControls label {max-width:100%;}}

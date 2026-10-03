@@ -36,6 +36,8 @@ complete AFFiNE parity or completion of the entire product specification.
 - Private local draft recovery, Base/Current/Draft comparison, manual rich-text combination,
   generation-checked disposal with confirmation, and guarded content/page history restore.
 - Browser recapture preserves workspace-edited titles and notes and keeps retained text searchable.
+- Rich-note block move/delete controls, last-save undo, three heading levels and sequential numbered lists.
+- Connector shape/color/dash controls and a searchable nested-page outline with breadcrumb navigation.
 
 The extension does not calculate accumulated total-open time and does not require an AI provider.
 
@@ -50,6 +52,12 @@ Use **Open in workspace** or **Boards → Workspace** for document/canvas/mixed 
 Notes and files remain canonical Brain objects; BlockSuite's transient document stores
 reference IDs, not a second persistent content database. AppFlowy, Anytype, Logseq and
 xTiles are interaction/data-model references, not additional backends.
+
+Use each note's block toolbar to move or delete blocks and choose heading levels.
+**Undo text change** restores the last canonical save, not an unlimited action history.
+Connector controls change page presentation; **Remove from page** retains the shared
+relationship, while **Unlink everywhere** requires confirmation. **Page outline** searches
+page titles and retains ancestors for context; breadcrumbs navigate through saved page parents.
 
 **Recovery**, **Page history** and Inspector **Content history** support reviewed local
 recovery and restoration. Only successfully acknowledged local journal writes are
@@ -84,13 +92,21 @@ recent recorded workspace activity, and incoming backlinks for the selected obje
   browser-history reconstruction. Unobserved provenance is shown as Unknown.
 - Full Tab / Session, Domain and AI inspector parity, rich/file/frame Canvas breadth,
   large-graph profiling and credentialed provider acceptance remain separate work.
-- Native connector rerouting, comprehensive rich-block controls and a full nested-page
-  outline are follow-up editor work; large-library indexing and editor bundle reduction
-  are also pending. Supported workspace controls are not full native-editor parity.
+- Native connector endpoint/path rerouting, nested lists and code-language controls remain
+  follow-up editor work. The searchable outline is not a drag/reparent tree. Large-library
+  indexing and editor bundle reduction are also pending; supported workspace controls
+  are not full native-editor parity.
 - Live provider synchronization, authenticated GitHub/Codex connectors, multi-user
   collaboration, universal undo and model-powered organization are not implemented.
 
 ## Verification checkpoint
+
+The October 3 editor follow-up passed lint, formatting, both TypeScript checks,
+**133 unit/integration tests** and the production MV3 build. The expanded browser suite
+contains 23 tests. Local rich-block assertions (including delete/restore/edit/undo)
+passed after the review fix, but Chromium shutdown timed out, so this follow-up does
+not yet have a clean final local browser-suite result. Clean-machine CI verification
+is pending; see [current status](docs/UNIFIED_BRAIN_STATUS.md).
 
 The October 2 reliability batch (`eb9f132`) passed lint, formatting, both TypeScript
 checks, **131 unit/integration tests**, **20 isolated Chromium browser tests**, a clean
