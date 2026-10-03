@@ -42,6 +42,7 @@ export function AffineWorkspace(props: Props) {
         void import('./blocksuiteWorkspaceAdapter').then(async ({mountWorkspaceEditor}) => {
             if (cancelled) return;
             mounted = await mountWorkspaceEditor(node, {snapshot: page, mode,
+                onUndo: token => {if (!cancelled) setUndoToken(token);},
                 onSelect: (id, placementId) => {if (placementId) setSelected([placementId]); callbacks.current.onSelect(id, placementId);},
                 onOpenPage: id => callbacks.current.onOpenPage(id), onAction: (id, action) => callbacks.current.onAction(id, action),
                 onStatus: message => {if (!cancelled) setStatus(message);}});
@@ -116,7 +117,7 @@ export function AffineWorkspace(props: Props) {
                 <button disabled={busy || !noteTitle.trim()} onClick={() => void run(async () => {
                     await db.transaction('rw', [db.entities, db.tasks, db.activities, db.boards, db.settings, db.relationships, db.placements, db.workspaceRevisions], async () => {
                         const note = await createBrainObject({type: 'note', title: noteTitle}); await addPageReference(props.boardId, note.id);
-                    }); setNoteTitle(''); await reload();
+                    }); setNoteTitle(current => current === noteTitle ? '' : current); await reload();
                 })}>New note</button>
                 <label>Existing object<select value={objectId} onChange={e => setObjectId(e.target.value)}><option value="">Choose an object</option>
                     {props.entities.map(e => <option key={e.id} value={e.id}>{e.title} · {e.type}</option>)}</select></label>

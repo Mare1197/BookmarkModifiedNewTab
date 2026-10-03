@@ -13,6 +13,7 @@ export interface WorkspaceEditorInput {
     onOpenPage: (boardId: string) => void;
     onAction: (entityId: string, action: 'source' | 'inspector' | 'graph' | 'ai') => void;
     onStatus: (status: string) => void;
+    onUndo?: (token: string) => void;
 }
 export async function mountWorkspaceEditor(host: HTMLElement, input: WorkspaceEditorInput): Promise<PageEditorSession> {
     let snapshot = input.snapshot, status: SaveStatus = 'saved', disposed = false;
@@ -36,6 +37,7 @@ export async function mountWorkspaceEditor(host: HTMLElement, input: WorkspaceEd
             const result = await layoutJournal.applyNext(targetKey({kind: 'page', id: snapshot.board.id}), async (op, version) => {
                 if (op.kind !== 'page' || version.kind !== 'page') throw new Error('Invalid page journal.');
                 const saved = await applyPageCommand(snapshot.board.id, version.value, op.command, layoutJournal.sessionId);
+                if (saved.undoToken && op.command.type !== 'view') input.onUndo?.(saved.undoToken);
                 return {value: saved, nextBase: layoutSnapshot(saved), nextVersion: {kind: 'page' as const, value: saved.version}};
             }, async () => {
                 const saved = await loadPageSnapshot(snapshot.board.id);
@@ -43,7 +45,6 @@ export async function mountWorkspaceEditor(host: HTMLElement, input: WorkspaceEd
             });
             if (!result) throw new Error('Layout draft journal is unavailable.');
             snapshot = result.value;
-            projection.reconcileConnectors(snapshot);
         }});
     function schedule() {clearTimeout(timer); timer = setTimeout(() => {void flush().catch(report);}, 400);}
     const projection = await mountPageProjection(host, snapshot, input.mode, {
@@ -76,7 +77,7 @@ export async function mountWorkspaceEditor(host: HTMLElement, input: WorkspaceEd
             await session.reconcileRecovery();
             const reviewedCount = queue.pending().length;
             const settled = await layoutJournal.settleResolved();
-            if (settled.length) {queue.clearRecovered(reviewedCount); snapshot = await loadPageSnapshot(snapshot.board.id); projection.reconcileConnectors(snapshot);}
+            if (settled.length) {queue.clearRecovered(reviewedCount); snapshot = await loadPageSnapshot(snapshot.board.id);}
             if (!session.dirtyCount() && !queue.pending().length) {error = undefined; status = 'saved';}
             input.onStatus(getStatus());
         },

@@ -64,7 +64,8 @@ export function validateCommand(value: unknown): asserts value is PageCommand {
             check(['default', 'blue', 'green', 'yellow', 'purple'].includes(String(v.color))); break;
         case 'view': only(v, ['type', 'mode', 'viewport']);
             validatePagePresentation({version: 1, ownerEntityId: 'validation', revision: 0, mode: v.mode, viewport: v.viewport, groups: [], connectors: []}); break;
-        case 'connect': only(v, ['type', 'fromPlacementId', 'toPlacementId', 'relationType', 'label']);
+        case 'connect': only(v, ['type', 'connectorId', 'fromPlacementId', 'toPlacementId', 'relationType', 'label']);
+            if (v.connectorId !== undefined) id(v.connectorId);
             id(v.fromPlacementId); id(v.toPlacementId); check(v.fromPlacementId !== v.toPlacementId);
             check(['related', 'supports', 'depends-on', 'references'].includes(String(v.relationType)));
             check(v.label === undefined || typeof v.label === 'string' && v.label.length <= 500); break;
@@ -72,6 +73,13 @@ export function validateCommand(value: unknown): asserts value is PageCommand {
             validatePagePresentation({version: 1, ownerEntityId: 'v', revision: 0, mode: 'canvas', viewport: {x: 0, y: 0, zoom: 1}, groups: [],
                 connectors: [{id: v.connectorId, relationshipId: 'r', fromPlacementId: 'a', toPlacementId: 'b',
                     points: v.points, color: v.color, dashed: v.dashed, mode: v.mode}]}); break;
+        case 'connector-route': case 'reconnect':
+            only(v, v.type === 'reconnect' ? ['type', 'connectorId', 'fromPlacementId', 'toPlacementId', 'anchors', 'points'] : ['type', 'connectorId', 'anchors', 'points']);
+            id(v.connectorId); check(v.anchors !== undefined);
+            if (v.type === 'reconnect') {id(v.fromPlacementId); id(v.toPlacementId); check(v.fromPlacementId !== v.toPlacementId);}
+            validatePagePresentation({version: 1, ownerEntityId: 'v', revision: 0, mode: 'canvas', viewport: {x: 0, y: 0, zoom: 1}, groups: [],
+                connectors: [{id: v.connectorId, relationshipId: 'r', fromPlacementId: 'a', toPlacementId: 'b',
+                    points: v.points, anchors: v.anchors, color: '#64748b', dashed: false, mode: 'orthogonal'}]}); break;
         case 'remove-connector': only(v, ['type', 'connectorId', 'scope']); id(v.connectorId); check(['page', 'everywhere'].includes(String(v.scope))); break;
         default: throw new Error('Invalid recovery command.');
     }

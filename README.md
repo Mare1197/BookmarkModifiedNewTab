@@ -84,6 +84,23 @@ bookmark desktop for native bookmark organization. Board layouts and other folde
 memberships are independent. The Inspector lists every board/folder membership,
 recent recorded workspace activity, and incoming backlinks for the selected object.
 
+## Native connector routing
+
+In Workspace → Canvas, select a connector and drag its endpoint onto another object
+card. Attachment positions persist. Retargeting creates or reuses a shared Brain
+relationship; the original relationship remains available to other pages until you
+explicitly unlink it.
+
+For orthogonal lines, **Add route bend** creates a draggable waypoint. Arrow keys move
+a focused bend (Shift for larger steps), Delete removes it, and **Reset route** restores
+automatic routing. Escape or pointer cancellation restores the previous route.
+**Undo layout** reverses the latest saved layout operation; **Page history** provides
+reviewed restoration. Curve/straight lines keep native automatic routing, not manual
+Bezier control points. Geometry stays page-local; objects are never copied.
+
+Page loads use indexed endpoint queries and connector-ID lookups, avoiding a scan of
+unrelated library relationships. See [routing and performance verification](docs/ROUTING_PERFORMANCE_VERIFICATION.md).
+
 ## Known limitations
 
 - Workspace moves have one persistent undo slot; sibling manual ordering and native
@@ -92,14 +109,19 @@ recent recorded workspace activity, and incoming backlinks for the selected obje
   browser-history reconstruction. Unobserved provenance is shown as Unknown.
 - Full Tab / Session, Domain and AI inspector parity, rich/file/frame Canvas breadth,
   large-graph profiling and credentialed provider acceptance remain separate work.
-- Native connector endpoint/path rerouting, nested lists and code-language controls remain
-  follow-up editor work. The searchable outline is not a drag/reparent tree. Large-library
-  indexing and editor bundle reduction are also pending; supported workspace controls
+- Nested lists, code-language controls and manual curve control points remain
+  follow-up editor work. The searchable outline is not a drag/reparent tree. Broad library
+  pagination, visible-only rendering and editor bundle reduction are still pending; supported workspace controls
   are not full native-editor parity.
 - Live provider synchronization, authenticated GitHub/Codex connectors, multi-user
   collaboration, universal undo and model-powered organization are not implemented.
 
 ## Verification checkpoint
+
+The October 3 routing/indexed-read follow-up passed local lint, formatting, both
+TypeScript checks, **141 unit/integration tests**, **24 browser tests** and the
+production MV3 build. See the [verification report](docs/ROUTING_PERFORMANCE_VERIFICATION.md)
+for review fixes, benchmark methodology and remaining limitations.
 
 The October 3 editor follow-up (`8a27de7`) passed a clean install, lint, formatting,
 both TypeScript checks, **133 unit/integration tests**, **23 browser tests** and the

@@ -1,6 +1,6 @@
 import {AffineSchemas, PageEditorBlockSpecs, EdgelessEditorBlockSpecs, getSurfaceBlock,
     pageRootWidgetViewMap, edgelessRootWidgetViewMap, AFFINE_FORMAT_BAR_WIDGET,
-    ConnectorMode, StrokeStyle, type NoteBlockModel, type ConnectorElementModel} from '@blocksuite/blocks';
+    ConnectorMode, StrokeStyle, type NoteBlockModel} from '@blocksuite/blocks';
 import {effects as blockEffects} from '@blocksuite/blocks/effects';
 import {PageEditor, EdgelessEditor} from '@blocksuite/presets';
 import {effects as presetEffects} from '@blocksuite/presets/effects';
@@ -11,6 +11,7 @@ import {literal} from 'lit/static-html.js';
 import {PageReferenceSchema, WorkspaceReferenceBlock, referenceContexts, type ReferenceContext} from './blocksuiteBrainReference';
 import {placementPresentation, type PageSnapshot} from './pageRepository';
 import {validateGeometry} from './pageValidation';
+import {mountConnectorRouting} from './blocksuiteConnectorRouting';
 import type {PageCommand, PageMode} from '../../workspace/pageTypes';
 import '@toeverything/theme/style.css';
 
@@ -32,6 +33,7 @@ export async function mountPageProjection(container: HTMLElement, snapshot: Page
     let hydrating = true, disposed = false, timer: ReturnType<typeof setTimeout> | undefined;
     const dirtyNotes = new Set<string>();
     const disposables: Array<{dispose(): void}> = [];
+    let routing: ReturnType<typeof mountConnectorRouting> | undefined;
     const placements = snapshot.placements.map((p, i) => ({p, presentation: placementPresentation(p, i)}))
         .sort((a, b) => a.presentation.order - b.presentation.order);
     for (const {p, presentation} of placements) {
@@ -60,7 +62,8 @@ export async function mountPageProjection(container: HTMLElement, snapshot: Page
     for (const c of snapshot.presentation.connectors) {
         if (!notes.has(c.fromPlacementId) || !notes.has(c.toPlacementId)) continue;
         const id = surface.addElement({type: 'connector', mode: modes[c.mode], stroke: c.color, strokeStyle: c.dashed ? StrokeStyle.Dash : StrokeStyle.Solid,
-            source: {id: notes.get(c.fromPlacementId), position: [1, 0.5]}, target: {id: notes.get(c.toPlacementId), position: [0, 0.5]}});
+            source: {id: notes.get(c.fromPlacementId), position: [c.anchors?.source.x ?? 1, c.anchors?.source.y ?? 0.5]},
+            target: {id: notes.get(c.toPlacementId), position: [c.anchors?.target.x ?? 0, c.anchors?.target.y ?? 0.5]}});
         connectors.set(id, c.id);
     }
     referenceContexts.set(doc.id, context);
@@ -83,7 +86,20 @@ export async function mountPageProjection(container: HTMLElement, snapshot: Page
             for (const id of notes.values()) doc.updateBlock(doc.getBlockById(id)!, {index: nextIndex()});
         }
         if (editor instanceof EdgelessEditor) {
+            routing = mountConnectorRouting(pane, surface, editor.std.get(GfxController), snapshot, connectors, placementIds, onCommand, context.onError);
             const viewport = editor.std.get(GfxController).viewport;
+            // BlockSuite observes its own resize, not scrolling in our outer shell.
+            // Refresh client offsets before hit testing without changing world coordinates.
+            const syncOffset = () => {
+                const rect = pane.getBoundingClientRect();
+                viewport.setRect(rect.left, rect.top, rect.width, rect.height);
+            };
+            document.addEventListener('scroll', syncOffset, true);
+            pane.addEventListener('pointerdown', syncOffset, true);
+            disposables.push({dispose() {
+                document.removeEventListener('scroll', syncOffset, true);
+                pane.removeEventListener('pointerdown', syncOffset, true);
+            }});
             const v = snapshot.presentation.viewport; viewport.setViewport(v.zoom, [v.x, v.y]);
             disposables.push(viewport.viewportUpdated.on(({zoom, center}) => {
                 if (!hydrating && !disposed) onCommand({type: 'view', mode, viewport: {x: center[0], y: center[1], zoom}});
@@ -92,6 +108,7 @@ export async function mountPageProjection(container: HTMLElement, snapshot: Page
     }
     function flushGeometry() {
         clearTimeout(timer);
+        routing?.flush();
         if (!dirtyNotes.size || disposed) return;
         const changes = [...dirtyNotes].flatMap(id => {
             const note = doc.getBlockById(id) as NoteBlockModel | undefined;
@@ -108,6 +125,7 @@ export async function mountPageProjection(container: HTMLElement, snapshot: Page
         if (event.type === 'update' && placementIds.has(event.id)) {
             if (event.props.key === 'xywh' && mode !== 'document') {
                 dirtyNotes.add(event.id); clearTimeout(timer); timer = setTimeout(flushGeometry, 250);
+                queueMicrotask(() => routing?.refresh());
             }
             if (event.props.key === 'edgeless') {
                 const note = doc.getBlockById(event.id) as NoteBlockModel;
@@ -127,34 +145,11 @@ export async function mountPageProjection(container: HTMLElement, snapshot: Page
             onCommand({type: 'remove-reference', placementIds: [placementIds.get(event.id)!]});
         }
     }));
-    const captureConnector = (id: string) => {
-        if (hydrating || disposed || connectors.has(id)) return;
-        const element = surface.getElementById(id) as ConnectorElementModel | null;
-        if (!element || element.type !== 'connector') return;
-        const from = element.source?.id && placementIds.get(element.source.id), to = element.target?.id && placementIds.get(element.target.id);
-        if (from && to && from !== to) {
-            connectors.set(id, 'pending');
-            onCommand({type: 'connect', fromPlacementId: from, toPlacementId: to, relationType: 'related'});
-        }
-    };
     disposables.push(surface.elementAdded.on(({id}) => {
         if (hydrating) return;
         if (surface.getElementById(id)?.type !== 'connector') {
             queueMicrotask(() => {if (!disposed) {surface.deleteElement(id); context.onError(new Error('Use workspace controls for persistent objects and groups.'));}});
-        } else captureConnector(id);
-    }), surface.elementUpdated.on(({id, props, local}) => {
-        if (hydrating || !local) return;
-        const canonicalId = connectors.get(id), element = surface.getElementById(id) as ConnectorElementModel | null;
-        if (canonicalId && canonicalId !== 'pending' && element?.type === 'connector' && ['mode', 'stroke', 'strokeStyle'].some(k => k in props)) {
-            const previous = snapshot.presentation.connectors.find(c => c.id === canonicalId)!;
-            onCommand({type: 'connector-style', connectorId: canonicalId, points: previous.points,
-                color: /^#[0-9a-f]{6}$/i.test(String(element.stroke)) ? String(element.stroke) : previous.color,
-                dashed: element.strokeStyle === StrokeStyle.Dash, mode: element.mode === ConnectorMode.Straight ? 'straight' : element.mode === ConnectorMode.Curve ? 'curve' : 'orthogonal'});
-        } else captureConnector(id);
-    }), surface.elementRemoved.on(({id}) => {
-        if (hydrating || disposed) return;
-        const canonicalId = connectors.get(id);
-        if (canonicalId && canonicalId !== 'pending') onCommand({type: 'remove-connector', connectorId: canonicalId, scope: 'page'});
+        }
     }));
     const blockUnsupported = (event: Event) => {
         const target = event.target as HTMLElement;
@@ -164,16 +159,8 @@ export async function mountPageProjection(container: HTMLElement, snapshot: Page
     };
     container.addEventListener('paste', blockUnsupported, true);
     hydrating = false;
-    return {flushGeometry, reconcileConnectors(next: PageSnapshot) {
-        snapshot = next;
-        for (const [id, canonicalId] of connectors) if (canonicalId === 'pending') {
-            const element = surface.getElementById(id) as ConnectorElementModel | null;
-            const from = element?.source.id && placementIds.get(element.source.id), to = element?.target.id && placementIds.get(element.target.id);
-            const saved = next.presentation.connectors.find(c => c.fromPlacementId === from && c.toPlacementId === to);
-            if (saved) connectors.set(id, saved.id);
-        }
-    }, dispose() {
-        disposed = true; clearTimeout(timer); disposables.forEach(d => d.dispose());
+    return {flushGeometry, dispose() {
+        disposed = true; clearTimeout(timer); routing?.dispose(); disposables.forEach(d => d.dispose());
         container.removeEventListener('paste', blockUnsupported, true);
         editors.forEach(e => e.remove()); container.replaceChildren(); referenceContexts.delete(doc.id); doc.dispose(); collection.dispose();
     }};

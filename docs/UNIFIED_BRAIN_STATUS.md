@@ -38,7 +38,7 @@ AppFlowy, Anytype, Logseq and xTiles remain interaction/data-model references, n
 
 ## Still outside this delivered slice
 
-- Complete native-editor parity: connector endpoint/path rerouting, every native group/style/reorder operation, outline drag/reparent, nested lists and code-language controls. Use the workspace controls for persistent supported operations; arbitrary native block insertion is rejected visibly.
+- Complete native-editor parity: manual Bezier controls, every native group/style/reorder operation, outline drag/reparent, nested lists and code-language controls. Native endpoint retargeting and orthogonal bends are implemented in the [routing follow-up](ROUTING_PERFORMANCE_VERIFICATION.md). Use the workspace controls for persistent supported operations; arbitrary native block insertion is rejected visibly.
 - Multi-user collaboration, cloud sync and universal undo. Recovery covers locally acknowledged journals, not power loss before acknowledgement, erased browser storage, disk failure or extension uninstall. It is not an off-device backup.
 - Live provider ingestion/chat continuation, authenticated GitHub/Codex/automation connectors and a complete browser activity journal.
 - Model-powered organization, cluster merge review, arbitrary property schemas, configurable grouping and advanced dashboard/timeline templates.
@@ -60,5 +60,5 @@ Local checkpoint commits preserve the pre-upgrade state and the canonical page, 
 ## Recommended next upgrades
 
 1. Recovery follow-ups: lightweight indexed draft-summary pagination. Confirmation before inactive Keep current discards, recapture preservation, conversation ordering and the scoped DOMPurify patch are covered by the later [reliability follow-up](RELIABILITY_BATCH_VERIFICATION.md).
-2. Complete connector endpoint/path routing and native operation persistence, nested lists, code-language controls and outline drag/reparent; extend end-to-end gesture coverage. Basic block move/delete/heading controls, connector styling and searchable page navigation are implemented in the October 3 follow-up.
-3. Large-library benchmarks, indexed/paged queries and editor bundle reduction before expanding live provider integrations.
+2. Extend native operation persistence, nested lists, code-language controls and outline drag/reparent. Endpoint retargeting, orthogonal route bends, undo/reload/cancel coverage are implemented in the routing follow-up.
+3. Broader indexed/paged queries, visible-only rendering and editor bundle reduction before expanding live provider integrations. Page snapshot queries now use existing indexes; 1k/10k synthetic read-volume benchmarks are in the routing/performance report.

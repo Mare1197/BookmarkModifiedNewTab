@@ -4,7 +4,7 @@ import {validateGeometry, validatePagePresentation, validatePlacementPresentatio
 import type {BoardPlacement, BoardRecord, RelationshipRecord, WorkspaceEntity} from '../../workspace/types';
 import type {PageCommand, PagePresentation, PageVersion, PlacementPresentation} from '../../workspace/pageTypes';
 import {captureEntityTransition, captureTransition, layoutSnapshot} from './revisionRepository';
-import {validateSnapshot} from './recoveryValidation';
+import {validateCommand, validateSnapshot} from './recoveryValidation';
 import type {LayoutSnapshot} from '../../workspace/recoveryTypes';
 import {projectPresentation} from './pagePresentationCommands';
 
@@ -57,13 +57,16 @@ async function snapshot(boardId: string): Promise<PageSnapshot> {
     const presentation = setting.value;
     const owner = await pageEntity(presentation.ownerEntityId);
     const placements = (await db.placements.where('boardId').equals(boardId).toArray()).sort((a, b) => a.id.localeCompare(b.id));
-    const allLinks = await db.relationships.toArray();
-    const relationshipIds = new Set(presentation.connectors.map(c => c.relationshipId));
-    const relationships = allLinks.filter(r => relationshipIds.has(r.id)).sort((a, b) => a.id.localeCompare(b.id));
+    const relationshipIds = [...new Set(presentation.connectors.map(c => c.relationshipId))];
+    const [connectorLinks, outgoing, incoming] = await Promise.all([
+        db.relationships.bulkGet(relationshipIds),
+        db.relationships.where('fromEntityId').equals(owner.id).toArray(),
+        db.relationships.where('toEntityId').equals(owner.id).toArray()
+    ]);
+    const relationships = connectorLinks.filter((r): r is RelationshipRecord => Boolean(r)).sort((a, b) => a.id.localeCompare(b.id));
     const entities = (await db.entities.bulkGet(placements.map(p => p.entityId))).filter((e): e is WorkspaceEntity => Boolean(e));
-    const parents = allLinks.filter(r => r.type === 'page-parent' && r.confirmed);
-    const parentId = parents.find(r => r.fromEntityId === owner.id)?.toEntityId;
-    const children = (await db.entities.bulkGet(parents.filter(r => r.toEntityId === owner.id).map(r => r.fromEntityId)))
+    const parentId = outgoing.find(r => r.type === 'page-parent' && r.confirmed)?.toEntityId;
+    const children = (await db.entities.bulkGet(incoming.filter(r => r.type === 'page-parent' && r.confirmed).map(r => r.fromEntityId)))
         .filter((e): e is WorkspaceEntity => Boolean(e));
     return {board, owner, presentation, placements, entities, relationships, children,
         parent: parentId ? await db.entities.get(parentId) : undefined,
@@ -194,6 +197,7 @@ export function applyPageCommand(boardId: string, expected: PageVersion, command
     return db.transaction('rw', tables(), async () => {
         const before = await snapshot(boardId);
         checkVersion(before.version, expected);
+        validateCommand(command);
         const state = layout(before);
         const p = state.presentation;
         const placement = (id: string) => {
@@ -207,6 +211,23 @@ export function applyPageCommand(boardId: string, expected: PageVersion, command
             return result;
         };
         switch (command.type) {
+            case 'reconnect': {
+                const c = connector(command.connectorId), from = placement(command.fromPlacementId), to = placement(command.toPlacementId);
+                if (from.entityId === to.entityId) throw new Error('Cannot connect an object to itself.');
+                const original = before.relationships.find(r => r.id === c.relationshipId);
+                if (!original?.confirmed || !['related', 'supports', 'depends-on', 'references'].includes(original.type)) throw new Error('Unsupported connector relationship type.');
+                let link = (await db.relationships.where('fromEntityId').equals(from.entityId).toArray())
+                    .find(r => r.toEntityId === to.entityId && r.type === original.type && r.confirmed);
+                if (!link) {
+                    const time = Date.now();
+                    link = {id: uid('relationship'), fromEntityId: from.entityId, toEntityId: to.entityId, type: original.type,
+                        label: original.label, origin: 'user', confirmed: true, createdAt: time, updatedAt: time};
+                    await db.relationships.add(link);
+                } else if (!before.relationships.some(r => r.id === link!.id)) before.relationships.push(link);
+                Object.assign(c, {relationshipId: link.id, fromPlacementId: from.id, toPlacementId: to.id,
+                    anchors: structuredClone(command.anchors), points: structuredClone(command.points)});
+                break;
+            }
             case 'connect': {
                 const from = placement(command.fromPlacementId), to = placement(command.toPlacementId);
                 if (from.entityId === to.entityId) throw new Error('Cannot connect an object to itself.');
@@ -224,7 +245,7 @@ export function applyPageCommand(boardId: string, expected: PageVersion, command
                     // Existing semantic links must survive undo of their first visual reference.
                     before.relationships.push(r);
                 }
-                p.connectors.push({id: uid('connector'), relationshipId: r.id, fromPlacementId: from.id, toPlacementId: to.id,
+                p.connectors.push({id: command.connectorId || uid('connector'), relationshipId: r.id, fromPlacementId: from.id, toPlacementId: to.id,
                     points: [], color: '#64748b', dashed: false, mode: 'orthogonal'});
                 break;
             }

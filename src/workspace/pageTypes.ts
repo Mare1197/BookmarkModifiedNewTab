@@ -8,10 +8,12 @@ export interface RichBlock {id: string; kind: RichKind; runs: RichRun[]; level?:
 export interface RichContent {version: 1; blocks: RichBlock[]}
 export interface PageVersion {revision: number; fingerprint: string}
 export interface PageGroup {id: string; label: string; parentId?: string; collapsed: boolean}
+export interface ConnectorAnchors {source: {x: number; y: number}; target: {x: number; y: number}}
 export interface PageConnector {
     id: string; relationshipId: string; fromPlacementId: string; toPlacementId: string;
     points: Array<{x: number; y: number}>; color: string; dashed: boolean;
     mode: 'straight' | 'orthogonal' | 'curve';
+    anchors?: ConnectorAnchors;
 }
 export interface PagePresentation {
     version: 1; ownerEntityId: string; revision: number; mode: PageMode;
@@ -29,6 +31,8 @@ export type PageCommand =
     | {type: 'style'; placementIds: string[]; color: PlacementPresentation['color']}
     | {type: 'view'; mode: PageMode; viewport: PagePresentation['viewport']}
     | {type: 'remove-reference'; placementIds: string[]}
-    | {type: 'connect'; fromPlacementId: string; toPlacementId: string; relationType: string; label?: string}
+    | {type: 'connect'; connectorId?: string; fromPlacementId: string; toPlacementId: string; relationType: string; label?: string}
     | {type: 'connector-style'; connectorId: string; points: PageConnector['points']; color: string; dashed: boolean; mode: PageConnector['mode']}
+    | {type: 'connector-route'; connectorId: string; anchors: ConnectorAnchors; points: PageConnector['points']}
+    | {type: 'reconnect'; connectorId: string; fromPlacementId: string; toPlacementId: string; anchors: ConnectorAnchors; points: PageConnector['points']}
     | {type: 'remove-connector'; connectorId: string; scope: 'page' | 'everywhere'};

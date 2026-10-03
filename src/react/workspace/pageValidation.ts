@@ -40,13 +40,18 @@ export function validatePagePresentation(v: unknown): asserts v is PagePresentat
     }
     const connectors = new Set<string>();
     for (const c of v.connectors) {
-        if (!record(c) || !only(c, ['id', 'relationshipId', 'fromPlacementId', 'toPlacementId', 'points', 'color', 'dashed', 'mode']) ||
+        if (!record(c) || !only(c, ['id', 'relationshipId', 'fromPlacementId', 'toPlacementId', 'points', 'color', 'dashed', 'mode', 'anchors']) ||
             !['id', 'relationshipId', 'fromPlacementId', 'toPlacementId'].every(key => id(c[key])) ||
             c.fromPlacementId === c.toPlacementId || connectors.has(String(c.id)) ||
             typeof c.color !== 'string' || !/^#[0-9a-f]{6}$/i.test(c.color) || typeof c.dashed !== 'boolean' ||
             !['straight', 'orthogonal', 'curve'].includes(String(c.mode)) || !Array.isArray(c.points) || c.points.length > 1000 ||
             c.points.some(p => !record(p) || !only(p, ['x', 'y']) || !finite(p.x, -1e6, 1e6) || !finite(p.y, -1e6, 1e6))) {
             throw new Error('Invalid page connector.');
+        }
+        if (c.anchors !== undefined) {
+            const a = c.anchors;
+            if (!record(a) || !only(a, ['source', 'target']) || [a.source, a.target].some(p =>
+                !record(p) || !only(p, ['x', 'y']) || !finite(p.x, 0, 1) || !finite(p.y, 0, 1))) throw new Error('Invalid connector anchors.');
         }
         connectors.add(String(c.id));
     }

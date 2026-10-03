@@ -32,10 +32,12 @@ export function projectPresentation(base: LayoutSnapshot, commands: PageCommand[
                 p.connectors = p.connectors.filter(c => !removed.has(c.fromPlacementId) && !removed.has(c.toPlacementId)); break;
             }
             case 'connector-style': Object.assign(connector(command.connectorId), {points: structuredClone(command.points), color: command.color, dashed: command.dashed, mode: command.mode}); break;
+            case 'connector-route': Object.assign(connector(command.connectorId), {points: structuredClone(command.points), anchors: structuredClone(command.anchors)}); break;
             case 'remove-connector':
                 if (command.scope === 'everywhere') throw new SemanticCommandError('This operation deletes a shared relationship.');
                 connector(command.connectorId); p.connectors = p.connectors.filter(c => c.id !== command.connectorId); break;
             case 'connect': throw new SemanticCommandError('This operation creates a shared relationship.');
+            case 'reconnect': throw new SemanticCommandError('This operation retargets a shared relationship reference.');
         }
         validateSnapshot(state);
     }

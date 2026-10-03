@@ -21,6 +21,101 @@ async function records(page, table) {
     }), table);
 }
 
+test('native connector endpoint and bend drags persist across reload without erasing the original link', async ({context, extensionId}) => {
+    const page = await openWorkspace(context, extensionId), workspace = page.getByRole('region', {name: 'AFFiNE workspace'});
+    const errors = []; page.on('pageerror', error => errors.push(error.message));
+    for (const title of ['Routing B', 'Routing C']) {
+        await workspace.getByLabel('New note title', {exact: true}).fill(title);
+        await workspace.getByRole('button', {name: 'New note', exact: true}).click();
+    }
+    await workspace.getByText('Pages and layout controls', {exact: true}).click();
+    for (const [title, x, y] of [['Start collecting ideas', 0, 0], ['Routing B', 650, 0], ['Routing C', 1100, 0]]) {
+        await workspace.getByLabel('Selected cards', {exact: true}).selectOption({label: title});
+        await workspace.getByLabel('x', {exact: true}).fill(String(x));
+        await workspace.getByLabel('y', {exact: true}).fill(String(y));
+        await workspace.getByLabel('width', {exact: true}).fill('300');
+        await workspace.getByRole('button', {name: 'Apply geometry', exact: true}).click();
+        await expect(workspace.getByRole('status').first()).toHaveText('saved');
+    }
+    await workspace.getByLabel('Selected cards', {exact: true}).selectOption({label: 'Start collecting ideas'});
+    await workspace.getByLabel(/^Connect to/).selectOption({label: 'Routing B'});
+    await workspace.getByRole('button', {name: 'Connect cards', exact: true}).click();
+    const initial = (await records(page, 'settings')).find(s => s.key.startsWith('workspace-page:')).value.connectors[0];
+    await workspace.getByText('Pages and layout controls', {exact: true}).click();
+    await workspace.getByRole('button', {name: 'Canvas', exact: true}).click();
+    await expect(workspace.locator('edgeless-editor')).toBeVisible();
+    await expect(workspace.getByRole('status').first()).toHaveText('saved');
+    await workspace.getByRole('button', {name: 'Fit cards', exact: true}).click();
+    await expect(workspace.getByRole('status').first()).toHaveText('saved');
+    const native = workspace.locator('affine-edgeless-root');
+    const selectLine = async () => {
+        await expect(async () => {
+        await native.scrollIntoViewIfNeeded();
+        await expect.poll(() => native.evaluate(root => Math.abs(root.service.viewport.top - root.closest('.brainNativePane').getBoundingClientRect().top))).toBeLessThan(1);
+        const point = await native.evaluate(root => {
+            const connector = root.service.elements.find(e => e.type === 'connector'), path = connector.absolutePath;
+            const a = path[0], b = path[1];
+            const [x, y] = root.service.viewport.toViewCoord((a[0] + b[0]) / 2, (a[1] + b[1]) / 2);
+            return {x: x + root.service.viewport.left, y: y + root.service.viewport.top};
+        });
+        await page.mouse.click(point.x, point.y);
+        await expect(workspace.locator('edgeless-connector-handle .line-end')).toBeVisible({timeout: 500});
+        }).toPass({timeout: 8000});
+    };
+    await selectLine();
+    const endpoint = workspace.locator('edgeless-connector-handle .line-end');
+    await endpoint.hover(); const handle = await endpoint.boundingBox();
+    const target = await workspace.locator('[data-brain-reference]').filter({hasText: 'Routing C'}).boundingBox();
+    await page.mouse.move(handle.x + handle.width / 2, handle.y + handle.height / 2);
+    await page.mouse.down(); await page.mouse.move(target.x + 5, target.y + target.height / 2, {steps: 12}); await page.mouse.up();
+    await workspace.getByRole('button', {name: 'Save now', exact: true}).click();
+    await expect.poll(async () => (await records(page, 'settings')).find(s => s.key.startsWith('workspace-page:')).value.connectors[0].toPlacementId).not.toBe(initial.toPlacementId);
+    expect((await records(page, 'relationships')).some(r => r.id === initial.relationshipId)).toBe(true);
+    await selectLine();
+    await workspace.getByRole('button', {name: 'Add route bend', exact: true}).click();
+    const bend = workspace.getByRole('button', {name: 'Route bend 1', exact: true});
+    await bend.hover(); const bendBox = await bend.boundingBox();
+    await page.mouse.move(bendBox.x + bendBox.width / 2, bendBox.y + bendBox.height / 2);
+    await page.mouse.down(); await page.mouse.move(bendBox.x + 65, bendBox.y - 35, {steps: 10}); await page.mouse.up();
+    await workspace.getByRole('button', {name: 'Save now', exact: true}).click();
+    await expect(workspace.getByRole('status').first()).toHaveText('saved');
+    let saved = (await records(page, 'settings')).find(s => s.key.startsWith('workspace-page:')).value.connectors[0];
+    expect(saved.points).toHaveLength(1); expect(saved.anchors).toBeTruthy();
+    await workspace.getByRole('button', {name: 'Undo layout', exact: true}).click();
+    await expect.poll(async () => (await records(page, 'settings')).find(s => s.key.startsWith('workspace-page:')).value.connectors[0]?.points).not.toEqual(saved.points);
+    saved = (await records(page, 'settings')).find(s => s.key.startsWith('workspace-page:')).value.connectors[0];
+    expect(saved.points).toHaveLength(1);
+    await page.reload();
+    await page.frameLocator('iframe[title="Browser OS desktop"]').getByRole('button', {name: 'Boards', exact: true}).click();
+    await page.getByRole('button', {name: 'Workspace', exact: true}).click();
+    await expect(workspace.locator('edgeless-editor')).toBeVisible();
+    await expect(workspace.getByRole('status').first()).toHaveText('saved');
+    expect((await records(page, 'settings')).find(s => s.key.startsWith('workspace-page:')).value.connectors[0]).toEqual(saved);
+    await selectLine(); await expect(bend).toBeVisible();
+    const originalTarget = await native.evaluate(root => root.service.elements.find(e => e.type === 'connector').target.id);
+    const end = await endpoint.boundingBox();
+    await page.mouse.move(end.x + end.width / 2, end.y + end.height / 2); await page.mouse.down();
+    await page.mouse.move(end.x + 40, end.y - 80, {steps: 8});
+    await endpoint.dispatchEvent('pointercancel', {pointerId: 1, bubbles: true});
+    const other = await workspace.locator('[data-brain-reference]').filter({hasText: 'Routing B'}).boundingBox();
+    await page.mouse.move(other.x + 3, other.y + other.height / 2, {steps: 8});
+    await expect.poll(() => native.evaluate(root => root.service.elements.find(e => e.type === 'connector').target.id)).toBe(originalTarget);
+    await page.mouse.up();
+    await expect.poll(() => native.evaluate((root, point) => root.service.elements.find(e => e.type === 'connector').absolutePath.some(p =>
+        Math.abs(p[0] - point.x) < 0.1 && Math.abs(p[1] - point.y) < 0.1), saved.points[0])).toBe(true);
+    await expect.poll(async () => {
+        const visible = await endpoint.boundingBox();
+        const expected = await native.evaluate(root => {
+            const end = root.service.elements.find(e => e.type === 'connector').absolutePath.at(-1);
+            const [x, y] = root.service.viewport.toViewCoord(end[0], end[1]);
+            return {x: x + root.service.viewport.left, y: y + root.service.viewport.top};
+        });
+        return Math.hypot(visible.x + visible.width / 2 - expected.x, visible.y + visible.height / 2 - expected.y);
+    }).toBeLessThan(2);
+    await page.screenshot({path: path.join(os.tmpdir(), 'workspace-native-routing.png')});
+    expect(errors).toEqual([]);
+});
+
 test('rich block controls preserve order, heading level and canonical undo across reload', async ({context, extensionId}) => {
     const page = await openWorkspace(context, extensionId), workspace = page.getByRole('region', {name: 'AFFiNE workspace'});
     const errors = []; page.on('pageerror', error => errors.push(error.message));
