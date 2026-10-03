@@ -101,12 +101,13 @@ recent recorded workspace activity, and incoming backlinks for the selected obje
 
 ## Verification checkpoint
 
-The October 3 editor follow-up passed lint, formatting, both TypeScript checks,
-**133 unit/integration tests** and the production MV3 build. The expanded browser suite
-contains 23 tests. Local rich-block assertions (including delete/restore/edit/undo)
-passed after the review fix, but Chromium shutdown timed out, so this follow-up does
-not yet have a clean final local browser-suite result. Clean-machine CI verification
-is pending; see [current status](docs/UNIFIED_BRAIN_STATUS.md).
+The October 3 editor follow-up (`8a27de7`) passed a clean install, lint, formatting,
+both TypeScript checks, **133 unit/integration tests**, **23 browser tests** and the
+production MV3 build in [GitHub CI](https://github.com/Mare1197/BookmarkModifiedNewTab/actions/runs/37093827265).
+No flaky browser cases were reported. The packaged extension is attached to that run.
+Local source checks/build also passed, but Windows Chromium shutdown timed out after
+the corrected rich-block assertions; the clean browser-suite result is from Linux CI,
+not the local runner. See [current status](docs/UNIFIED_BRAIN_STATUS.md).
 
 The October 2 reliability batch (`eb9f132`) passed lint, formatting, both TypeScript
 checks, **131 unit/integration tests**, **20 isolated Chromium browser tests**, a clean
