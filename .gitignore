@@ -1,2 +1,7 @@
 node_modules
 dist
+.output
+.wxt
+.wxt-legacy
+playwright-report
+test-results

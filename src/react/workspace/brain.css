@@ -1,0 +1,27 @@
+.brainWorkspace {height:100%; overflow:auto; padding:20px; box-sizing:border-box;}
+.brainWorkspace h2 {margin-top:0;}
+.brainControls {display:flex; flex-wrap:wrap; gap:8px; align-items:end; margin:12px 0;}
+.brainControls label, .brainCapture label {display:flex; flex-direction:column; gap:4px; font-size:12px;}
+.brainWorkspace input, .brainWorkspace select, .brainWorkspace textarea {max-width:100%; box-sizing:border-box; padding:7px; border:1px solid #52627a; border-radius:6px; color:inherit; background:transparent;}
+.brainWorkspace option {color:#172337; background:#fff;}
+.brainWorkspace textarea {width:100%;}
+.brainWorkspace button, .brainObjectTools button {padding:6px 9px; border-radius:6px; cursor:pointer;}
+.brainControls button[aria-pressed="true"] {background:#2563eb; color:white;}
+.brainCapture {border:1px solid #77849a; border-radius:8px; padding:12px; margin:16px 0;}
+.brainCapture summary {cursor:pointer;}
+.brainTableScroll {overflow:auto;}
+.brainTable {width:100%; border-collapse:collapse; text-align:left;}
+.brainTable th, .brainTable td {border-bottom:1px solid #77849a55; padding:10px 8px;}
+.brainObjectLink {text-align:left; overflow-wrap:anywhere; font-weight:600;}
+.brainKanban {display:flex; gap:12px; overflow:auto; align-items:flex-start;}
+.brainKanban > section {min-width:220px; flex:1; background:#77849a15; border-radius:8px; padding:10px;}
+.brainCard {border:1px solid #77849a66; border-radius:8px; padding:12px; margin:8px 0; min-width:0; overflow-wrap:anywhere;}
+.brainCard small {display:block; margin:8px 0; opacity:.8;}
+.brainTiles {display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px;}
+.brainTimeline li {padding:12px 0;}
+.brainTimeline time {display:block; font-size:12px; margin-bottom:5px;}
+.brainObjectTools {padding:12px 0; border-top:1px solid #77849a55;}
+.brainObjectTools select {max-width:100%; margin:6px 0;}
+.brainObjectTools .brainConnections {max-height:210px; overflow:auto;}
+.brainObjectTools button {margin:3px;}
+@media(max-width:760px) {.brainTiles {grid-template-columns:minmax(0,1fr);} .brainTiles > article {grid-column:span 1 !important;} .brainWorkspace {padding:12px;}}

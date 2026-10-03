@@ -25,7 +25,6 @@
     };
 
     let fullIconWidth;
-    // eslint-disable-next-line max-statements
     const arrowKeysHandler = e => {
         e.preventDefault();
         const activeWindowIconArea = document.querySelector('.window.active .iconArea');
