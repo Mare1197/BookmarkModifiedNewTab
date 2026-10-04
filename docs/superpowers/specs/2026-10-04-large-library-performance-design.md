@@ -171,4 +171,5 @@ Deliver changes, benchmark tooling/results and updated documentation on the new
 branch only. Upgrades 3-7, cloud sync, live provider connectors and new AI behavior
 are out of scope. A faster microbenchmark alone does not complete this milestone.
 
-This written spec awaits user review before the implementation plan is written.
+The user approved this written spec with "Implement it". The implementation plan is
+`docs/superpowers/plans/2026-10-04-large-library-performance.md`.
