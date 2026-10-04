@@ -1,7 +1,8 @@
 const path = require('node:path');
 const base = require('@playwright/test');
 
-const extensionPath = path.resolve(__dirname, '..', '..', 'dist');
+const extensionPath = process.env.WORKSPACE_EXTENSION_PATH ?
+    path.resolve(process.env.WORKSPACE_EXTENSION_PATH) : path.resolve(__dirname, '..', '..', 'dist');
 
 const test = base.test.extend({
     context: async ({timezoneId}, use) => {
