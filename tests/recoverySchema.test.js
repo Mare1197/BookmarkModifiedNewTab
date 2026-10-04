@@ -39,7 +39,7 @@ test('an open React connection closes on upgrade and requires a reload', async t
     const {load} = await workspaceFixture(t), {WorkspaceClient} = load('workspaceClient.ts');
     const name = 'recovery-versionchange-' + crypto.randomUUID(), old = new WorkspaceClient(name);
     await old.open();
-    const next = new Dexie(name); next.version(5).stores({future: 'id'});
+    const next = new Dexie(name); next.version(old.verno + 1).stores({future: 'id'});
     await next.open(); t.after(() => next.delete());
     assert.equal(old.isOpen(), false); assert.equal(old.reloadRequired, true);
 });

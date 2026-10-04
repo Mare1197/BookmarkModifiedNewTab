@@ -81,6 +81,13 @@
             workspaceDrafts: 'id,sessionId,targetKey,boardId,updatedAt',
             workspaceRevisions: 'id,targetKey,createdAt,[targetKey+createdAt],[targetKey+createdAt+id]'
         });
+        db.version(5).stores({
+            entities: 'id,type,canonicalUrl,domainId,inboxAt,updatedAt,*searchTerms,[updatedAt+id]',
+            placements: 'id,boardId,entityId,kind,updatedAt,[boardId+entityId],[boardId+id]',
+            relationships: 'id,fromEntityId,toEntityId,type,origin,confirmed,updatedAt,[fromEntityId+id],[toEntityId+id]',
+            folderMemberships: 'id,folderId,entityId,sourceKind,position,[folderId+entityId],[folderId+position+id]',
+            activities: 'id,type,boardId,entityId,sessionId,createdAt,[entityId+createdAt+id]'
+        });
         db.on('versionchange', () => {db.close();
             if (typeof window !== 'undefined') window.dispatchEvent(new Event('workspace-reload-required'));});
         return db;
