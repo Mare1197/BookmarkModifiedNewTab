@@ -1,6 +1,6 @@
 # Large native BlockSuite board performance
 
-Date: 8 October 2026. Status: written design awaiting user review; not implemented.
+Date: 8 October 2026. Status: direction and written spec approved by the user's subsequent instruction to implement; implementation-plan review remains pending. Not implemented.
 Predecessor: [local search/background indexing](2026-10-08-local-search-index-design.md).
 Reference application: `c552110`; reporting checkpoint `cb36b51`.
 
@@ -77,4 +77,4 @@ Success requires no correctness regressions, bounded expensive content hydration
 
 Implement after the search stage is independently verified and saved. Remain on the isolated performance branch; preserve `feature/browser-resources-inspector` and the pre-stage commit. Record fixed findings separately from reviewer approval. Update README, current-build builder instructions, status and native-performance report with measured limits. Do not claim advanced Canvas parity, continuous provider ingestion, cloud sync or universal undo is included.
 
-This written spec defines the selected design, not delivered features. Written-spec review and a reviewed implementation plan are still required before code changes.
+This written spec defines the approved design, not delivered features. Written-spec review is complete; implementation-plan review remains required before code changes.

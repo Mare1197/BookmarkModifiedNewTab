@@ -1,6 +1,6 @@
 # Local search index and background processing
 
-Date: 8 October 2026. Status: written design awaiting user review; not implemented.
+Date: 8 October 2026. Status: direction and written spec approved by the user's subsequent instruction to implement; implementation-plan review remains pending. Not implemented.
 Reference application: `c552110`; published reporting checkpoint: `cb36b51` on `feature/large-library-performance`.
 
 ## Intent and scope
