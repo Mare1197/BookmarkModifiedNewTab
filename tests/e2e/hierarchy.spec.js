@@ -66,8 +66,20 @@ test('a folder cannot be moved into a descendant and drag uses the same safe mov
     await expect(folders.getByRole('status')).toHaveText('A folder cannot be moved into itself or its descendants.');
     await folders.getByRole('button', {name: 'Use selected object', exact: true}).click();
     await page.getByRole('treeitem', {name: /Start collecting ideas/}).click();
-    await folders.getByRole('button', {name: 'Drag selected item', exact: true})
-        .dragTo(folders.getByRole('treeitem', {name: 'Child research Workspace', exact: true}));
+    await expect(folders.getByText('Selected: Start collecting ideas', {exact: true})).toBeVisible();
+    const dragSource = folders.getByRole('button', {name: 'Drag selected item', exact: true});
+    const dragTarget = folders.getByRole('treeitem', {name: 'Child research Workspace', exact: true});
+    // Keep both hit targets in the same scroll position before mouse-down.
+    // Locator dragTo can scroll this shared ancestor between press and movement.
+    await dragSource.hover();
+    await expect(dragTarget).toBeInViewport({ratio: 1});
+    const sourceBox = await dragSource.boundingBox(), targetBox = await dragTarget.boundingBox();
+    expect(sourceBox).not.toBeNull(); expect(targetBox).not.toBeNull();
+    await page.mouse.move(sourceBox.x + sourceBox.width / 2, sourceBox.y + sourceBox.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(targetBox.x + targetBox.width / 2, targetBox.y + targetBox.height / 2, {steps: 10});
+    await page.mouse.move(targetBox.x + targetBox.width / 2, targetBox.y + targetBox.height / 2);
+    await page.mouse.up();
     await expect(folders.getByRole('status')).toHaveText('Moved. Undo move is available.');
     await expect(page.getByRole('complementary', {name: 'Inspector'})
         .getByRole('listitem').filter({hasText: 'Child research'})).toBeVisible();
