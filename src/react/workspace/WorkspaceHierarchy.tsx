@@ -92,7 +92,7 @@ export function WorkspaceHierarchy({folders, selectedEntityId, onSelectEntity, o
                     onDragOver={event => {if (writable && dragging.current) event.preventDefault();}}
                     onDrop={event => {if (writable) drop(event, folder.id);}}>
                     {expanded[folder.id] ? '▾ ' : '▸ '}{folder.title}{!writable && ' · read-only'}</button>}
-                {row.kind === 'move' && <button type="button" draggable={!busy}
+                {row.kind === 'move' && <button type="button" disabled={busy} draggable={!busy}
                     onDragStart={event => start(event, {kind: 'folder', id: folder.id})}
                     onDragEnd={() => {dragging.current = undefined;}}
                     aria-pressed={activePicked?.kind === 'folder' && activePicked.id === folder.id}
@@ -134,7 +134,7 @@ export function WorkspaceHierarchy({folders, selectedEntityId, onSelectEntity, o
         <button type="button" disabled={busy || !selection} onClick={() => {
             if (selection) void action(() => moveHierarchyItem(selection, targetId || undefined), 'Moved. Undo move is available.');
         }}>Move selected</button>
-        {activePicked && <button type="button" onClick={() => setPicked(undefined)}>Use selected object</button>}
+        {activePicked && <button type="button" disabled={busy} onClick={() => setPicked(undefined)}>Use selected object</button>}
         <button type="button" disabled={busy} onClick={() => void action(undoHierarchyMove, 'Move undone.')}>Undo move</button>
         <form onSubmit={event => {
             event.preventDefault();

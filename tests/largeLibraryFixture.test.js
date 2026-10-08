@@ -32,3 +32,30 @@ test('seeding splits large fixtures into bounded protocol messages', async () =>
     assert.ok(calls.every(records => Object.values(records).reduce((n, rows) => n + rows.length, 0) <= 500));
     assert.equal(calls.reduce((n, records) => n + (records.entities?.length || 0), 0), 1000);
 });
+test('benchmark readiness requires generation parity not counts', async t => {
+    const helper = require('./helpers/largeLibraryFixture');
+    assert.equal(typeof helper.isSearchIndexReady, 'function');
+    const state = {status: 'ready', format: 1, scanComplete: true, generation: 7, indexedGeneration: 6,
+        epoch: 'new', pending: 0, documentCount: 1000, entityCount: 1000};
+    assert.equal(helper.isSearchIndexReady(state), false);
+    assert.equal(helper.isSearchIndexReady({...state, indexedGeneration: 7, pending: 1}), false);
+    assert.equal(helper.isSearchIndexReady({...state, indexedGeneration: 7, scanComplete: false}), false);
+    assert.equal(helper.isSearchIndexReady({...state, indexedGeneration: 7}, {afterEpoch: 'new'}), false);
+    assert.equal(helper.isSearchIndexReady({...state, indexedGeneration: 7}, {minGeneration: 8}), false);
+    assert.equal(helper.isSearchIndexReady({...state, indexedGeneration: 7}), true);
+    const {workspaceFixture} = require('./helpers/workspaceFixture');
+    const {db, load} = await workspaceFixture(t);
+    const fixture = helper.makeSearchIndexFixture(1000, 'small-board');
+    const original = indexedDB.open;
+    indexedDB.open = function (_name, ...args) {return original.call(this, db.name, ...args);};
+    t.after(() => {indexedDB.open = original;});
+    const page = {evaluate: async (run, input) => run(input)};
+    await helper.seedLargeLibrary(page, fixture.data);
+    assert.equal(helper.isSearchIndexReady(await helper.readSearchIndexState(page)), false);
+    const api = load('searchIndexRepository.ts'), lease = await api.claimSearchLease(db, 'benchmark-test', Date.now());
+    for (let i = 0; i < 30; i++) if ((await api.runSearchIndexBatch(db, lease)).status === 'ready') break;
+    assert.equal(helper.isSearchIndexReady(await helper.readSearchIndexState(page)), true);
+    const result = await load('libraryQueryEngine.ts').readLibraryPage(db, {dialect: 'brain', text: fixture.selectiveText, sort: 'title', referenceTime: 1});
+    const resultIds = result.items.map(item => item.id);
+    assert.deepEqual(resultIds, [fixture.selectiveEntityId]);
+});

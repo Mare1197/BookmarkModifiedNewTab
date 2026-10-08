@@ -74,4 +74,39 @@ async function seedLargeLibrary(page, fixture, onProgress = () => {}) {
     }), {searchReset: []});
 }
 
-module.exports = {makeLargeLibraryFixture, seedLargeLibrary};
+function makeSearchIndexFixture(size, shape) {
+    const data = makeLargeLibraryFixture(size, shape);
+    if (size < 52) throw new Error('Search benchmark requires at least 52 objects');
+    return {data, selectiveText: '000051', selectiveEntityId: 'perf:object:000051'};
+}
+function isSearchIndexReady(state, {afterEpoch, minGeneration} = {}) {
+    return Boolean(state && state.format === 1 && state.status === 'ready' && state.scanComplete && state.pending === 0 &&
+        Number.isSafeInteger(state.generation) && state.generation === state.indexedGeneration &&
+        state.documentCount === state.entityCount && typeof state.epoch === 'string' && state.epoch &&
+        (afterEpoch === undefined || state.epoch !== afterEpoch) && (minGeneration === undefined || state.generation >= minGeneration));
+}
+async function readSearchIndexState(page) {
+    return page.evaluate(() => new Promise((resolve, reject) => {
+        const request = indexedDB.open('browserOsWorkspace'); request.onerror = () => reject(request.error);
+        request.onsuccess = () => {
+            const db = request.result, tx = db.transaction(['searchState', 'searchChanges', 'searchDocuments', 'entities'], 'readonly');
+            const state = tx.objectStore('searchState').get('main'), pending = tx.objectStore('searchChanges').count();
+            const documents = tx.objectStore('searchDocuments').count(), entities = tx.objectStore('entities').count();
+            tx.oncomplete = () => {db.close(); resolve({...state.result, pending: pending.result,
+                documentCount: documents.result, entityCount: entities.result});};
+            tx.onabort = () => {db.close(); reject(tx.error || new Error('Index status read aborted'));};
+        };
+    }));
+}
+async function waitForSearchIndex(page, options = {}) {
+    const deadline = Date.now() + (options.timeoutMs || 180000);
+    let state;
+    do {
+        state = await readSearchIndexState(page);
+        if (isSearchIndexReady(state, options)) return state;
+        if (state.status === 'error') throw new Error(state.lastError || 'Search cache build failed');
+        await new Promise(resolve => setTimeout(resolve, 250));
+    } while (Date.now() < deadline);
+    throw new Error('Search index did not become fresh: ' + JSON.stringify(state));
+}
+module.exports = {makeLargeLibraryFixture, seedLargeLibrary, makeSearchIndexFixture, isSearchIndexReady, readSearchIndexState, waitForSearchIndex};

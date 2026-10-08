@@ -61,6 +61,7 @@ test('a folder cannot be moved into a descendant and drag uses the same safe mov
     await expect(folders.getByRole('button', {name: 'Move folder Child research', exact: true})).toBeVisible();
     await folders.getByRole('button', {name: 'Move folder Parent research', exact: true}).click();
     await destination.selectOption({label: 'Child research'});
+    await expect(folders.getByText('Selected: Parent research', {exact: true})).toBeVisible();
     await folders.getByRole('button', {name: 'Move selected', exact: true}).click();
     await expect(folders.getByRole('status')).toHaveText('A folder cannot be moved into itself or its descendants.');
     await folders.getByRole('button', {name: 'Use selected object', exact: true}).click();
