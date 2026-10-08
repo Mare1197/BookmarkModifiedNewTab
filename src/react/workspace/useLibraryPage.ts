@@ -5,6 +5,7 @@ import {queryLibraryPosition} from './libraryQueries';
 import {libraryQueryKey} from './libraryOrdering';
 import {useWorkspaceQuery} from './useWorkspaceQuery';
 import {queryClock, queryPosition} from './queryLifecycle';
+import {createIndexReadinessObserver} from './indexReadiness';
 import type {LibraryCursor, LibraryQuery} from './libraryQueryTypes';
 
 const dependencies = new Set(['entities', 'relationships', 'placements', 'tasks', 'boards', 'settings']);
@@ -23,17 +24,22 @@ export function useLibraryPage(input: Omit<LibraryQuery, 'referenceTime'>) {
     const keyRef = useRef(key); keyRef.current = key;
     useEffect(() => {
         let timer: ReturnType<typeof setTimeout> | undefined;
-        const changed = (parts: ObservabilitySet) => {
-            if (!Object.keys(parts).some(part => {
-                const prefix = 'idb://' + db.name + '/';
-                return part.startsWith(prefix) && dependencies.has(part.slice(prefix.length).split('/')[0]!);
-            })) return;
+        const refresh = () => {
             clearTimeout(timer);
             timer = setTimeout(() => setPosition(prior => ({key: keyRef.current,
                 index: prior.key === keyRef.current ? prior.index : 0, cursors: [undefined], epoch: prior.epoch + 1})), 0);
         };
+        const readiness = createIndexReadinessObserver(() => db.searchState.get('main'), refresh);
+        const changed = (parts: ObservabilitySet) => {
+            const prefix = 'idb://' + db.name + '/';
+            if (Object.keys(parts).some(part => part.startsWith(prefix + 'searchState/'))) void readiness.check().catch(() => {});
+            if (!Object.keys(parts).some(part => {
+                return part.startsWith(prefix) && dependencies.has(part.slice(prefix.length).split('/')[0]!);
+            })) return;
+            refresh();
+        };
         Dexie.on('storagemutated', changed);
-        return () => {clearTimeout(timer); Dexie.on.storagemutated.unsubscribe(changed);};
+        return () => {readiness.dispose(); clearTimeout(timer); Dexie.on.storagemutated.unsubscribe(changed);};
     }, []);
     const page = useWorkspaceQuery(key + ':' + active.index,
         signal => queryLibraryPosition(query, active.index, active.cursors, {signal}), active.epoch);

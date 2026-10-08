@@ -23,6 +23,8 @@ export interface LibraryCursor {
     orderedIds?: readonly string[];
     defaultOrders?: Readonly<Record<string, number>>;
     position?: number;
+    searchGeneration?: number;
+    searchEpoch?: string;
 }
 export interface LibraryPage {
     items: WorkspaceEntity[];
@@ -31,6 +33,8 @@ export interface LibraryPage {
     total?: number;
     scanned: number;
     defaultOrders?: Readonly<Record<string, number>>;
+    searchGeneration?: number;
+    searchEpoch?: string;
 }
 export interface LibraryReadOptions {
     cursor?: LibraryCursor;
