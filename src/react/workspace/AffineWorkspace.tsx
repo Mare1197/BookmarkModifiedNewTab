@@ -97,7 +97,7 @@ export function AffineWorkspace(props: Props) {
                 })}>{value[0]!.toUpperCase() + value.slice(1)}</button>)}
                 <button onClick={() => void run(async () => {})}>Save now</button>
                 <button onClick={props.onHistory}>Page history</button>
-                <button onClick={() => void run(async () => {
+                <button disabled={busy} onClick={() => void run(async () => {
                     const current = await loadPageSnapshot(props.boardId); if (!current.placements.length) return;
                     const minX = Math.min(...current.placements.map(p => p.x)), minY = Math.min(...current.placements.map(p => p.y));
                     const maxX = Math.max(...current.placements.map(p => p.x + p.width)), maxY = Math.max(...current.placements.map(p => p.y + p.height));

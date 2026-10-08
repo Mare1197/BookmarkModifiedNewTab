@@ -43,7 +43,10 @@ for (const kind of ['entity', 'page']) test(`acknowledged ${kind} draft survives
         if (kind === 'page') {
             await ws.getByRole('button', {name: 'Canvas', exact: true}).click();
             await expect(ws.locator('edgeless-editor')).toBeVisible();
+            await expect(ws.getByRole('button', {name: 'Canvas', exact: true})).toBeEnabled();
+            const beforeFit = (await records(page, 'settings')).find(setting => setting.key.startsWith('workspace-page:')).value.revision;
             await ws.getByRole('button', {name: 'Fit cards', exact: true}).click();
+            await expect.poll(async () => (await records(page, 'settings')).find(setting => setting.key.startsWith('workspace-page:')).value.revision).toBeGreaterThan(beforeFit);
             await expect(ws.getByRole('status').first()).toHaveText('saved');
             const viewport = (await records(page, 'settings')).find(setting => setting.key.startsWith('workspace-page:')).value.viewport;
             await expect.poll(() => ws.locator('affine-edgeless-root').evaluate(root => ({
