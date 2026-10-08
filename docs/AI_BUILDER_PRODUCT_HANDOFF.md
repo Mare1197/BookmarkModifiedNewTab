@@ -2,6 +2,8 @@
 
 Prepared: 11 September 2026.
 
+Current-build companion added 8 October 2026: [instructions to reproduce the delivered build](AI_BUILDER_CURRENT_BUILD.md). Use that document for a like-for-like builder comparison. This document retains the full target behavior and earlier requested features, including requirements that remain unfinished. The older starting-point/verification table below is historical; consult the current-build companion and [implementation status](UNIFIED_BRAIN_STATUS.md) for the current branch.
+
 Scope correction: this first consolidation omitted the connected-AI-chat, memory and continuous multi-source direction. On September 18, the user explicitly confirmed AFFiNE/BlockSuite, xTiles, AppFlowy, Anytype and Logseq as references for capabilities inside one New Tab OS with a shared Brain. Read the [connected knowledge addendum](CONNECTED_KNOWLEDGE_ADDENDUM.md) and [current implementation boundaries](UNIFIED_BRAIN_STATUS.md) with this document. This is not an exhaustive reconstruction of every earlier discussion or a claim that all specified features are finished.
 
 This is a standalone specification for an AI builder. It defines what the product must do, how its features interact, and how completion should be judged. It deliberately does not prescribe a technology stack, implementation architecture, or visual design.

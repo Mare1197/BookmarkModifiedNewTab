@@ -45,7 +45,7 @@ for (const size of sizes) for (const shape of shapes) {
         console.log(`PERF_SETUP ${label} ${size} ${shape} sample ${sample + 1} start`);
         await seedLargeLibrary(page, makeLargeLibraryFixture(size, shape), (table, count) => console.log(`PERF_SETUP ${table} ${count}`));
         console.log(`PERF_SETUP ${label} ${size} ${shape} sample ${sample + 1} complete`);
-        // Fresh renderer after seeding; browser/OS disk caches may already be warm.
+        // Fresh document after seeding; renderer processes and browser/OS caches may be reused.
         await page.goto('about:blank');
         requested.clear();
         const measure = async (name, action) => {

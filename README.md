@@ -38,6 +38,9 @@ complete AFFiNE parity or completion of the entire product specification.
 - Browser recapture preserves workspace-edited titles and notes and keeps retained text searchable.
 - Rich-note block move/delete controls, last-save undo, three heading levels and sequential numbered lists.
 - Connector shape/color/dash controls and a searchable nested-page outline with breadcrumb navigation.
+- Native connector endpoint retargeting, orthogonal route bends, cancellation and persistent layout undo.
+- Scoped database reads, 50-object collection pages, separate Timeline paging, viewport-bounded
+  Explorer/folder rendering, searchable destination pickers and deferred optional views with retry.
 
 The extension does not calculate accumulated total-open time and does not require an AI provider.
 
@@ -110,13 +113,28 @@ unrelated library relationships. See [routing and performance verification](docs
 - Full Tab / Session, Domain and AI inspector parity, rich/file/frame Canvas breadth,
   large-graph profiling and credentialed provider acceptance remain separate work.
 - Nested lists, code-language controls and manual curve control points remain
-  follow-up editor work. The searchable outline is not a drag/reparent tree. Broad library
-  pagination, visible-only rendering and editor bundle reduction are still pending; supported workspace controls
-  are not full native-editor parity.
+  follow-up editor work. The searchable outline is not a drag/reparent tree. This branch adds
+  database-backed collection paging, windowed Explorer/folder rows and deferred optional views.
+  Broad substring/title searches still scan their scope, and large native-editor capacity is
+  not certified. Total editor dependency size is not reduced; supported controls are not full native-editor parity.
 - Live provider synchronization, authenticated GitHub/Codex connectors, multi-user
   collaboration, universal undo and model-powered organization are not implemented.
 
 ## Verification checkpoint
+
+The isolated `feature/large-library-performance` upgrade is documented in
+[large-library performance](docs/LARGE_LIBRARY_PERFORMANCE.md), including scoped reads,
+50-object collection pages, independently paged Timeline activity, searchable destination
+pickers, background-refresh retention and lazy-view failure recovery. All **30 benchmark
+cases** passed (five samples for both board shapes at 1k/10k/50k objects); timings,
+variability and unmeasured large native-editor capacity are reported separately. The original
+`feature/browser-resources-inspector` branch is preserved.
+
+The October 8 performance refactor (`c552110`) passed local lint/formatting, both
+TypeScript checks, **174 unit/integration tests**, **31 serial browser tests** and the
+production MV3 build. The immutable build also passed the 30-case synthetic performance
+matrix. This is the current-build checkpoint; the older results below
+describe earlier releases, not the complete requested roadmap.
 
 The October 3 routing/indexed-read follow-up passed local lint, formatting, both
 TypeScript checks, **141 unit/integration tests**, **24 browser tests** and the
@@ -156,6 +174,70 @@ CI uses Node 22 and npm 10.9.9; local verification also passed on Node 24.13.0.
 For serial browser verification use `npx playwright test tests/e2e --workers=1`.
 The browser suite uses disposable profiles, not your personal Chrome profile.
 
+## Test this exact build
+
+For a separate test checkout:
+
+```powershell
+git clone --branch feature/large-library-performance --single-branch https://github.com/Mare1197/BookmarkModifiedNewTab.git NewTabOS-test
+cd NewTabOS-test
+```
+
+Use the `feature/large-library-performance` branch. Install dependencies, run the
+checks, then build and load `dist/` as an unpacked extension using the commands above.
+Open a new browser tab, choose **Boards**, then test **Brain**, **Workspace**, **Canvas**,
+**Graph**, **Search**, **Tasks**, **Activity**, **Assets** and **Recovery**. AI is optional.
+Build after running `npm test`: its compatibility preparation replaces generated files.
+For browser tests, install the matching Chromium once with `npx playwright install chromium`.
+
+Try this connected workflow: create a project; preview/import a local chat export;
+link it and a captured browser page to the project; create a note/task and sourced memory;
+open the same objects in Table, Kanban, Tiles and Canvas; edit a shared note; review exact
+AI context; reload and inspect backlinks/history. Use a separate test browser profile
+if you want to experiment without changing your usual extension data.
+
+## Instructions for another AI builder
+
+The complete stack-independent, appearance-independent instructions for reproducing
+this build are in [Current-build product instructions](docs/AI_BUILDER_CURRENT_BUILD.md).
+They cover every implemented subsystem, shared identity rules, view behavior, browser
+resources, capture, chats, memory, native editing/connectors, tasks/sessions, persistence,
+recovery, performance and acceptance scenarios.
+
+Core app logic:
+
+- The New Tab OS remains the entry point. Preserve existing working features and user data.
+- Browser captures, chats/messages, projects, notes, files, tasks and memory share one
+  typed object/relationship store. Every view references the same stable objects.
+- Object content and source identity are shared. Board geometry, tile ordering and
+  connector presentation are separate. Removing an occurrence does not delete its object.
+- Desktop, Explorer, Table, Kanban, Tiles, Timeline, Canvas, Mind Map and Graph are
+  interchangeable ways to use that data, with one consistent Inspector and search.
+- Projects link chats, browser research, repositories, notes, tasks and reviewed memory.
+  Capture and project resume disclose destinations/browser actions before applying them.
+- Conversations import with preview, stable source/message identities and preserved
+  local edits. Derived memories retain sources and project links; AI suggestions need approval.
+- Memory exclusion, forgetting, review deadlines, private scope and contradictions
+  govern every optional AI request. Show exact context and recheck policies before sending.
+- Edits persist across views/reload. Keep acknowledged recovery drafts and saved history
+  private, compare conflicts and verify fresh state before restore/disposal.
+- Page collections, keep selected-object reads independent, bound list rendering,
+  retain rows during background refresh and expose loading/error/retry separately.
+
+The five references are included: **Anytype** for the object model, **Logseq** for
+backlinks/graph/activity, **AFFiNE/BlockSuite** for document/canvas editing,
+**AppFlowy** for structured views and **xTiles** for tiles/quick organization. Their
+capabilities operate inside New Tab OS over its Brain.
+
+To test a builder against the same delivered build, provide the current-build document
+and this branch. To ask it to complete everything we previously wanted, also provide
+[Full product requirements](docs/AI_BUILDER_PRODUCT_HANDOFF.md) and
+[Connected chats and memory requirements](docs/CONNECTED_KNOWLEDGE_ADDENDUM.md).
+Those retain the requested but unfinished work: advanced tasks/workflows, Inbox rules,
+duplicate merging, session comparison/groups, complete Canvas/Inspector breadth,
+continuous source connectors, semantic retrieval, NotebookLM and GBrain evaluation.
+The current-build document labels those limits explicitly.
+
 ## Permissions
 
 - `bookmarks`: render and manage the user's native bookmark hierarchy.
@@ -180,6 +262,7 @@ Analysis view.
 - [Reliability batch verification](docs/RELIABILITY_BATCH_VERIFICATION.md)
 - [Workspace recovery verification](docs/WORKSPACE_RECOVERY_VERIFICATION.md)
 - [Complete product handoff](docs/AI_BUILDER_PRODUCT_HANDOFF.md)
+- [Current-build instructions for another AI builder](docs/AI_BUILDER_CURRENT_BUILD.md)
 - [Connected knowledge specification](docs/CONNECTED_KNOWLEDGE_ADDENDUM.md)
 - [Shared workspace schema](docs/SHARED_WORKSPACE_SCHEMA.md)
 - [GBrain integration decision](docs/GBRAIN_INTEGRATION_DECISION.md)
