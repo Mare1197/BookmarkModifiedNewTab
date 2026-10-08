@@ -2,7 +2,8 @@
     const isCommonJs = typeof module === 'object' && module.exports;
     const DexieModule = isCommonJs ? require('dexie') : root.Dexie;
     const schemaCore = isCommonJs ? require('./schemaCore.js') : root.workspaceSchemaCore;
-    const api = factory(DexieModule, schemaCore);
+    const search = isCommonJs ? require('./searchInvalidation.js') : root.workspaceSearchInvalidation;
+    const api = factory(DexieModule, schemaCore, search);
 
     if (isCommonJs) {
         module.exports = api;
@@ -28,7 +29,7 @@
             root.app.workspaceMigrationError = error;
             return null;
         });
-}(typeof globalThis !== 'undefined' ? globalThis : this, function(DexieModule, schemaCore) {
+}(typeof globalThis !== 'undefined' ? globalThis : this, function(DexieModule, schemaCore, search) {
     const DexieClass = DexieModule && (DexieModule.Dexie || DexieModule.default || DexieModule);
     const DATABASE_NAME = 'browserOsWorkspace';
     const SCHEMA_V1 = {
@@ -88,6 +89,9 @@
             folderMemberships: 'id,folderId,entityId,sourceKind,position,[folderId+entityId],[folderId+position+id]',
             activities: 'id,type,boardId,entityId,sessionId,createdAt,[entityId+createdAt+id]'
         });
+        db.version(6).stores(search.SEARCH_SCHEMA).upgrade(search.initializeSearchState);
+        db.on('populate', search.initializeSearchState);
+        search.installSearchInvalidation(db);
         db.on('versionchange', () => {db.close();
             if (typeof window !== 'undefined') window.dispatchEvent(new Event('workspace-reload-required'));});
         return db;
@@ -244,10 +248,11 @@
 
         const exportSnapshot = async (options = {}) => {
             await open();
-            const tables = await db.transaction('r', db.tables, async () => {
+            const supported = Object.keys(SCHEMA_V3).concat(options.includeRecovery ? ['workspaceDrafts', 'workspaceRevisions'] : [])
+                .map(name => db.table(name));
+            const tables = await db.transaction('r', supported, async () => {
                 const records = {};
-                for (const table of db.tables) {
-                    if (!options.includeRecovery && ['workspaceDrafts', 'workspaceRevisions'].includes(table.name)) continue;
+                for (const table of supported) {
                     records[table.name] = await table.toArray();
                 }
                 return records;

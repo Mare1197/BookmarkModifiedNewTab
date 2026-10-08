@@ -1196,11 +1196,16 @@ function validateRecords(tableName: string, records: unknown[]): void {
     });
 }
 
+const backupTables = ['meta', 'entities', 'sourceRefs', 'domains', 'folders', 'folderMemberships', 'boards', 'placements',
+    'relationships', 'tabSessions', 'assets', 'settings', 'tasks', 'activities', 'savedFilters', 'workspaceSessions',
+    'boardTemplates', 'workspaceDrafts', 'workspaceRevisions'];
+
 export async function exportWorkspace(options: {includeRecovery?: boolean} = {}): Promise<WorkspaceExport> {
-    const tables = await workspaceClient.transaction('r', workspaceClient.tables, async () => {
+    const supported = backupTables.filter(name => options.includeRecovery || !['workspaceDrafts', 'workspaceRevisions'].includes(name))
+        .map(name => workspaceClient.table(name));
+    const tables = await workspaceClient.transaction('r', supported, async () => {
         const records: Record<string, unknown[]> = {};
-        for (const table of workspaceClient.tables) {
-            if (!options.includeRecovery && ['workspaceDrafts', 'workspaceRevisions'].includes(table.name)) continue;
+        for (const table of supported) {
             records[table.name] = await table.toArray();
         }
         return records;
@@ -1224,8 +1229,11 @@ export async function importWorkspace(snapshot: WorkspaceExport): Promise<void> 
         ![2, 3, 4].includes(snapshot.schemaVersion) || !snapshot.tables) {
         throw new Error('This is not a supported Browser OS workspace export.');
     }
-    const allowed = new Set(workspaceClient.tables.map(table => table.name));
+    const allowed = new Set(backupTables);
     const tableNames = Object.keys(snapshot.tables);
+    if (tableNames.some(name => ['searchState', 'searchChanges', 'searchDocuments'].includes(name))) {
+        throw new Error('Derived search cache cannot be imported. Export only canonical workspace data.');
+    }
     if (tableNames.some(name => !allowed.has(name))) {
         throw new Error('The export contains an unknown table.');
     }

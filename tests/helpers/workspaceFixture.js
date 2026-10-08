@@ -20,8 +20,10 @@ async function workspaceFixture(t) {
         cache.set(filename, exports);
         new Function('require', 'exports', compiled)(name => {
             if (name === './workspaceClient') return {workspaceClient: db};
+            if (name === './workspaceDatabase') return {...module(path.resolve(path.dirname(filename), 'workspaceDatabase.ts')), workspaceClient: db};
             if (name === 'wxt/browser') return {browser};
             if (!name.startsWith('.')) return require(name);
+            if (name.endsWith('.js')) return require(path.resolve(path.dirname(filename), name));
             const dependency = path.resolve(path.dirname(filename), name + '.ts');
             return module(existsSync(dependency) ? dependency : dependency + 'x');
         }, exports);
