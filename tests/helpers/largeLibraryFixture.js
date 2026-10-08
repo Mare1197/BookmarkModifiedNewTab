@@ -50,6 +50,28 @@ async function seedLargeLibrary(page, fixture, onProgress = () => {}) {
         }
         onProgress(table, rows.length);
     }
+    // Raw fixture writes bypass Dexie's canonical mutation middleware. Fence
+    // stale owners only after every setup batch is durable, including same-count replacements.
+    await page.evaluate(() => new Promise((resolve, reject) => {
+        const request = indexedDB.open('browserOsWorkspace');
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => {
+            const db = request.result, tx = db.transaction(['searchState', 'searchChanges'], 'readwrite');
+            const states = tx.objectStore('searchState'), read = states.get('main');
+            read.onsuccess = () => {
+                if (!read.result) {tx.abort(); return;}
+                const state = {...read.result, generation: read.result.generation + 1, epoch: crypto.randomUUID(),
+                    owner: '', leaseUntil: 0, fence: read.result.fence + 1, scanComplete: false,
+                    lastId: undefined, processed: 0, buildGeneration: read.result.generation + 1};
+                delete state.total;
+                if (state.status === 'ready') state.status = 'building';
+                states.put(state);
+                tx.objectStore('searchChanges').put({id: 'reset', kind: 'reset', generation: state.generation});
+            };
+            tx.oncomplete = () => {db.close(); resolve();};
+            tx.onabort = () => {db.close(); reject(tx.error || new Error('Search fixture invalidation aborted'));};
+        };
+    }), {searchReset: []});
 }
 
 module.exports = {makeLargeLibraryFixture, seedLargeLibrary};

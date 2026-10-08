@@ -17,6 +17,8 @@ import {
 import {useLibraryPage} from './useLibraryPage';
 import {LibraryPager} from './LibraryPager';
 import {useWorkflowPage} from './useWorkflowPage';
+import {SearchIndexPanel} from './SearchIndexPanel';
+import {getSearchWorkerClient} from './searchWorkerClient';
 
 interface AsyncViewProps {
     onRefresh: () => Promise<void>;
@@ -78,6 +80,7 @@ export function SmartSearchView({
                 {!page.loading && !page.error && results.length === 0 && <p>No local results.</p>}
             </div>
             <LibraryPager page={page} label="Search pages" />
+            <SearchIndexPanel service={getSearchWorkerClient()} />
             <aside className="workspaceSearch__saved" aria-label="Saved filters">
                 <h3>Saved filters</h3>
                 {snapshot.savedFilters.map(filter => (

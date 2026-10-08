@@ -18,7 +18,7 @@ export function retainQueryState<T>(prior: QueryState<T> & {key: string}, next: 
         refreshing: next.refreshing || (next.loading && data !== undefined)};
 }
 
-export function observeWorkspaceQuery<T>(read: (signal: AbortSignal) => Promise<T>, publish: (state: QueryState<T>) => void) {
+export function observeWorkspaceQuery<T>(read: (signal: AbortSignal) => Promise<T>, publish: (state: QueryState<T>) => void, automatic = true) {
     let data: T | undefined, stopped = false, generation = 0;
     let subscription: Subscription | undefined, controller: AbortController | undefined;
     const start = () => {
@@ -26,6 +26,17 @@ export function observeWorkspaceQuery<T>(read: (signal: AbortSignal) => Promise<
         subscription?.unsubscribe(); controller?.abort();
         const epoch = ++generation;
         publish({data, loading: data === undefined, refreshing: data !== undefined});
+        if (!automatic) {
+            const request = new AbortController(); controller = request;
+            void Promise.resolve().then(() => read(request.signal)).then(value => {
+                if (stopped || epoch !== generation || request.signal.aborted) return;
+                data = value; publish({data, loading: false, refreshing: false});
+            }, error => {
+                if (!stopped && epoch === generation && !request.signal.aborted) publish({data, loading: false, refreshing: false,
+                    error: error instanceof Error ? error : new Error(String(error))});
+            });
+            return;
+        }
         subscription = liveQuery(async () => {
             controller?.abort(); const request = new AbortController(); controller = request;
             if (!stopped && epoch === generation) publish({data, loading: data === undefined, refreshing: data !== undefined});

@@ -10,6 +10,7 @@
 .affineControls input,.affineControls select {max-width:100%;min-width:0;}
 .affineControls input[type=number] {width:90px;}
 .affineWorkspace fieldset {min-width:0;border:1px solid #cbd5e1;margin:8px 0;}
+.affineWorkspace .brainLayoutControls {border:0;padding:0;margin:0;}
 .workspacePages ol,.workspacePages ul {list-style:none;padding:0;margin:8px 0;}
 .workspacePages ol {display:flex;flex-wrap:wrap;gap:6px;}
 .workspacePages li {min-width:0;}

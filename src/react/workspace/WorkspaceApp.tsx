@@ -3,6 +3,7 @@ import type {Target} from '../../workspace/recoveryTypes';
 const RecoveryDialog = lazy(() => import('./RecoveryDialog').then(module => ({default: module.RecoveryDialog})));
 import {liveQuery} from 'dexie';
 import {workspaceClient} from './workspaceClient';
+import {getSearchWorkerClient, releaseSearchWorkerClient} from './searchWorkerClient';
 import {loadShell, loadBoard, loadObject, loadExpandedNeighborhood} from './workspaceReads';
 import {useWorkspaceQuery} from './useWorkspaceQuery';
 import type {AssetRecord} from '../../workspace/types';
@@ -206,6 +207,13 @@ function WorkspaceAppInner({onClose}: WorkspaceAppProps) {
     const snapshot = useMemo(() => ({...emptySnapshot, ...shell.data, ...board.data}), [shell.data, board.data]);
     const inspected = object.data || emptySnapshot;
     const busy = !initialized || shell.loading || board.loading;
+    const searchUsable = initialized && Boolean(shell.data);
+    useEffect(() => {
+        if (!searchUsable) return;
+        const service = getSearchWorkerClient();
+        const timer = setTimeout(() => {void service.ensureIndex().catch(() => {});}, 0);
+        return () => {clearTimeout(timer); releaseSearchWorkerClient(service);};
+    }, [searchUsable]);
 
     const refresh = useCallback(async (boardId?: string) => {
         if (boardId && boardId !== activeBoardRef.current) await editorSession.current?.flush();

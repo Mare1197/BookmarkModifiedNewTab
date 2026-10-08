@@ -62,9 +62,11 @@ for (const kind of ['entity', 'page']) test(`acknowledged ${kind} draft survives
         });
         if (kind === 'entity') await page.locator('workspace-reference-block rich-text [contenteditable="true"]').first().fill('Durable crash recovery text');
         else {
-            const handle = ws.locator('.brainReferenceHandle').first(); await handle.hover(); const box = await handle.boundingBox();
+            const handle = ws.locator('.brainReferenceHandle').first(); await handle.hover();
             await expect.poll(() => ws.locator('affine-edgeless-root').evaluate(root =>
                 Math.abs(root.service.viewport.top - root.closest('.brainNativePane').getBoundingClientRect().top))).toBeLessThan(1);
+            // Read input geometry only after the viewport offset has settled.
+            const box = await handle.boundingBox();
             await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2); await page.mouse.down();
             await page.mouse.move(box.x + box.width / 2 + 90, box.y + box.height / 2 + 30, {steps: 12}); await page.mouse.up();
         }

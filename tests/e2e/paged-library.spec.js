@@ -28,6 +28,9 @@ test('library pages stay bounded and Inspector resolves an object outside the bo
     for (const mode of ['Kanban', 'Tiles', 'Timeline', 'AI Inbox']) {
         await brain.getByRole('button', {name: mode, exact: true}).click();
         const pager = brain.getByRole('navigation', {name: 'Object pages', exact: true});
+        // A worker request can still be loading after the optimistic page label
+        // changes. Do not skip Previous based on its transient disabled state.
+        await expect(pager.getByRole('status')).toHaveCount(0);
         if (await pager.getByRole('button', {name: 'Previous page'}).isEnabled()) await pager.getByRole('button', {name: 'Previous page'}).click();
         await expect(pager).toContainText('Page 1');
         const rows = mode === 'Timeline' ? brain.locator('.brainTimeline li') : mode === 'AI Inbox' ?

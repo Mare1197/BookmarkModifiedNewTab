@@ -34,8 +34,13 @@ test('native connector endpoint and bend drags persist across reload without era
         await workspace.getByLabel('x', {exact: true}).fill(String(x));
         await workspace.getByLabel('y', {exact: true}).fill(String(y));
         await workspace.getByLabel('width', {exact: true}).fill('300');
+        const entity = (await records(page, 'entities')).find(item => item.title === title);
         await workspace.getByRole('button', {name: 'Apply geometry', exact: true}).click();
         await expect(workspace.getByRole('status').first()).toHaveText('saved');
+        await expect.poll(async () => {
+            const saved = (await records(page, 'placements')).find(item => item.entityId === entity.id);
+            return [saved.x, saved.y, saved.width];
+        }).toEqual([x, y, 300]);
     }
     await workspace.getByLabel('Selected cards', {exact: true}).selectOption({label: 'Start collecting ideas'});
     await workspace.getByLabel(/^Connect to/).selectOption({label: 'Routing B'});

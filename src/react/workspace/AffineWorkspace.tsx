@@ -126,6 +126,7 @@ export function AffineWorkspace(props: Props) {
                 }} />
             </div>
             <details><summary>Pages and layout controls</summary>
+                <fieldset className="brainLayoutControls" disabled={busy}>
                 <div className="affineControls"><button onClick={() => void run(async () => {
                     const title = window.prompt('Child page title'); if (!title || !page) return;
                     const child = await createWorkspacePage(title, page.owner.id); callbacks.current.onOpenPage(child.board.id);
@@ -160,6 +161,7 @@ export function AffineWorkspace(props: Props) {
                 {page?.presentation.connectors.map(c => <WorkspaceConnectorControls key={c.id} connector={c} busy={busy} onCommand={command}
                     label={(page.entities.find(e => e.id === page.placements.find(p => p.id === c.fromPlacementId)?.entityId)?.title || 'Missing object') + ' → ' +
                         (page.entities.find(e => e.id === page.placements.find(p => p.id === c.toPlacementId)?.entityId)?.title || 'Missing object')} />)}
+                </fieldset>
             </details>
         </header>
         <div ref={host} className={'affineNativeHost ' + mode} />

@@ -11,6 +11,7 @@
     const initializeSearchState = transaction => transaction.table('searchState').put(initialSearchState()).then(() => {});
     function changedState(state, reset) {
         const next = Object.assign({}, state || initialSearchState());
+        delete next.total;
         next.generation++;
         if (next.status === 'ready') next.status = 'building';
         if (reset) Object.assign(next, {epoch: crypto.randomUUID(), fence: next.fence + 1, owner: '', leaseUntil: 0,

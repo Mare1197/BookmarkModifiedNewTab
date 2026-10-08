@@ -42,7 +42,7 @@ export function useLibraryPage(input: Omit<LibraryQuery, 'referenceTime'>) {
         return () => {readiness.dispose(); clearTimeout(timer); Dexie.on.storagemutated.unsubscribe(changed);};
     }, []);
     const page = useWorkspaceQuery(key + ':' + active.index,
-        signal => queryLibraryPosition(query, active.index, active.cursors, {signal}), active.epoch);
+        signal => queryLibraryPosition(query, active.index, active.cursors, {signal}), active.epoch, false);
     const index = page.data?.pageIndex ?? active.index;
     return {...page, index,
         next: () => {

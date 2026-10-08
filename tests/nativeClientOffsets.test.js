@@ -1,0 +1,28 @@
+const assert = require('node:assert/strict');
+const test = require('node:test');
+const {existsSync} = require('node:fs');
+const {workspaceFixture} = require('./helpers/workspaceFixture');
+test('native client offsets follow sibling layout shifts without changing camera', async t => {
+    const {load} = await workspaceFixture(t);
+    const api = existsSync('src/react/workspace/nativeClientOffsets.ts') ? load('nativeClientOffsets.ts') : {};
+    assert.equal(typeof api.attachNativeClientOffsets, 'function', 'layout-shift offset observer must exist');
+    let resize, mutation, rect = {left: 10, top: 100, width: 600, height: 650};
+    const observed = new Set(), events = new Map(); let removed = 0, disconnected = 0;
+    const priorResize = globalThis.ResizeObserver, priorMutation = globalThis.MutationObserver;
+    globalThis.ResizeObserver = class {constructor(fn) {resize = fn;} observe(node) {observed.add(node);} disconnect() {disconnected++;}};
+    globalThis.MutationObserver = class {constructor(fn) {mutation = fn;} observe() {} disconnect() {disconnected++;}};
+    t.after(() => {globalThis.ResizeObserver = priorResize; globalThis.MutationObserver = priorMutation;});
+    const eventHost = {addEventListener(type, fn) {events.set(type, fn);}, removeEventListener() {removed++;}};
+    const pane = {...eventHost, ownerDocument: eventHost, getBoundingClientRect: () => rect};
+    const header = {}, layout = {children: [header, pane]}, writes = [];
+    const viewport = {center: {x: 3, y: 5}, zoom: 2, setRect(...args) {writes.push(args);}};
+    const dispose = api.attachNativeClientOffsets(pane, layout, viewport);
+    assert.ok(observed.has(header)); assert.deepEqual(writes.at(-1), [10, 100, 600, 650]);
+    rect = {...rect, top: 139}; resize();
+    assert.deepEqual(writes.at(-1), [10, 139, 600, 650]);
+    assert.deepEqual(viewport.center, {x: 3, y: 5}); assert.equal(viewport.zoom, 2);
+    const count = writes.length; resize(); assert.equal(writes.length, count);
+    rect = {...rect, top: 160}; mutation(); assert.equal(writes.at(-1)[1], 160);
+    dispose(); const stopped = writes.length; rect = {...rect, top: 190}; resize(); mutation();
+    assert.equal(writes.length, stopped); assert.equal(removed, 2); assert.ok(disconnected >= 2);
+});

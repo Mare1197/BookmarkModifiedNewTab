@@ -107,3 +107,7 @@ export function createSearchWorkerClient(factory?: () => Worker, db: WorkspaceCl
 }
 let service: SearchWorkerClient | undefined;
 export function getSearchWorkerClient() {return service ||= createSearchWorkerClient();}
+export function releaseSearchWorkerClient(client: SearchWorkerClient) {
+    if (service === client) service = undefined;
+    client.dispose();
+}

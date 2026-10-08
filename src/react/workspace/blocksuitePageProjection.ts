@@ -12,6 +12,8 @@ import {PageReferenceSchema, WorkspaceReferenceBlock, referenceContexts, type Re
 import {placementPresentation, type PageSnapshot} from './pageRepository';
 import {validateGeometry} from './pageValidation';
 import {mountConnectorRouting} from './blocksuiteConnectorRouting';
+import {attachNativeClientOffsets} from './nativeClientOffsets';
+import {attachNativePointerCoordinates} from './nativePointerCoordinates';
 import type {PageCommand, PageMode} from '../../workspace/pageTypes';
 import '@toeverything/theme/style.css';
 
@@ -88,18 +90,8 @@ export async function mountPageProjection(container: HTMLElement, snapshot: Page
         if (editor instanceof EdgelessEditor) {
             routing = mountConnectorRouting(pane, surface, editor.std.get(GfxController), snapshot, connectors, placementIds, onCommand, context.onError);
             const viewport = editor.std.get(GfxController).viewport;
-            // BlockSuite observes its own resize, not scrolling in our outer shell.
-            // Refresh client offsets before hit testing without changing world coordinates.
-            const syncOffset = () => {
-                const rect = pane.getBoundingClientRect();
-                viewport.setRect(rect.left, rect.top, rect.width, rect.height);
-            };
-            document.addEventListener('scroll', syncOffset, true);
-            pane.addEventListener('pointerdown', syncOffset, true);
-            disposables.push({dispose() {
-                document.removeEventListener('scroll', syncOffset, true);
-                pane.removeEventListener('pointerdown', syncOffset, true);
-            }});
+            disposables.push({dispose: attachNativePointerCoordinates(editor.std.host, editor.std.event)});
+            disposables.push({dispose: attachNativeClientOffsets(pane, container.parentElement || container, viewport)});
             const v = snapshot.presentation.viewport; viewport.setViewport(v.zoom, [v.x, v.y]);
             disposables.push(viewport.viewportUpdated.on(({zoom, center}) => {
                 if (!hydrating && !disposed) onCommand({type: 'view', mode, viewport: {x: center[0], y: center[1], zoom}});

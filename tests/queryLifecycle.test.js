@@ -71,3 +71,13 @@ test('new logical queries renew relative time and reset A/B/A continuation', asy
     assert.equal(other.index, 0); assert.equal(other.key, 'B');
     assert.equal(queryPosition(other, 'A').index, 0);
 });
+test('manual library observation ignores build progress but keeps explicit refresh and cancellation', async t => {
+    const {db, load} = await workspaceFixture(t), {observeWorkspaceQuery} = load('queryLifecycle.ts');
+    const states = []; let reads = 0;
+    const observer = observeWorkspaceQuery(async () => {reads++; return db.searchState.get('main');}, state => states.push(state), false);
+    t.after(() => observer.stop()); await until(() => states.at(-1)?.data); assert.equal(reads, 1);
+    await db.searchState.update('main', {status: 'building', processed: 50});
+    await new Promise(resolve => setTimeout(resolve, 30)); assert.equal(reads, 1);
+    observer.refresh(); await until(() => states.at(-1)?.data?.processed === 50); assert.equal(reads, 2);
+    observer.stop(); const count = states.length; observer.refresh(); assert.equal(states.length, count);
+});
