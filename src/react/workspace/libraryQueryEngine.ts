@@ -262,11 +262,12 @@ export async function readLibraryPage(db: WorkspaceClient, query: LibraryQuery, 
 }
 const abortQuery = (signal?: AbortSignal) => {if (signal?.aborted) throw new DOMException('Query aborted', 'AbortError');};
 export async function readLibraryPosition(db: WorkspaceClient, query: LibraryQuery, index: number,
-    cursors: Array<LibraryCursor | undefined>, options: IndexedReadOptions = {}) {
+    cursors: Array<LibraryCursor | undefined>, options: IndexedReadOptions = {},
+    readPage: (query: LibraryQuery, options: IndexedReadOptions) => Promise<LibraryPage> = (q, o) => readLibraryPage(db, q, o)) {
     let chain = [...cursors], pageIndex = index > 0 && !chain[index] ? 0 : index;
     while (true) {
         try {
-            const page = await readLibraryPage(db, query, {...options, cursor: chain[pageIndex]});
+            const page = await readPage(query, {...options, cursor: chain[pageIndex]});
             if (pageIndex >= index || !page.nextCursor) return {...page, pageIndex, cursors: chain};
             chain[++pageIndex] = page.nextCursor;
         } catch (error) {
