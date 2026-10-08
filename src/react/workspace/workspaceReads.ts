@@ -2,6 +2,7 @@ import Dexie from 'dexie';
 import type {WorkspaceEntity, RelationshipRecord} from '../../workspace/types';
 import {workspaceClient as db} from './workspaceClient';
 import {queryLibraryPage} from './libraryQueries';
+import {compareLibraryIds} from './libraryOrdering';
 import type {LibraryCursor, LibraryQuery} from './libraryQueryTypes';
 import type {WorkspaceSnapshot} from './workspaceRepository';
 import type {WorkspaceShell, BoardReadModel, ObjectReadModel, GraphScope, GraphPage, FolderCursor, FolderPage} from './workspaceReadModels';
@@ -50,15 +51,27 @@ export async function loadProject(projectId: string) {
     });
 }
 
-/** Companions for a visible collection page; never presented as complete history. */
+/** Companions for a visible collection page. History is loaded only by Timeline. */
 export async function loadPageCompanions(ids: string[]) {
-    const [tasks, relationships, activities] = await Promise.all([
-        db.tasks.where('entityId').anyOf(ids).toArray(), db.relationships.where('fromEntityId').anyOf(ids).toArray(),
-        db.activities.where('entityId').anyOf(ids).toArray()
+    const [tasks, relationships] = await Promise.all([
+        db.tasks.where('entityId').anyOf(ids).toArray(), db.relationships.where('fromEntityId').anyOf(ids).toArray()
     ]);
     const entities = (await db.entities.bulkGet([...new Set(relationships.map(link => link.toEntityId))])).filter(present);
-    activities.sort((a, b) => b.createdAt - a.createdAt || a.id.localeCompare(b.id));
-    return {tasks, relationships, activities, entities};
+    return {tasks, relationships, entities};
+}
+
+/** Sort compact index keys, then hydrate at most 50 history records. */
+export async function loadObjectActivityPage(ids: string[], index: number) {
+    return db.transaction('r', db.activities, async () => {
+        const keys = (await Promise.all([...new Set(ids)].map(id => db.activities
+            .where('[entityId+createdAt+id]').between([id, Dexie.minKey, Dexie.minKey],
+                [id, Infinity, Dexie.maxKey]).keys()))).flat() as unknown as [string, number, string][];
+        keys.sort((a, b) => b[1] - a[1] || compareLibraryIds(a[2], b[2]));
+        const start = Math.max(0, index) * 50;
+        const activities = (await db.activities.bulkGet(keys.slice(start, start + 50).map(key => key[2])))
+            .filter(item => item !== undefined);
+        return {activities, total: keys.length, hasMore: start + 50 < keys.length};
+    });
 }
 
 // Initialization is deliberately not part of these reads: live queries must not

@@ -1,18 +1,22 @@
-import {useEffect, useMemo, useState} from 'react';
+import {useEffect, useState} from 'react';
 import type {EntityType, WorkspaceEntity, WorkspaceTaskStatus} from '../../workspace/types';
-import type {WorkspaceSnapshot} from './workspaceRepository';
+import {loadPageCompanions, loadObjectActivityPage} from './workspaceReads';
+import {useWorkspaceQuery} from './useWorkspaceQuery';
 import {BRAIN_STATUSES, BRAIN_TYPES, createBrainObject, linkBrainObjects,
     loadTileLayout, loadBrainViews, saveBrainView, reviewRelationship, saveTileLayout, setBrainStatus, suggestInboxProjects,
     type BrainView, type TileLayout} from './brainRepository';
-import {brainStatus, queryBrain, type BrainQuery} from './brainSelectors';
-import {ConversationImportPanel} from './ConversationImportPanel';
+import {brainStatus, type BrainQuery} from './brainSelectors';
+import {useLibraryPage} from './useLibraryPage';
+import {LibraryPager} from './LibraryPager';
+import {LibraryObjectPicker} from './LibraryObjectPicker';
+import {lazyWorkspaceView} from './lazyWorkspaceView';
+const ConversationImportPanel = lazyWorkspaceView(async () => ({default: (await import('./ConversationImportPanel')).ConversationImportPanel}), 'Conversation import');
 import {ProjectHome} from './ProjectHome';
 
 export type BrainMode = 'Table' | 'Kanban' | 'Tiles' | 'Timeline' | 'AI Inbox';
 interface Props {
     initialMode?: BrainMode;
     navigationKey?: number;
-    snapshot: WorkspaceSnapshot;
     onSelect: (entityId: string) => void;
     onCanvas: (entityId: string) => Promise<void>;
     onWorkspace?: (entityId: string) => Promise<void>;
@@ -20,14 +24,27 @@ interface Props {
     onStatus: (message: string) => void;
 }
 
-export function BrainWorkspace({snapshot, onSelect, onCanvas, onWorkspace, onRefresh, onStatus, initialMode = 'Table', navigationKey}: Props) {
+function ObjectTimeline({ids, onSelect}: {ids: string[]; onSelect: (id: string) => void}) {
+    const [index, setIndex] = useState(0);
+    const state = useWorkspaceQuery(JSON.stringify(['object-history', ids, index]), () => loadObjectActivityPage(ids, index));
+    return <section aria-label="Object activity timeline">
+        <p>Activity for the objects on this collection page.</p>
+        <LibraryPager label="Activity pages" itemLabel="activities" page={{...state, index,
+            next: () => setIndex(value => value + 1), previous: () => setIndex(value => Math.max(0, value - 1))}} />
+        <ol className="brainTimeline">{state.data?.activities.map(activity => <li key={activity.id}>
+            <time>{new Date(activity.createdAt).toLocaleString()}</time>
+            <button onClick={() => activity.entityId && onSelect(activity.entityId)}>{activity.summary}</button>
+        </li>)}</ol>
+    </section>;
+}
+
+export function BrainWorkspace({onSelect, onCanvas, onWorkspace, onRefresh, onStatus, initialMode = 'Table', navigationKey}: Props) {
     const [mode, setMode] = useState<BrainMode>(initialMode);
     useEffect(() => setMode(initialMode), [initialMode, navigationKey]);
     const [query, setQuery] = useState<BrainQuery>({sort: 'updated'});
     const [newType, setNewType] = useState<EntityType>('project');
     const [title, setTitle] = useState('');
-    const [page, setPage] = useState(0);
-    useEffect(() => setPage(0), [query, mode]);
+    const [captureOpen, setCaptureOpen] = useState(false);
     const [busy, setBusy] = useState(false);
     const [savedViews, setSavedViews] = useState<BrainView[]>([]);
     const [viewName, setViewName] = useState('');
@@ -46,14 +63,15 @@ export function BrainWorkspace({snapshot, onSelect, onCanvas, onWorkspace, onRef
             .catch(error => { if (!cancelled) onStatus(String(error)); });
         return () => { cancelled = true; };
     }, [scope]);
-    const projects = useMemo(() => snapshot.entities.filter(entity => entity.type === 'project'), [snapshot.entities]);
-    const entityMap = useMemo(() => new Map(snapshot.entities.map(entity => [entity.id, entity])), [snapshot.entities]);
-    const collection = useMemo(() => queryBrain(snapshot.entities, snapshot.relationships, snapshot.tasks, query), [snapshot, query]);
-    const inbox = collection.filter(entity => entity.inboxAt);
-    const displayed = mode === 'AI Inbox' ? inbox : collection;
-    const pageCount = Math.max(1, Math.ceil(displayed.length / 50));
-    const pageIndex = Math.min(page, pageCount - 1);
-    const pageItems = displayed.slice(pageIndex * 50, (pageIndex + 1) * 50);
+    const page = useLibraryPage({dialect: 'brain', text: query.query || '', type: query.type,
+        status: query.status, projectId: query.projectId, inbox: mode === 'AI Inbox',
+        sort: mode === 'Tiles' ? 'tiles' : query.sort || 'title', tileScope: scope, tileBaseSort: query.sort});
+    const pageItems = page.data?.items || [];
+    const companions = useWorkspaceQuery('brain-page:' + JSON.stringify(pageItems.map(item => item.id)),
+        () => loadPageCompanions(pageItems.map(item => item.id)));
+    const snapshot = companions.data || {entities: [], tasks: [], relationships: [], activities: []};
+    const entityMap = new Map([...pageItems, ...snapshot.entities].map(entity => [entity.id, entity]));
+    const collection = pageItems;
     const pageIds = new Set(pageItems.map(entity => entity.id));
     const suggestions = snapshot.relationships.filter(link => !link.confirmed && link.reviewStatus !== 'rejected' &&
         pageIds.has(link.fromEntityId));
@@ -76,9 +94,8 @@ export function BrainWorkspace({snapshot, onSelect, onCanvas, onWorkspace, onRef
         await saveTileLayout(scope, entityId, {order, width});
         setLayouts(await loadTileLayout(scope));
     };
-    const defaultOrder = new Map(collection.map((entity, index) => [entity.id, index]));
-    const tiles = [...collection].sort((a, b) => (layouts[a.id]?.order ?? defaultOrder.get(a.id)!) -
-        (layouts[b.id]?.order ?? defaultOrder.get(b.id)!));
+    const defaultOrder = (entity: WorkspaceEntity) => page.data?.defaultOrders?.[entity.id] ?? page.index * 50 + pageItems.indexOf(entity);
+    const tiles = pageItems;
 
     return <section className="brainWorkspace" aria-label="Unified Brain">
         <header><h2>Unified Brain</h2><p>One object, every view. Browser captures, chats, notes and memory stay connected.</p></header>
@@ -87,9 +104,7 @@ export function BrainWorkspace({snapshot, onSelect, onCanvas, onWorkspace, onRef
                 <button type="button" key={item} aria-pressed={mode === item} onClick={() => setMode(item)}>{item}</button>)}
         </nav>
         <div className="brainControls">
-            <label>Project<select value={query.projectId || ''} onChange={event => changeQuery({projectId: event.target.value})}>
-                <option value="">All objects</option>{projects.map(project => <option key={project.id} value={project.id}>{project.title}</option>)}
-            </select></label>
+            <LibraryObjectPicker label="Project" value={query.projectId || ''} onChange={projectId => changeQuery({projectId})} type="project" emptyLabel="All objects" />
             <label>Find objects<input value={query.query || ''} onChange={event => changeQuery({query: event.target.value})} /></label>
             <label>Object type<select value={query.type || ''} onChange={event => changeQuery({type: event.target.value})}>
                 <option value="">All types</option>{BRAIN_TYPES.map(type => <option key={type}>{type}</option>)}
@@ -114,7 +129,7 @@ export function BrainWorkspace({snapshot, onSelect, onCanvas, onWorkspace, onRef
             <label>View name<input value={viewName} onChange={event => setViewName(event.target.value)} /></label>
             <button disabled={busy || !viewName.trim()}>Save current view</button>
         </form>
-        <details className="brainCapture"><summary>Create an object or import a conversation</summary>
+        <details className="brainCapture" onToggle={event => setCaptureOpen(event.currentTarget.open)}><summary>Create an object or import a conversation</summary>
             <form className="brainControls" onSubmit={event => {
                 event.preventDefault();
                 void act(async () => {
@@ -130,14 +145,13 @@ export function BrainWorkspace({snapshot, onSelect, onCanvas, onWorkspace, onRef
                 <label>Object title<input required value={title} onChange={event => setTitle(event.target.value)} /></label>
                 <button disabled={busy || !title.trim()}>Create object</button>
             </form>
-            <ConversationImportPanel onImported={onRefresh} onStatus={onStatus} />
+            {captureOpen && <ConversationImportPanel onImported={onRefresh} onStatus={onStatus} />}
         </details>
-        {query.projectId && <ProjectHome key={query.projectId} projectId={query.projectId} snapshot={snapshot}
+        {query.projectId && <ProjectHome key={query.projectId} projectId={query.projectId}
             onSelect={onSelect} onCanvas={onCanvas} onWorkspace={onWorkspace} onStatus={onStatus} />}
-        <p role="status">{displayed.length} objects · shared IDs across all views</p>
-        <nav aria-label="Object pages"><button disabled={pageIndex === 0} onClick={() => setPage(pageIndex - 1)}>Previous page</button>
-            <span> Page {pageIndex + 1} of {pageCount} · 50 objects per page </span>
-            <button disabled={pageIndex + 1 >= pageCount} onClick={() => setPage(pageIndex + 1)}>Next page</button></nav>
+        <p role="status">{pageItems.length} objects on this page{page.data?.total === undefined ? '' : ' · ' + page.data.total + ' matching'} · shared IDs across all views</p>
+        <LibraryPager page={page} />
+        {companions.error && <p role="alert">Related details unavailable. <button onClick={companions.retry}>Retry details</button></p>}
         {mode === 'Table' && <div className="brainTableScroll"><table className="brainTable"><thead><tr>
             <th>Name</th><th>Type</th><th>Status</th><th>Last activity</th><th>Workspace</th>
         </tr></thead><tbody>{pageItems.map(entity => <tr key={entity.id} data-entity-id={entity.id}>
@@ -155,13 +169,13 @@ export function BrainWorkspace({snapshot, onSelect, onCanvas, onWorkspace, onRef
                     onDragStart={event => event.dataTransfer.setData('text/brain-object', entity.id)}>
                     {objectLink(entity)}<small>{entity.type}</small>{statusControl(entity)}
                 </article>)}</section>)}</div>}
-        {mode === 'Tiles' && <div className="brainTiles">{tiles.slice(pageIndex * 50, (pageIndex + 1) * 50).map((entity, index) => <article key={entity.id}
+        {mode === 'Tiles' && <div className="brainTiles">{tiles.map((entity, index) => <article key={entity.id}
             className="brainCard" data-entity-id={entity.id} style={{gridColumn: 'span ' + (layouts[entity.id]?.width || 1)}}
             draggable={!busy} onDragStart={event => event.dataTransfer.setData('text/brain-object', entity.id)}
             onDragOver={event => event.preventDefault()} onDrop={event => {
                 event.preventDefault(); const sourceId = event.dataTransfer.getData('text/brain-object');
                 if (sourceId !== entity.id && collection.some(item => item.id === sourceId)) {
-                    void act(() => moveTile(sourceId, (layouts[entity.id]?.order ?? collection.indexOf(entity)) - 0.5,
+                    void act(() => moveTile(sourceId, (layouts[entity.id]?.order ?? defaultOrder(entity)) - 0.5,
                         layouts[sourceId]?.width || 1), 'Tile reordered');
                 }
             }}>
@@ -169,20 +183,18 @@ export function BrainWorkspace({snapshot, onSelect, onCanvas, onWorkspace, onRef
             {statusControl(entity)}
             <div className="brainControls"><label>Tile width<select aria-label={'Tile width for ' + entity.title}
                 value={layouts[entity.id]?.width || 1} disabled={busy} onChange={event => void act(() => moveTile(entity.id,
-                    layouts[entity.id]?.order ?? collection.indexOf(entity), Number(event.target.value)), 'Tile resized')}>
+                    layouts[entity.id]?.order ?? defaultOrder(entity), Number(event.target.value)), 'Tile resized')}>
                 {[1, 2, 3].map(size => <option key={size} value={size}>{size}</option>)}</select></label>
                 <button disabled={busy || index === 0} onClick={() => {
-                    const previous = tiles[pageIndex * 50 + index - 1];
+                    const previous = tiles[index - 1];
                     if (previous) void act(() => moveTile(entity.id,
-                        (layouts[previous.id]?.order ?? collection.indexOf(previous)) - 0.5,
+                        (layouts[previous.id]?.order ?? defaultOrder(previous)) - 0.5,
                         layouts[entity.id]?.width || 1), 'Tile moved');
                 }}>Move earlier</button>
             </div>
         </article>)}</div>}
-        {mode === 'Timeline' && <ol className="brainTimeline">{snapshot.activities
-            .filter(activity => activity.entityId && pageIds.has(activity.entityId))
-            .map(activity => <li key={activity.id}><time>{new Date(activity.createdAt).toLocaleString()}</time>
-                <button onClick={() => activity.entityId && onSelect(activity.entityId)}>{activity.summary}</button></li>)}</ol>}
+        {mode === 'Timeline' && <ObjectTimeline key={JSON.stringify(pageItems.map(item => item.id))}
+            ids={pageItems.map(item => item.id)} onSelect={onSelect} />}
         {mode === 'AI Inbox' && <section aria-label="Brain inbox">
             <p>Local keyword suggestions — not AI-generated. Nothing is moved until you approve it.</p>
             <button disabled={busy} onClick={() => void act(suggestInboxProjects, 'Local suggestions refreshed')}>Suggest projects locally</button>
@@ -198,6 +210,6 @@ export function BrainWorkspace({snapshot, onSelect, onCanvas, onWorkspace, onRef
                 <small>{entity.type} · Select to add to a project or create a sourced memory.</small>
             </article>)}
         </section>}
-        {!displayed.length && <p>No objects match this view. Change the filters or capture something new.</p>}
+        {!page.loading && !page.error && !pageItems.length && <p>No objects match this view. Change the filters or capture something new.</p>}
     </section>;
 }

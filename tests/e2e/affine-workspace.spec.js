@@ -40,7 +40,10 @@ test('native connector endpoint and bend drags persist across reload without era
     await workspace.getByLabel('Selected cards', {exact: true}).selectOption({label: 'Start collecting ideas'});
     await workspace.getByLabel(/^Connect to/).selectOption({label: 'Routing B'});
     await workspace.getByRole('button', {name: 'Connect cards', exact: true}).click();
+    await expect.poll(async () => (await records(page, 'settings')).find(s => s.key.startsWith('workspace-page:'))?.value.connectors[0]).toBeTruthy();
     const initial = (await records(page, 'settings')).find(s => s.key.startsWith('workspace-page:')).value.connectors[0];
+    const targetEntity = (await records(page, 'entities')).find(entity => entity.title === 'Routing C');
+    const targetPlacement = (await records(page, 'placements')).find(placement => placement.entityId === targetEntity.id);
     await workspace.getByText('Pages and layout controls', {exact: true}).click();
     await workspace.getByRole('button', {name: 'Canvas', exact: true}).click();
     await expect(workspace.locator('edgeless-editor')).toBeVisible();
@@ -69,7 +72,7 @@ test('native connector endpoint and bend drags persist across reload without era
     await page.mouse.move(handle.x + handle.width / 2, handle.y + handle.height / 2);
     await page.mouse.down(); await page.mouse.move(target.x + 5, target.y + target.height / 2, {steps: 12}); await page.mouse.up();
     await workspace.getByRole('button', {name: 'Save now', exact: true}).click();
-    await expect.poll(async () => (await records(page, 'settings')).find(s => s.key.startsWith('workspace-page:')).value.connectors[0].toPlacementId).not.toBe(initial.toPlacementId);
+    await expect.poll(async () => (await records(page, 'settings')).find(s => s.key.startsWith('workspace-page:'))?.value.connectors[0]?.toPlacementId).toBe(targetPlacement.id);
     expect((await records(page, 'relationships')).some(r => r.id === initial.relationshipId)).toBe(true);
     await selectLine();
     await workspace.getByRole('button', {name: 'Add route bend', exact: true}).click();

@@ -1,5 +1,6 @@
 import type {BoardPlacement, RelationshipRecord, WorkspaceEntity, WorkspaceTask} from '../../workspace/types';
 import {buildBrainContext} from './brainContext';
+import {compareLibraryIds} from './libraryOrdering';
 export {buildBrainContext} from './brainContext';
 
 export function objectConnections(entityId: string, relationships: RelationshipRecord[]) {
@@ -33,8 +34,8 @@ export function queryBrain(entities: WorkspaceEntity[], links: RelationshipRecor
         (!query.status || brainStatus(entity, tasks) === query.status) &&
         words.every(word => [entity.title, entity.canonicalUrl || '', String(entity.metadata?.body || ''),
             ...(entity.tags || [])].join(' ').toLocaleLowerCase().includes(word)))
-        .sort((a, b) => query.sort === 'updated' ? b.updatedAt - a.updatedAt || a.id.localeCompare(b.id) :
-            a.title.localeCompare(b.title) || a.id.localeCompare(b.id));
+        .sort((a, b) => query.sort === 'updated' ? b.updatedAt - a.updatedAt || compareLibraryIds(a.id, b.id) :
+            a.title.localeCompare(b.title) || compareLibraryIds(a.id, b.id));
 }
 
 // An ephemeral view projection, never persisted as real board placements.

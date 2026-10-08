@@ -3,71 +3,53 @@ import type {Target} from '../../workspace/recoveryTypes';
 const RecoveryDialog = lazy(() => import('./RecoveryDialog').then(module => ({default: module.RecoveryDialog})));
 import {liveQuery} from 'dexie';
 import {workspaceClient} from './workspaceClient';
+import {loadShell, loadBoard, loadObject, loadExpandedNeighborhood} from './workspaceReads';
+import {useWorkspaceQuery} from './useWorkspaceQuery';
 import type {AssetRecord} from '../../workspace/types';
-import {addPageFile, isSafeRaster} from './pageAssets';
-import {
-    addEdge,
-    Background,
-    BackgroundVariant,
-    Controls,
-    ReactFlow,
-    ReactFlowProvider,
-    applyEdgeChanges,
-    applyNodeChanges,
-    type Connection,
-    type Edge,
-    type EdgeChange,
-    type Node,
-    type NodeChange
-} from '@xyflow/react';
+import {addPageFile} from './pageAssets';
+import {useAssetUrls} from './useAssetUrls';
+import {lazyWorkspaceView} from './lazyWorkspaceView';
+const WorkspaceFlow = lazyWorkspaceView(() => import('./WorkspaceGraphView'), 'Canvas');
 
 import {WorkspaceExplorer} from './WorkspaceExplorer';
-import {BrainWorkspace, type BrainMode} from './BrainWorkspace';
+import type {BrainMode} from './BrainWorkspace';
+const BrainWorkspace = lazyWorkspaceView(async () => ({default: (await import('./BrainWorkspace')).BrainWorkspace}), 'Brain');
 import {BrainObjectTools} from './BrainObjectTools';
-import {AffineWorkspace} from './AffineWorkspace';
+const AffineWorkspace = lazyWorkspaceView(async () => ({default: (await import('./AffineWorkspace')).AffineWorkspace}), 'Workspace editor');
 import type {PageEditorSession} from './pageEditorSession';
 import {addPageReference, openProjectWorkspace, openWorkspacePage} from './pageRepository';
 import {openBrainCanvas} from './brainRepository';
-import {graphProjection} from './brainSelectors';
 import './brain.css';
 import {WorkspaceInspector} from './WorkspaceInspector';
-import {WorkspaceNode, type WorkspaceNodeData} from './WorkspaceNode';
 import {WorkspaceQuickAdd, type WorkspaceCommand} from './WorkspaceQuickAdd';
-import {
-    ActivityView,
-    InboxView,
-    SessionsView,
-    SmartSearchView,
-    TasksView,
-    TemplatesView
-} from './WorkspaceWorkflows';
-import {AnalysisView, SettingsView} from './WorkspaceUtilities';
+const ActivityView = lazyWorkspaceView(async () => ({default: (await import('./WorkspaceWorkflows')).ActivityView}), 'Activity');
+const InboxView = lazyWorkspaceView(async () => ({default: (await import('./WorkspaceWorkflows')).InboxView}), 'Inbox');
+const SessionsView = lazyWorkspaceView(async () => ({default: (await import('./WorkspaceWorkflows')).SessionsView}), 'Sessions');
+const SmartSearchView = lazyWorkspaceView(async () => ({default: (await import('./WorkspaceWorkflows')).SmartSearchView}), 'Search');
+const TasksView = lazyWorkspaceView(async () => ({default: (await import('./WorkspaceWorkflows')).TasksView}), 'Tasks');
+const TemplatesView = lazyWorkspaceView(async () => ({default: (await import('./WorkspaceWorkflows')).TemplatesView}), 'Templates');
+const AnalysisView = lazyWorkspaceView(async () => ({default: (await import('./WorkspaceUtilities')).AnalysisView}), 'Analysis');
+const SettingsView = lazyWorkspaceView(async () => ({default: (await import('./WorkspaceUtilities')).SettingsView}), 'Settings');
 import {
     addCurrentTab,
     addNote,
     autoLayoutBoard,
     captureWindowSession,
     createBoard,
-    createRelationship,
     deleteBoard,
-    deleteRelationship,
     duplicateBoard,
     duplicatePlacements,
-    loadWorkspace,
+    ensureWorkspace,
     removePlacements,
     renameBoard,
     setInboxState,
     updateTask,
     updateEntity,
-    updatePlacement,
     type WorkspaceSnapshot
 } from './workspaceRepository';
 
 type WorkspaceView = 'editor' | 'brain' | 'activity' | 'analysis' | 'assets' | 'canvas' | 'graph' | 'inbox' |
     'mindmap' | 'search' | 'sessions' | 'settings' | 'tasks' | 'templates';
-type FlowNode = Node<WorkspaceNodeData, 'workspace'>;
-
-const nodeTypes = {workspace: WorkspaceNode};
 const emptySnapshot: WorkspaceSnapshot = {
     activities: [],
     assets: [],
@@ -86,202 +68,6 @@ const emptySnapshot: WorkspaceSnapshot = {
 
 interface WorkspaceAppProps {
     onClose: () => void;
-}
-
-function useAssetUrls(snapshot: WorkspaceSnapshot): Map<string, string> {
-    const [urls, setUrls] = useState<Map<string, string>>(new Map());
-    useEffect(() => {
-        const urls = new Map<string, string>();
-        let cancelled = false;
-        void Promise.all(snapshot.assets.map(async asset => {
-            if (await isSafeRaster(asset) && !cancelled) urls.set(asset.entityId, URL.createObjectURL(asset.blob));
-        })).then(() => {
-            if (!cancelled) setUrls(new Map(urls));
-        });
-        return () => {
-            cancelled = true;
-            urls.forEach(url => URL.revokeObjectURL(url));
-        };
-    }, [snapshot.assets]);
-    return urls;
-}
-
-function nodesFromSnapshot(snapshot: WorkspaceSnapshot, assetUrls: Map<string, string>): FlowNode[] {
-    const entityMap = new Map(snapshot.entities.map(entity => [entity.id, entity]));
-    return snapshot.placements.flatMap(placement => {
-        const entity = entityMap.get(placement.entityId);
-        if (!entity) {
-            return [];
-        }
-        return [{
-            id: placement.id,
-            type: 'workspace',
-            position: {x: placement.x, y: placement.y},
-            data: {entity, assetUrl: assetUrls.get(entity.id)},
-            style: {width: placement.width, height: placement.height},
-            zIndex: placement.zIndex,
-            ariaLabel: entity.title
-        } satisfies FlowNode];
-    });
-}
-
-function edgesFromSnapshot(snapshot: WorkspaceSnapshot): Edge[] {
-    const firstPlacementByEntity = new Map<string, string>();
-    snapshot.placements.forEach(placement => {
-        if (!firstPlacementByEntity.has(placement.entityId)) {
-            firstPlacementByEntity.set(placement.entityId, placement.id);
-        }
-    });
-    return snapshot.relationships.filter(relationship => relationship.confirmed).flatMap(relationship => {
-        const source = firstPlacementByEntity.get(relationship.fromEntityId);
-        const target = firstPlacementByEntity.get(relationship.toEntityId);
-        if (!source || !target) {
-            return [];
-        }
-        return [{
-            id: relationship.id,
-            source,
-            target,
-            label: relationship.label || relationship.type,
-            type: 'smoothstep',
-            style: {stroke: relationship.origin === 'ai-suggested' ? '#9a6dd7' : '#327bf2'},
-            ariaLabel: (relationship.label || relationship.type) + ' relationship'
-        }];
-    });
-}
-
-function layoutGraph(nodes: FlowNode[], mode: 'graph' | 'mindmap'): FlowNode[] {
-    if (mode === 'graph') {
-        return nodes.map((node, index) => ({
-            ...node,
-            draggable: false,
-            data: {...node.data, allowResize: false},
-            position: {
-                x: 90 + (index % 3) * 310,
-                y: 80 + Math.floor(index / 3) * 220
-            }
-        }));
-    }
-    const centerX = 470;
-    const centerY = 260;
-    return nodes.map((node, index) => {
-        if (index === 0) {
-            return {
-                ...node,
-                draggable: false,
-                data: {...node.data, allowResize: false},
-                position: {x: centerX, y: centerY}
-            };
-        }
-        const angle = (Math.PI * 2 * (index - 1)) / Math.max(nodes.length - 1, 1);
-        return {
-            ...node,
-            draggable: false,
-            data: {...node.data, allowResize: false},
-            position: {x: centerX + Math.cos(angle) * 360, y: centerY + Math.sin(angle) * 220}
-        };
-    });
-}
-
-function WorkspaceFlow({
-    activeBoardId,
-    refresh,
-    snapshot,
-    view,
-    visibleEntityIds,
-    onSelect
-}: {
-    activeBoardId: string;
-    refresh: () => Promise<void>;
-    snapshot: WorkspaceSnapshot;
-    view: 'canvas' | 'graph' | 'mindmap';
-    visibleEntityIds?: Set<string>;
-    onSelect: (entityId?: string, placementId?: string) => void;
-}) {
-    const assetUrls = useAssetUrls(snapshot);
-    const flowSnapshot = useMemo(() => view === 'graph' ?
-        {...snapshot, ...graphProjection(snapshot.entities, snapshot.relationships, {entityIds: visibleEntityIds})} : snapshot, [snapshot, view, visibleEntityIds]);
-    const sourceNodes = useMemo(() => nodesFromSnapshot(flowSnapshot, assetUrls)
-        .filter(node => !visibleEntityIds || visibleEntityIds.has(node.data.entity.id)),
-    [assetUrls, flowSnapshot, visibleEntityIds]);
-    const sourceEdges = useMemo(() => {
-        const visibleNodeIds = new Set(sourceNodes.map(node => node.id));
-        return edgesFromSnapshot(flowSnapshot).filter(edge =>
-            visibleNodeIds.has(edge.source) && visibleNodeIds.has(edge.target));
-    }, [flowSnapshot, sourceNodes]);
-    const [nodes, setNodes] = useState<FlowNode[]>(sourceNodes);
-    const [edges, setEdges] = useState<Edge[]>(sourceEdges);
-    useEffect(() => {
-        setNodes(view === 'canvas' ? sourceNodes : layoutGraph(sourceNodes, view));
-        setEdges(sourceEdges);
-    }, [sourceEdges, sourceNodes, view]);
-
-    const onNodesChange = useCallback((changes: NodeChange<FlowNode>[]) => {
-        setNodes(current => applyNodeChanges(changes, current));
-    }, []);
-    const onEdgesChange = useCallback((changes: EdgeChange<Edge>[]) => {
-        setEdges(current => applyEdgeChanges(changes, current));
-        changes.filter(change => change.type === 'remove').forEach(change => {
-            void deleteRelationship(change.id).then(refresh);
-        });
-    }, [refresh]);
-    const onConnect = useCallback(async (connection: Connection) => {
-        if (view !== 'canvas') {
-            return;
-        }
-        const from = snapshot.placements.find(placement => placement.id === connection.source);
-        const to = snapshot.placements.find(placement => placement.id === connection.target);
-        if (!from || !to) {
-            return;
-        }
-        const relationship = await createRelationship(from.entityId, to.entityId);
-        setEdges(current => addEdge({...connection, id: relationship.id, label: relationship.label}, current));
-        await refresh();
-    }, [refresh, snapshot.placements, view]);
-
-    if (nodes.length === 0) {
-        return (
-            <div className="workspaceEmpty">
-                <h2>This board is empty</h2>
-                <p>Add the current tab, a note, or an image to begin.</p>
-            </div>
-        );
-    }
-
-    return (
-        <ReactFlow
-            aria-label={view === 'canvas' ? 'Board canvas' : view === 'mindmap' ? 'Mind map' : 'Relationship graph'}
-            nodes={nodes}
-            edges={edges}
-            nodeTypes={nodeTypes}
-            onNodesChange={onNodesChange}
-            onEdgesChange={onEdgesChange}
-            onConnect={onConnect}
-            onNodeClick={(_event, node) => onSelect((node.data as WorkspaceNodeData).entity.id, view === 'canvas' ? node.id : undefined)}
-            onPaneClick={() => onSelect()}
-            onNodeDragStop={(_event, node) => {
-                if (view === 'canvas') {
-                    void updatePlacement(node.id, {x: node.position.x, y: node.position.y});
-                }
-            }}
-            onNodesDelete={deleted => {
-                if (view === 'canvas') {
-                    void removePlacements(deleted.map(node => node.id)).then(refresh);
-                }
-            }}
-            fitView
-            minZoom={0.25}
-            maxZoom={2}
-            nodesDraggable={view === 'canvas'}
-            nodesConnectable={view === 'canvas'}
-            deleteKeyCode={null}
-            multiSelectionKeyCode={['Control', 'Meta']}
-        >
-            <Background variant={BackgroundVariant.Dots} color="#c8cdd4" gap={18} size={1} />
-            <Controls showInteractive={false} />
-            <div className="workspaceCanvas__boardLabel">{activeBoardId ? '' : 'Board'}</div>
-        </ReactFlow>
-    );
 }
 
 function AssetsView({
@@ -368,7 +154,6 @@ function AssetsView({
 }
 
 function WorkspaceAppInner({onClose}: WorkspaceAppProps) {
-    const [snapshot, setSnapshot] = useState(emptySnapshot);
     const [activeBoardId, setActiveBoardId] = useState('');
     const [view, setViewState] = useState<WorkspaceView>('canvas');
     const editorSession = useRef<PageEditorSession | undefined>(undefined);
@@ -389,7 +174,9 @@ function WorkspaceAppInner({onClose}: WorkspaceAppProps) {
     const setView = (next: WorkspaceView) => {void leaveEditor(() => setViewState(next));};
     const [selectedEntityId, setSelectedEntityId] = useState<string>();
     const [selectedPlacementId, setSelectedPlacementId] = useState<string>();
-    const [busy, setBusy] = useState(true);
+    const [initialized, setInitialized] = useState(false);
+    const [initializationError, setInitializationError] = useState<string>();
+    const initialization = useRef<Promise<unknown> | undefined>(undefined);
     const [notice, setNotice] = useState('');
     useEffect(() => {
         const reloadNotice = () => setNotice('Workspace storage was upgraded in another tab. Export any unsaved draft, then reload this tab.');
@@ -404,18 +191,33 @@ function WorkspaceAppInner({onClose}: WorkspaceAppProps) {
     const [brainMode, setBrainMode] = useState<BrainMode>('Table');
     const [brainNavigationKey, setBrainNavigationKey] = useState(0);
     const [focusEntityIds, setFocusEntityIds] = useState<string[]>();
+    const [graphExpansion, setGraphExpansion] = useState({scope: '', pages: 1});
+    const graphScopeKey = focusEntityIds?.[0] || '';
+    const graphPages = graphExpansion.scope === graphScopeKey ? graphExpansion.pages : 1;
     const refreshRequest = useRef(0);
     const activeBoardRef = useRef(activeBoardId);
     const requestedBoardRef = useRef(activeBoardId);
+    const shell = useWorkspaceQuery('shell:' + initialized, async () => initialized ? loadShell() : undefined);
+    const board = useWorkspaceQuery('board:' + activeBoardId, async () => activeBoardId ? loadBoard(activeBoardId) : undefined);
+    const object = useWorkspaceQuery('object:' + selectedEntityId, async () => selectedEntityId ? loadObject(selectedEntityId) : null);
+    const graph = useWorkspaceQuery('graph:' + (view === 'graph') + ':' + graphScopeKey + ':' + graphPages, async () => view === 'graph' ?
+        loadExpandedNeighborhood(graphScopeKey ? {kind: 'entity', id: graphScopeKey} : {kind: 'library'}, graphPages) : undefined);
+    // Compatibility composition for board-only renderers, not a library snapshot.
+    const snapshot = useMemo(() => ({...emptySnapshot, ...shell.data, ...board.data}), [shell.data, board.data]);
+    const inspected = object.data || emptySnapshot;
+    const busy = !initialized || shell.loading || board.loading;
 
     const refresh = useCallback(async (boardId?: string) => {
         if (boardId && boardId !== activeBoardRef.current) await editorSession.current?.flush();
         if (boardId) requestedBoardRef.current = boardId;
         const request = ++refreshRequest.current;
-        setBusy(true);
+        setInitializationError(undefined);
         try {
+            initialization.current ||= ensureWorkspace();
+            try {await initialization.current;} catch (error) {initialization.current = undefined; throw error;}
+            setInitialized(true);
             const requestedBoardId = requestedBoardRef.current || activeBoardRef.current || undefined;
-            const next = await loadWorkspace(requestedBoardId);
+            const next = await loadShell();
             if (request !== refreshRequest.current) {
                 return;
             }
@@ -423,24 +225,21 @@ function WorkspaceAppInner({onClose}: WorkspaceAppProps) {
                 next.boards.some(board => board.id === requestedBoardId) ?
                 requestedBoardId :
                 next.boards[0]?.id || '';
-            if (resolvedBoardId !== activeBoardRef.current) {
+            if (activeBoardRef.current && resolvedBoardId !== activeBoardRef.current) {
                 setSelectedEntityId(undefined);
                 setSelectedPlacementId(undefined);
                 setFocusEntityIds(undefined);
             }
-            setSnapshot(next);
             activeBoardRef.current = resolvedBoardId;
             requestedBoardRef.current = resolvedBoardId;
             setActiveBoardId(resolvedBoardId);
+            shell.retry(); board.retry(); object.retry(); graph.retry();
             setNotice('');
         } catch (error) {
             if (request === refreshRequest.current) {
                 requestedBoardRef.current = activeBoardRef.current;
-                setNotice(error instanceof Error ? error.message : 'Workspace failed to load.');
-            }
-        } finally {
-            if (request === refreshRequest.current) {
-                setBusy(false);
+                const message = error instanceof Error ? error.message : 'Workspace failed to load.';
+                setNotice(message); setInitializationError(message);
             }
         }
     }, []);
@@ -450,14 +249,8 @@ function WorkspaceAppInner({onClose}: WorkspaceAppProps) {
     }, []);
 
     useEffect(() => {
-        let timer: ReturnType<typeof setTimeout> | undefined;
-        const subscription = liveQuery(() => Promise.all(workspaceClient.tables.map(table => table.count())))
-            .subscribe({next: () => {
-                clearTimeout(timer);
-                timer = setTimeout(() => { void refresh(); }, 120);
-            }, error: error => setNotice('Live refresh unavailable: ' + String(error))});
-        return () => { clearTimeout(timer); subscription.unsubscribe(); };
-    }, [refresh]);
+        if (shell.data && activeBoardId && !shell.data.boards.some(item => item.id === activeBoardId)) void refresh();
+    }, [shell.data, activeBoardId, refresh]);
 
     useEffect(() => {
         const openQuickAdd = (event: KeyboardEvent) => {
@@ -471,11 +264,11 @@ function WorkspaceAppInner({onClose}: WorkspaceAppProps) {
         return () => window.removeEventListener('keydown', openQuickAdd);
     }, []);
 
-    const selectedEntity = snapshot.entities.find(entity => entity.id === selectedEntityId);
+    const selectedEntity = object.data?.entity;
     const selectedPlacement = snapshot.placements.find(placement => placement.id === selectedPlacementId);
     const activeBoard = snapshot.boards.find(board => board.id === activeBoardId);
     const visibleEntityIds = useMemo(() => focusEntityIds ? new Set(focusEntityIds) : undefined, [focusEntityIds]);
-    const graphScopeCount = visibleEntityIds ? snapshot.entities.filter(entity => visibleEntityIds.has(entity.id)).length : snapshot.entities.length;
+    const graphScopeCount = graph.data?.total;
 
     const selectEntity = (entityId?: string, placementId?: string) => {
         setSelectedEntityId(entityId);
@@ -551,14 +344,11 @@ function WorkspaceAppInner({onClose}: WorkspaceAppProps) {
                 <WorkspaceExplorer
                     activeBoardId={activeBoardId}
                     boards={snapshot.boards}
-                    entities={snapshot.entities}
+                    counts={shell.data?.counts || {entities: 0, inbox: 0, tasks: 0, sessions: 0}}
                     folders={snapshot.folders}
-                    memberships={snapshot.folderMemberships}
                     selectedEntityId={selectedEntityId}
                     onRefresh={() => refresh()}
                     savedFilters={snapshot.savedFilters}
-                    sessions={snapshot.workspaceSessions}
-                    tasks={snapshot.tasks}
                     mobileOpen={mobilePanel === 'explorer'}
                     onClosePanel={() => setMobilePanel(undefined)}
                     onCreateBoard={createNewBoard}
@@ -655,7 +445,12 @@ function WorkspaceAppInner({onClose}: WorkspaceAppProps) {
                             </button>
                         </div>
                     </nav>
-                    <div className="workspaceNotice" role="status">{busy ? 'Loading workspace…' : notice}</div>
+                    <div className="workspaceNotice" role="status">{busy && !initializationError ? 'Loading workspace…' : notice}</div>
+                    {initializationError && <p role="alert">{initializationError} <button onClick={() => void refresh()}>Retry workspace</button></p>}
+                    {[shell, board, object, graph].filter(query => query.error).map((query, index) =>
+                        <p role="alert" key={index}>{query.error?.message} <button onClick={query.retry}>Retry load</button></p>)}
+                    {selectedEntityId && !object.loading && !object.error && object.data === null &&
+                        <p role="status">The selected object is no longer available. Choose another object or open Recovery.</p>}
                     {visibleEntityIds && (
                         <div className="workspaceFocus" role="status">
                             Focus mode · showing {visibleEntityIds.size} selected and connected objects
@@ -663,8 +458,10 @@ function WorkspaceAppInner({onClose}: WorkspaceAppProps) {
                         </div>
                     )}
                     <div className="workspaceCanvas">
-                        {view === 'graph' && <p role="status">Graph shows {Math.min(200, graphScopeCount)} of {graphScopeCount} objects in the current scope ({Math.max(0, graphScopeCount - 200)} omitted). Select an object and use Show in Graph to focus its relationships.</p>}
-                        {view === 'brain' && <BrainWorkspace initialMode={brainMode} navigationKey={brainNavigationKey} snapshot={snapshot} onSelect={selectEntity}
+                        {view === 'graph' && <p role="status">Graph shows {graph.data?.entities.length || 0}{graphScopeCount === undefined ? '' : ' of ' + graphScopeCount} objects in the current scope{graph.data?.hasMore ? ' (more available)' : ''}. Select an object and use Show in Graph to focus its relationships.</p>}
+                        {view === 'graph' && graph.data?.hasMore && <button disabled={graph.loading || graph.refreshing}
+                            onClick={() => setGraphExpansion({scope: graphScopeKey, pages: graphPages + 1})}>Load 200 more graph objects</button>}
+                        {view === 'brain' && <BrainWorkspace initialMode={brainMode} navigationKey={brainNavigationKey} onSelect={selectEntity}
                             onCanvas={openObjectCanvas} onWorkspace={openObjectWorkspace} onRefresh={() => refresh()} onStatus={setNotice} />}
                         {view === 'editor' && activeBoardId && <AffineWorkspace key={activeBoardId + ':' + editorEpoch} boardId={activeBoardId} entities={snapshot.entities}
                             onHistory={() => void openRecovery({kind: 'page', id: activeBoardId})} onRecovery={() => void openRecovery()}
@@ -675,17 +472,18 @@ function WorkspaceAppInner({onClose}: WorkspaceAppProps) {
                                 if (action === 'source') {
                                     const entity = await workspaceClient.entities.get(id), url = entity?.source?.url || entity?.canonicalUrl;
                                     if (url && /^https?:\/\//i.test(url)) window.open(url, '_blank', 'noopener,noreferrer');
-                                } else if (action === 'graph') {setFocusEntityIds([id, ...snapshot.relationships.filter(r => r.confirmed && (r.fromEntityId === id || r.toEntityId === id)).flatMap(r => [r.fromEntityId, r.toEntityId])]); setViewState('graph');}
+                                } else if (action === 'graph') {setFocusEntityIds([id]); setViewState('graph');}
                                 else if (action === 'ai') setViewState('analysis');
                                 else setMobilePanel('inspector');
                             });}} />}
                         {(view === 'canvas' || view === 'mindmap' || view === 'graph') && (
                             <WorkspaceFlow
+                                key={activeBoardId + ':' + view}
                                 activeBoardId={activeBoardId}
                                 refresh={() => refresh()}
-                                snapshot={snapshot}
+                                snapshot={view === 'graph' ? {...emptySnapshot, ...graph.data} : snapshot}
                                 view={view}
-                                visibleEntityIds={visibleEntityIds}
+                                visibleEntityIds={view === 'graph' ? undefined : visibleEntityIds}
                                 onSelect={selectEntity}
                             />
                         )}
@@ -704,13 +502,12 @@ function WorkspaceAppInner({onClose}: WorkspaceAppProps) {
                             onRefresh={() => refresh()}
                             onSelect={selectEntity}
                             onStatus={setNotice}
-                            snapshot={snapshot}
                         />}
                         {view === 'sessions' && <SessionsView
+                            snapshot={snapshot}
                             activeBoardId={activeBoardId}
                             onRefresh={() => refresh()}
                             onStatus={setNotice}
-                            snapshot={snapshot}
                         />}
                         {view === 'tasks' && <TasksView
                             onFocus={(entity, relatedEntityIds) => {
@@ -726,7 +523,6 @@ function WorkspaceAppInner({onClose}: WorkspaceAppProps) {
                             onRefresh={() => refresh()}
                             onSelect={selectEntity}
                             onStatus={setNotice}
-                            snapshot={snapshot}
                         />}
                         {view === 'activity' && <ActivityView snapshot={snapshot} />}
                         {view === 'templates' && <TemplatesView
@@ -736,7 +532,6 @@ function WorkspaceAppInner({onClose}: WorkspaceAppProps) {
                             }}
                             onRefresh={() => refresh()}
                             onStatus={setNotice}
-                            snapshot={snapshot}
                         />}
                         {view === 'assets' && (
                             <AssetsView activeBoardId={activeBoardId} refresh={() => refresh()} snapshot={snapshot}
@@ -744,7 +539,6 @@ function WorkspaceAppInner({onClose}: WorkspaceAppProps) {
                         )}
                         {view === 'analysis' && (
                             <AnalysisView
-                                snapshot={snapshot}
                                 activeBoardId={activeBoardId}
                                 entity={selectedEntity}
                                 onSaved={() => refresh()}
@@ -755,15 +549,15 @@ function WorkspaceAppInner({onClose}: WorkspaceAppProps) {
                 </main>
                 <WorkspaceInspector
                     boards={snapshot.boards}
-                    boardMemberships={snapshot.boardMemberships}
+                    boardMemberships={inspected.boardMemberships}
                     folders={snapshot.folders}
-                    folderMemberships={snapshot.folderMemberships}
-                    activities={snapshot.activities}
+                    folderMemberships={inspected.folderMemberships}
+                    activities={inspected.activities}
                     entity={selectedEntity}
-                    entities={snapshot.entities}
+                    entities={inspected.entities}
                     placement={selectedPlacement}
-                    relationships={snapshot.relationships}
-                    tasks={snapshot.tasks}
+                    relationships={inspected.relationships}
+                    tasks={inspected.tasks}
                     mobileOpen={mobilePanel === 'inspector'}
                     onClosePanel={() => setMobilePanel(undefined)}
                     onCreateTask={() => {
@@ -790,12 +584,12 @@ function WorkspaceAppInner({onClose}: WorkspaceAppProps) {
                     }}
                 >
                     {selectedEntity && <BrainObjectTools key={selectedEntity.id} entity={selectedEntity}
-                        entities={snapshot.entities} relationships={snapshot.relationships} onSelect={selectEntity}
+                        entities={inspected.entities} relationships={inspected.relationships} onSelect={selectEntity}
                         onCanvas={openObjectCanvas} onRefresh={() => refresh()} onStatus={setNotice}
                         onEditor={() => {void openObjectWorkspace(selectedEntity.id).catch(e => setNotice(String(e)));}}
                         onBrain={mode => { setBrainMode(mode || 'Table'); setBrainNavigationKey(value => value + 1); setView('brain'); }} onAI={() => setView('analysis')}
                         onGraph={entityId => {
-                            const related = snapshot.relationships.filter(link => link.confirmed &&
+                            const related = inspected.relationships.filter(link => link.confirmed &&
                                 (link.fromEntityId === entityId || link.toEntityId === entityId));
                             setFocusEntityIds([entityId, ...related.flatMap(link => [link.fromEntityId, link.toEntityId])]);
                             setView('graph');
@@ -831,9 +625,5 @@ function WorkspaceAppInner({onClose}: WorkspaceAppProps) {
 }
 
 export function WorkspaceApp(props: WorkspaceAppProps) {
-    return (
-        <ReactFlowProvider>
-            <WorkspaceAppInner {...props} />
-        </ReactFlowProvider>
-    );
+    return <WorkspaceAppInner {...props} />;
 }

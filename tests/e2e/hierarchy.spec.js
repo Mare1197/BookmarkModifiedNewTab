@@ -2,6 +2,7 @@ const {expect, test} = require('./fixtures.js');
 
 async function openWorkspace(context, extensionId) {
     const page = await context.newPage();
+    await page.setViewportSize({width: 1584, height: 1024});
     await page.addInitScript(() => {
         localStorage.madeHelp = '1';
         localStorage.showedHelp = '1';
@@ -65,7 +66,7 @@ test('a folder cannot be moved into a descendant and drag uses the same safe mov
     await folders.getByRole('button', {name: 'Use selected object', exact: true}).click();
     await page.getByRole('treeitem', {name: /Start collecting ideas/}).click();
     await folders.getByRole('button', {name: 'Drag selected item', exact: true})
-        .dragTo(folders.locator('summary').filter({hasText: 'Child research'}));
+        .dragTo(folders.getByRole('treeitem', {name: 'Child research Workspace', exact: true}));
     await expect(folders.getByRole('status')).toHaveText('Moved. Undo move is available.');
     await expect(page.getByRole('complementary', {name: 'Inspector'})
         .getByRole('listitem').filter({hasText: 'Child research'})).toBeVisible();
@@ -94,11 +95,9 @@ test('selecting another object then returning clears a previously picked folder'
     await folders.getByRole('button', {name: 'Move selected', exact: true}).click();
     await expect(folders.getByRole('status')).toHaveText('Moved. Undo move is available.');
     await expect(inspector.getByRole('listitem').filter({hasText: 'Selection destination'})).toBeVisible();
-    const destinationChildren = folders.locator('details').filter({
-        has: page.locator('summary').filter({hasText: 'Selection destination'})
-    });
-    await expect(destinationChildren.getByRole('button', {name: 'Start collecting ideas', exact: true})).toBeVisible();
-    await expect(destinationChildren.getByRole('button', {name: 'Move folder Previously picked folder', exact: true})).toHaveCount(0);
+    const destinationTree = folders.getByRole('tree', {name: 'Folder tree'});
+    await expect(destinationTree.getByRole('treeitem', {name: 'Start collecting ideas', exact: true})).toBeVisible();
+    await expect(destinationTree.getByRole('treeitem', {name: 'Previously picked folder Workspace', exact: true})).toHaveAttribute('aria-level', '1');
     await page.screenshot({path: test.info().outputPath('hierarchy-desktop.png'), fullPage: true});
     await page.setViewportSize({width: 390, height: 844});
     await page.getByRole('navigation', {name: 'Mobile workspace navigation'})

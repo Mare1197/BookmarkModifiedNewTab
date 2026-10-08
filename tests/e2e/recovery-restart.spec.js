@@ -42,8 +42,13 @@ for (const kind of ['entity', 'page']) test(`acknowledged ${kind} draft survives
         let placement;
         if (kind === 'page') {
             await ws.getByRole('button', {name: 'Canvas', exact: true}).click();
+            await expect(ws.locator('edgeless-editor')).toBeVisible();
             await ws.getByRole('button', {name: 'Fit cards', exact: true}).click();
             await expect(ws.getByRole('status').first()).toHaveText('saved');
+            const viewport = (await records(page, 'settings')).find(setting => setting.key.startsWith('workspace-page:')).value.viewport;
+            await expect.poll(() => ws.locator('affine-edgeless-root').evaluate(root => ({
+                x: root.service.viewport.center.x, y: root.service.viewport.center.y, zoom: root.service.viewport.zoom
+            }))).toEqual(viewport);
             placement = (await records(page, 'placements'))[0];
         }
         // Test-only storage failure: journal writes still reach IndexedDB; canonical writes fail.
@@ -58,6 +63,8 @@ for (const kind of ['entity', 'page']) test(`acknowledged ${kind} draft survives
         if (kind === 'entity') await page.locator('workspace-reference-block rich-text [contenteditable="true"]').first().fill('Durable crash recovery text');
         else {
             const handle = ws.locator('.brainReferenceHandle').first(); await handle.hover(); const box = await handle.boundingBox();
+            await expect.poll(() => ws.locator('affine-edgeless-root').evaluate(root =>
+                Math.abs(root.service.viewport.top - root.closest('.brainNativePane').getBoundingClientRect().top))).toBeLessThan(1);
             await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2); await page.mouse.down();
             await page.mouse.move(box.x + box.width / 2 + 90, box.y + box.height / 2 + 30, {steps: 12}); await page.mouse.up();
         }
@@ -86,6 +93,9 @@ for (const kind of ['entity', 'page']) test(`acknowledged ${kind} draft survives
             await reopened.getByRole('button', {name: 'Workspace', exact: true}).click();
             await expect(reopened.locator('workspace-reference-block').first()).toBeVisible();
             await reopened.getByRole('button', {name: 'Save now', exact: true}).click();
+            await expect(reopened.getByRole('region', {name: 'AFFiNE workspace'}).getByRole('status').first()).toHaveText('saved');
+            await expect.poll(async () => (await records(reopened, 'workspaceDrafts')).filter(record =>
+                record.target.kind === 'page' && record.target.id === draft.target.id && record.operations.length && record.recoveredGeneration !== record.generation).length).toBe(0);
             await reopened.getByRole('button', {name: 'Page history', exact: true}).click();
             await reopened.getByRole('button', {name: 'Preview revision', exact: true}).last().click();
             await reopened.getByRole('button', {name: 'Restore revision', exact: true}).click();

@@ -1,17 +1,19 @@
 import {useState} from 'react';
 import {browser} from 'wxt/browser';
-import type {WorkspaceSnapshot} from './workspaceRepository';
 import {brainStatus, projectMembers, projectResumePreview} from './brainSelectors';
-import {workspaceClient} from './workspaceClient';
+import {loadProject} from './workspaceReads';
+import {useWorkspaceQuery} from './useWorkspaceQuery';
 
-export function ProjectHome({projectId, snapshot, onSelect, onCanvas, onWorkspace, onStatus}: {
-    projectId: string; snapshot: WorkspaceSnapshot; onSelect: (id: string) => void;
+export function ProjectHome({projectId, onSelect, onCanvas, onWorkspace, onStatus}: {
+    projectId: string; onSelect: (id: string) => void;
     onCanvas: (id: string) => Promise<void>; onStatus: (text: string) => void;
     onWorkspace?: (id: string) => Promise<void>;
 }) {
     const [preview, setPreview] = useState<ReturnType<typeof projectResumePreview>>();
     const [chosen, setChosen] = useState<Set<string>>(new Set());
     const [busy, setBusy] = useState(false);
+    const projectQuery = useWorkspaceQuery('project:' + projectId, () => loadProject(projectId));
+    const snapshot = projectQuery.data || {entities: [], relationships: [], tasks: []};
     const members = projectMembers(snapshot.entities, snapshot.relationships, projectId);
     const project = snapshot.entities.find(entity => entity.id === projectId);
     const groups = [
@@ -24,7 +26,8 @@ export function ProjectHome({projectId, snapshot, onSelect, onCanvas, onWorkspac
     const previewResume = async () => {
         try {
             const tabs = await browser.tabs.query({});
-            const next = projectResumePreview(projectId, snapshot.entities, snapshot.relationships, tabs.flatMap(tab => tab.url ? [tab.url] : []));
+            const fresh = await loadProject(projectId);
+            const next = projectResumePreview(projectId, fresh.entities, fresh.relationships, tabs.flatMap(tab => tab.url ? [tab.url] : []));
             setPreview(next); setChosen(new Set(next.slice(0, 10).map(item => item.url)));
         } catch (error) { onStatus(String(error)); }
     };
@@ -34,10 +37,7 @@ export function ProjectHome({projectId, snapshot, onSelect, onCanvas, onWorkspac
         let opened = 0;
         try {
             const tabs = await browser.tabs.query({});
-            const [entities, relationships] = await workspaceClient.transaction('r',
-                [workspaceClient.entities, workspaceClient.relationships], () => Promise.all([
-                    workspaceClient.entities.toArray(), workspaceClient.relationships.toArray()
-                ]));
+            const {entities, relationships} = await loadProject(projectId);
             const allowed = new Set(projectResumePreview(projectId, entities, relationships, tabs.flatMap(tab => tab.url ? [tab.url] : [])).map(item => item.url));
             for (const item of preview.filter(item => chosen.has(item.url) && allowed.has(item.url)).slice(0, 20)) {
                 await browser.tabs.create({url: item.url, active: false}); opened++;
@@ -48,6 +48,8 @@ export function ProjectHome({projectId, snapshot, onSelect, onCanvas, onWorkspac
     };
     return <section aria-label="Project homepage" className="brainCapture">
         <h3>{project?.title} · Project home</h3>
+        {projectQuery.loading && <p role="status">Loading project…</p>}
+        {projectQuery.error && <p role="alert">{projectQuery.error.message} <button onClick={projectQuery.retry}>Retry project</button></p>}
         <p>{members.length} connected objects · {members.filter(item => item.type === 'task' && brainStatus(item, snapshot.tasks) !== 'done').length} open tasks · {members.filter(item => item.type === 'memory').length} memories</p>
         <button onClick={() => void onCanvas(projectId).catch(error => onStatus(String(error)))}>Open project canvas</button>
         {onWorkspace && <button onClick={() => void onWorkspace(projectId).catch(error => onStatus(String(error)))}>Open project workspace</button>}

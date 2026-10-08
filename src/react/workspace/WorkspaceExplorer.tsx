@@ -1,27 +1,23 @@
 import {useState} from 'react';
 import {WorkspaceHierarchy} from './WorkspaceHierarchy';
+import {useLibraryPage} from './useLibraryPage';
+import {LibraryPager} from './LibraryPager';
+import {WindowedObjectList} from './WindowedObjectList';
 
 import type {
     BoardRecord,
-    FolderMembership,
     WorkspaceFolder,
-    SavedFilter,
-    WorkspaceEntity,
-    WorkspaceSession,
-    WorkspaceTask
+    SavedFilter
 } from '../../workspace/types';
 
 interface WorkspaceExplorerProps {
     activeBoardId: string;
     boards: BoardRecord[];
-    entities: WorkspaceEntity[];
+    counts: {entities: number; inbox: number; tasks: number; sessions: number};
     folders: WorkspaceFolder[];
-    memberships: FolderMembership[];
     selectedEntityId?: string;
     onRefresh: () => Promise<void>;
     savedFilters: SavedFilter[];
-    sessions: WorkspaceSession[];
-    tasks: WorkspaceTask[];
     mobileOpen?: boolean;
     onClosePanel?: () => void;
     onCreateBoard: () => void;
@@ -40,14 +36,11 @@ interface WorkspaceExplorerProps {
 export function WorkspaceExplorer({
     activeBoardId,
     boards,
-    entities,
+    counts,
     folders,
-    memberships,
     selectedEntityId,
     onRefresh,
     savedFilters,
-    sessions,
-    tasks,
     mobileOpen,
     onClosePanel,
     onCreateBoard,
@@ -63,10 +56,8 @@ export function WorkspaceExplorer({
     onSelectEntity
 }: WorkspaceExplorerProps) {
     const [query, setQuery] = useState('');
-    const normalizedQuery = query.trim().toLocaleLowerCase();
-    const filtered = entities.filter(entity =>
-        !normalizedQuery || [entity.title, entity.type, entity.canonicalUrl || '']
-            .some(value => value.toLocaleLowerCase().includes(normalizedQuery)));
+    const page = useLibraryPage({dialect: 'explorer', text: query, sort: 'id'});
+    const filtered = page.data?.items || [];
     return (
         <aside className={'workspaceExplorer' + (mobileOpen ? ' mobileOpen' : '')} aria-label="Workspace Explorer">
             <button
@@ -104,7 +95,7 @@ export function WorkspaceExplorer({
             </button>
             <h2>Inbox</h2>
             <button type="button" className="workspaceExplorer__special" onClick={onOpenInbox}>
-                <span>▱</span><span>Quick Inbox</span><i>{entities.filter(entity => entity.inboxAt).length}</i>
+                <span>▱</span><span>Quick Inbox</span><i>{counts.inbox}</i>
             </button>
             <h2>Objects</h2>
             <input
@@ -114,11 +105,12 @@ export function WorkspaceExplorer({
                 aria-label="Filter objects"
                 onChange={event => setQuery(event.target.value)}
             />
-            <div className="workspaceExplorer__tree" role="tree" aria-label="Board objects">
-                {filtered.map(entity => (
+            <WindowedObjectList items={filtered} selectedId={selectedEntityId} listKey={query + ':' + page.index}
+                label="Board objects" render={(entity, index) => (
                     <button
                         type="button"
                         role="treeitem"
+                        aria-posinset={index + 1} aria-setsize={filtered.length} aria-selected={entity.id === selectedEntityId}
                         key={entity.id}
                         onClick={() => onSelectEntity(entity.id)}
                         draggable onDragStart={event => {event.dataTransfer.setData('text/brain-object', entity.id); event.dataTransfer.effectAllowed = 'copy';}}
@@ -128,11 +120,11 @@ export function WorkspaceExplorer({
                         <span>{entity.title}</span>
                         {Boolean(entity.metadata?.live) && <i>Live</i>}
                     </button>
-                ))}
-                {filtered.length === 0 && <p>No matching objects.</p>}
-            </div>
+                )} />
+            {!page.loading && !page.error && filtered.length === 0 && <p>No matching objects.</p>}
+            <LibraryPager page={page} label="Explorer pages" />
             <div className="workspaceExplorer__smart">
-                <WorkspaceHierarchy folders={folders} memberships={memberships} entities={entities}
+                <WorkspaceHierarchy folders={folders}
                     selectedEntityId={selectedEntityId} onSelectEntity={onSelectEntity} onRefresh={onRefresh} />
                 <h2>Saved filters</h2>
                 {savedFilters.map(filter => (
@@ -142,11 +134,11 @@ export function WorkspaceExplorer({
                 ))}
                 <h2>Sessions</h2>
                 <button type="button" onClick={onOpenSessions}>
-                    <span>▣</span><span>Saved sessions</span><i>{sessions.length}</i>
+                    <span>▣</span><span>Saved sessions</span><i>{counts.sessions}</i>
                 </button>
                 <h2>Tasks</h2>
                 <button type="button" onClick={onOpenTasks}>
-                    <span>☑</span><span>My tasks</span><i>{tasks.filter(task => task.status !== 'done').length}</i>
+                    <span>☑</span><span>My tasks</span><i>{counts.tasks}</i>
                 </button>
             </div>
         </aside>

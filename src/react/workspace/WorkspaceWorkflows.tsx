@@ -1,4 +1,4 @@
-import {useDeferredValue, useMemo, useState} from 'react';
+import {useDeferredValue, useState} from 'react';
 
 import type {WorkspaceEntity, WorkspaceTaskStatus} from '../../workspace/types';
 import {
@@ -14,7 +14,9 @@ import {
     updateTask,
     type WorkspaceSnapshot
 } from './workspaceRepository';
-import {filterWorkspaceEntities} from './workspaceSearch';
+import {useLibraryPage} from './useLibraryPage';
+import {LibraryPager} from './LibraryPager';
+import {useWorkflowPage} from './useWorkflowPage';
 
 interface AsyncViewProps {
     onRefresh: () => Promise<void>;
@@ -35,7 +37,8 @@ export function SmartSearchView({
     snapshot: WorkspaceSnapshot;
 }) {
     const deferredQuery = useDeferredValue(query);
-    const results = useMemo(() => filterWorkspaceEntities(snapshot, deferredQuery), [deferredQuery, snapshot]);
+    const page = useLibraryPage({dialect: 'smart', text: deferredQuery, sort: 'id'});
+    const results = page.data?.items || [];
     const save = async () => {
         const name = window.prompt('Filter name', query || 'Saved filter');
         if (name === null) {
@@ -72,8 +75,9 @@ export function SmartSearchView({
                         <small>{entity.canonicalUrl || String(entity.metadata?.body || '')}</small>
                     </button>
                 ))}
-                {results.length === 0 && <p>No local results.</p>}
+                {!page.loading && !page.error && results.length === 0 && <p>No local results.</p>}
             </div>
+            <LibraryPager page={page} label="Search pages" />
             <aside className="workspaceSearch__saved" aria-label="Saved filters">
                 <h3>Saved filters</h3>
                 {snapshot.savedFilters.map(filter => (
@@ -97,15 +101,13 @@ export function InboxView({
     activeBoardId,
     onRefresh,
     onSelect,
-    onStatus,
-    snapshot
+    onStatus
 }: AsyncViewProps & {
     activeBoardId: string;
     onSelect: (entityId: string) => void;
-    snapshot: WorkspaceSnapshot;
 }) {
-    const inbox = snapshot.entities.filter(entity => entity.inboxAt)
-        .sort((left, right) => (right.inboxAt || 0) - (left.inboxAt || 0));
+    const page = useLibraryPage({dialect: 'explorer', text: '', inbox: true, sort: 'inbox'});
+    const inbox = page.data?.items || [];
     const run = async (action: () => Promise<void>, message: string) => {
         try {
             await action();
@@ -131,8 +133,9 @@ export function InboxView({
                         </div>
                     </article>
                 ))}
-                {inbox.length === 0 && <p className="workspaceWorkflow__empty">Inbox zero. New Quick Add captures can appear here.</p>}
+                {!page.loading && !page.error && inbox.length === 0 && <p className="workspaceWorkflow__empty">Inbox zero. New Quick Add captures can appear here.</p>}
             </div>
+            <LibraryPager page={page} label="Inbox pages" />
         </section>
     );
 }
@@ -141,6 +144,8 @@ export function SessionsView({activeBoardId, onRefresh, onStatus, snapshot}: Asy
     activeBoardId: string;
     snapshot: WorkspaceSnapshot;
 }) {
+    const page = useWorkflowPage('sessions');
+    const sessions = page.data?.workspaceSessions || [];
     const boardMap = new Map(snapshot.boards.map(board => [board.id, board]));
     const run = async (action: () => Promise<void>, message: string) => {
         try {
@@ -159,7 +164,7 @@ export function SessionsView({activeBoardId, onRefresh, onStatus, snapshot}: Asy
                     () => captureWindowSession(activeBoardId).then(() => undefined), 'Window session captured.')}>Capture current window</button>
             </header>
             <div className="workspaceWorkflow__rows">
-                {snapshot.workspaceSessions.map(session => (
+                {sessions.map(session => (
                     <article key={session.id}>
                         <div className="workspaceWorkflow__primary">
                             <span>Session</span><strong>{session.name}</strong>
@@ -171,8 +176,9 @@ export function SessionsView({activeBoardId, onRefresh, onStatus, snapshot}: Asy
                         </div>
                     </article>
                 ))}
-                {snapshot.workspaceSessions.length === 0 && <p className="workspaceWorkflow__empty">No saved sessions yet.</p>}
+                {!page.loading && !page.error && sessions.length === 0 && <p className="workspaceWorkflow__empty">No saved sessions yet.</p>}
             </div>
+            <LibraryPager page={page} label="Session pages" />
         </section>
     );
 }
@@ -184,15 +190,15 @@ export function TasksView({
     onNewTask,
     onRefresh,
     onSelect,
-    onStatus,
-    snapshot
+    onStatus
 }: AsyncViewProps & {
     onFocus: (entity: WorkspaceEntity, relatedEntityIds: string[]) => void;
     onNewTask: () => void;
     onSelect: (entityId: string) => void;
-    snapshot: WorkspaceSnapshot;
 }) {
     const [filter, setFilter] = useState<WorkspaceTaskStatus | 'all'>('all');
+    const page = useWorkflowPage('tasks', filter);
+    const snapshot = page.data || {entities: [], tasks: [], relationships: []};
     const entityMap = new Map(snapshot.entities.map(entity => [entity.id, entity]));
     const rows = snapshot.tasks.filter(task => filter === 'all' || task.status === filter)
         .sort((left, right) => (left.dueAt || Number.MAX_SAFE_INTEGER) - (right.dueAt || Number.MAX_SAFE_INTEGER));
@@ -240,20 +246,23 @@ export function TasksView({
                         </article>
                     );
                 })}
-                {rows.length === 0 && <p className="workspaceWorkflow__empty">No tasks in this view.</p>}
+                {!page.loading && !page.error && rows.length === 0 && <p className="workspaceWorkflow__empty">No tasks in this view.</p>}
             </div>
+            <LibraryPager page={page} label="Task pages" />
         </section>
     );
 }
 
 export function ActivityView({snapshot}: {snapshot: WorkspaceSnapshot}) {
-    const entityMap = new Map(snapshot.entities.map(entity => [entity.id, entity]));
+    const page = useWorkflowPage('activity');
+    const activities = page.data?.activities || [];
+    const entityMap = new Map((page.data?.entities || []).map(entity => [entity.id, entity]));
     const boardMap = new Map(snapshot.boards.map(board => [board.id, board]));
     return (
         <section className="workspaceWorkflow workspaceActivity" aria-label="Activity timeline">
             <header><div><h2>Activity & history work tree</h2><p>Observed workspace actions and provenance, newest first.</p></div></header>
             <ol>
-                {snapshot.activities.map(activity => (
+                {activities.map(activity => (
                     <li key={activity.id}>
                         <time>{new Date(activity.createdAt).toLocaleString()}</time>
                         <div><strong>{activity.summary}</strong>
@@ -261,16 +270,17 @@ export function ActivityView({snapshot}: {snapshot: WorkspaceSnapshot}) {
                         </div>
                     </li>
                 ))}
-                {snapshot.activities.length === 0 && <p className="workspaceWorkflow__empty">Activity begins when you capture, edit, connect, organize, or restore workspace objects.</p>}
+                {!page.loading && !page.error && activities.length === 0 && <p className="workspaceWorkflow__empty">Activity begins when you capture, edit, connect, organize, or restore workspace objects.</p>}
             </ol>
+            <LibraryPager page={page} label="Activity pages" />
         </section>
     );
 }
 
-export function TemplatesView({onCreated, onRefresh, onStatus, snapshot}: AsyncViewProps & {
+export function TemplatesView({onCreated, onRefresh, onStatus}: AsyncViewProps & {
     onCreated: (boardId: string) => void;
-    snapshot: WorkspaceSnapshot;
 }) {
+    const page = useWorkflowPage('templates');
     const create = async (templateId: string) => {
         try {
             const board = await createBoardFromTemplate(templateId);
@@ -285,13 +295,14 @@ export function TemplatesView({onCreated, onRefresh, onStatus, snapshot}: AsyncV
         <section className="workspaceWorkflow" aria-label="Board templates">
             <header><div><h2>Board templates</h2><p>Start with a useful structure, then auto-layout whenever the board changes.</p></div></header>
             <div className="workspaceTemplates">
-                {snapshot.boardTemplates.map(template => (
+                {(page.data?.boardTemplates || []).map(template => (
                     <article key={template.id}>
                         <strong>{template.name}</strong><p>{template.description}</p>
                         <button type="button" className="primaryButton" onClick={() => void create(template.id)}>Create board</button>
                     </article>
                 ))}
             </div>
+            <LibraryPager page={page} label="Template pages" />
         </section>
     );
 }

@@ -110,6 +110,11 @@ test('loads the unpacked extension and preserves legacy plus resource workflows'
     await quickAdd.getByRole('button', {name: 'Task'}).click();
     await quickAdd.getByRole('textbox', {name: 'Title'}).fill('Review captured research');
     await quickAdd.getByRole('button', {name: /Add to 2 destinations/}).click();
+    await expect(quickAdd).not.toBeVisible();
+    await expect(page.locator('.workspaceNotice')).toContainText('Review captured research added.');
+    // Newly placed cards may be outside the viewport; visible-only rendering
+    // must not be mistaken for a missing saved object.
+    await page.locator('.react-flow__controls-fitview').click();
     await expect(page.locator('.workspaceCard--task')).not.toHaveCount(0);
     await page.getByRole('button', {name: 'Tasks', exact: true}).click();
     await expect(page.getByRole('region', {name: 'Workspace tasks'})).toContainText('Review captured research');

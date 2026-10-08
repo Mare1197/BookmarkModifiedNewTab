@@ -26,6 +26,9 @@ test('Inspector drafts stay with their objects and reminders retain local time',
     const inspector = page.getByRole('complementary', {name: 'Inspector'});
     const firstNote = page.getByRole('treeitem', {name: /Start collecting ideas/});
     const secondNote = page.getByRole('treeitem', {name: /New note/});
+    // Wait for the async capture to enter the live list before clicking a row
+    // whose position can change while the new note is inserted.
+    await expect(secondNote).toBeVisible();
     await firstNote.click();
     await inspector.getByRole('textbox', {name: 'Title', exact: true}).fill('Draft belongs to first note');
     await secondNote.click();

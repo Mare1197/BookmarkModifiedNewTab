@@ -125,3 +125,28 @@ test('updated paging batches timestamp index reads instead of querying every tim
     assert.equal(page.items.length, 50); assert.equal(page.items[0].updatedAt, 599);
     assert.ok(reads < 20, 'bounded index batches, observed where calls: ' + reads);
 });
+test('normalization-equivalent IDs are not lost at timestamp cursor boundaries', async t => {
+    const {db, load} = await workspaceFixture(t), {queryLibraryPage} = load('libraryQueries.ts');
+    const ids = [...Array.from({length: 49}, (_, i) => 'a' + i), 'e\u0301', '\u00e9', 'z'];
+    await db.entities.bulkPut(ids.map(id => entity(id, {updatedAt: 1, inboxAt: 1})));
+    for (const sort of ['updated', 'inbox']) {
+        const found = []; let cursor;
+        do {const page = await queryLibraryPage({...query, sort}, {cursor}); found.push(...page.items.map(item => item.id)); cursor = page.nextCursor;} while (cursor);
+        assert.equal(found.length, ids.length); assert.equal(new Set(found).size, ids.length);
+    }
+});
+
+test('invalidated continuation rebuilds the current page and clamps after deletions', async t => {
+    const {db, load} = await workspaceFixture(t), {queryLibraryPosition} = load('libraryQueries.ts');
+    await db.entities.bulkPut(Array.from({length: 123}, (_, i) => entity('n' + String(i).padStart(3, '0'), {updatedAt: i})));
+    const input = {...query, dialect: 'brain', sort: 'updated'};
+    const current = await queryLibraryPosition(input, 2, [undefined]);
+    assert.equal(current.pageIndex, 2); assert.equal(current.items.length, 23);
+    await db.entities.update('n000', {updatedAt: 1000});
+    const refreshed = await queryLibraryPosition(input, 2, [undefined]);
+    assert.equal(refreshed.pageIndex, 2); assert.equal(refreshed.items.length, 23);
+    assert.ok(!refreshed.items.some(item => item.id === 'n000'));
+    await db.entities.bulkDelete(Array.from({length: 100}, (_, i) => 'n' + String(i).padStart(3, '0')));
+    const clamped = await queryLibraryPosition(input, 2, [undefined]);
+    assert.equal(clamped.pageIndex, 0); assert.equal(clamped.items.length, 23); assert.equal(clamped.hasMore, false);
+});

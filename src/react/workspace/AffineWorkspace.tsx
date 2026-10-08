@@ -119,8 +119,7 @@ export function AffineWorkspace(props: Props) {
                         const note = await createBrainObject({type: 'note', title: noteTitle}); await addPageReference(props.boardId, note.id);
                     }); setNoteTitle(current => current === noteTitle ? '' : current); await reload();
                 })}>New note</button>
-                <label>Existing object<select value={objectId} onChange={e => setObjectId(e.target.value)}><option value="">Choose an object</option>
-                    {props.entities.map(e => <option key={e.id} value={e.id}>{e.title} · {e.type}</option>)}</select></label>
+                <LibraryObjectPicker label="Existing object" value={objectId} onChange={setObjectId} emptyLabel="Choose an object" />
                 <button disabled={!objectId || busy} onClick={() => void run(async () => {await addPageReference(props.boardId, objectId); await reload();})}>Add existing object</button>
                 <button onClick={() => upload.current?.click()}>Upload file</button><input hidden type="file" ref={upload} onChange={e => {
                     const file = e.target.files?.[0]; if (file) void run(async () => {await addPageFile(props.boardId, file); await reload();}); e.target.value = '';
@@ -132,8 +131,8 @@ export function AffineWorkspace(props: Props) {
                     const child = await createWorkspacePage(title, page.owner.id); callbacks.current.onOpenPage(child.board.id);
                 })}>New child page</button>
                     {page?.children.map(child => <button key={child.id} onClick={() => void run(() => openParent(child.id))}>{child.title}</button>)}
-                    <label>Parent page<select value={parentId} onChange={e => setParentId(e.target.value)}><option value="">No parent</option>
-                        {props.entities.filter(e => e.id !== page?.owner.id && (e.type === 'project' || e.metadata?.workspacePage)).map(e => <option key={e.id} value={e.id}>{e.title}</option>)}</select></label>
+                    <LibraryObjectPicker label="Parent page" value={parentId} onChange={setParentId} excludeId={page?.owner.id}
+                        eligible={entity => entity.type === 'project' || Boolean(entity.metadata?.workspacePage)} emptyLabel="No parent" />
                     <button onClick={() => void run(async () => {if (page) await setPageParent(page.owner.id, parentId || undefined); await reload();})}>Move page</button>
                     {page?.owner.type === 'project' && <button onClick={() => void run(async () => {await refreshProjectReferences(props.boardId); await reload();})}>Add missing project members</button>}
                 </div>
@@ -166,3 +165,4 @@ export function AffineWorkspace(props: Props) {
         <div ref={host} className={'affineNativeHost ' + mode} />
     </section>;
 }
+import {LibraryObjectPicker} from './LibraryObjectPicker';

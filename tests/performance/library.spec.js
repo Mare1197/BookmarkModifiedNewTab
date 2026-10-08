@@ -9,10 +9,15 @@ const sizes = (process.env.PERF_SIZES || '1000,10000,50000').split(',').map(Numb
 const samples = Number(process.env.PERF_SAMPLES || 5);
 const shapes = (process.env.PERF_SHAPES || 'small-board,large-board').split(',');
 const label = process.env.PERF_LABEL || 'diagnostic';
-const revision = execFileSync('git', ['rev-parse', 'HEAD'], {encoding: 'utf8'}).trim();
+const harnessRevision = execFileSync('git', ['rev-parse', 'HEAD'], {encoding: 'utf8'}).trim();
+const revision = process.env.PERF_REVISION || harnessRevision;
+const workingTreeDirty = Boolean(execFileSync('git', ['status', '--porcelain'], {encoding: 'utf8'}).trim());
 
 for (const size of sizes) for (const shape of shapes) {
     for (let sample = 0; sample < samples; sample++) test(`${label} ${shape} ${size} sample ${sample + 1}`, async ({context, extensionId}, info) => {
+        // Durable writes for the 50k fixture can take several minutes on Windows.
+        // The timed navigation checks retain their individual assertion limits.
+        if (size >= 50000) test.setTimeout(900000);
         const page = await context.newPage(), errors = [], metrics = {};
         const requested = new Set();
         page.on('request', request => {
@@ -37,7 +42,9 @@ for (const size of sizes) for (const shape of shapes) {
         // Unmount the workspace while seeding so its subscriptions do not render
         // a growing library after each setup-only batch.
         await page.reload();
-        await seedLargeLibrary(page, makeLargeLibraryFixture(size, shape));
+        console.log(`PERF_SETUP ${label} ${size} ${shape} sample ${sample + 1} start`);
+        await seedLargeLibrary(page, makeLargeLibraryFixture(size, shape), (table, count) => console.log(`PERF_SETUP ${table} ${count}`));
+        console.log(`PERF_SETUP ${label} ${size} ${shape} sample ${sample + 1} complete`);
         // Fresh renderer after seeding; browser/OS disk caches may already be warm.
         await page.goto('about:blank');
         requested.clear();
@@ -65,7 +72,9 @@ for (const size of sizes) for (const shape of shapes) {
             const brain = page.getByRole('region', {name: 'Unified Brain', exact: true});
             const firstId = await brain.locator('tbody tr').first().getAttribute('data-entity-id');
             await measure('nextPage', async () => {
-                await brain.getByRole('navigation', {name: 'Object pages', exact: true}).getByRole('button', {name: 'Next page', exact: true}).click();
+                const navigation = brain.getByRole('navigation', {name: 'Object pages', exact: true});
+                const pager = await navigation.count() ? navigation : brain;
+                await pager.getByRole('button', {name: 'Next page', exact: true}).click();
                 await expect(brain.locator('tbody tr').first()).not.toHaveAttribute('data-entity-id', firstId);
             });
             await measure('search', async () => {
@@ -91,7 +100,7 @@ for (const size of sizes) for (const shape of shapes) {
             await page.screenshot({path: info.outputPath('workspace.png')});
             expect(errors).toEqual([]);
         } finally {
-            const result = {label, revision, size, shape, sample, browser: context.browser()?.version(),
+            const result = {label, revision, harnessRevision, workingTreeDirty, size, shape, sample, browser: context.browser()?.version(),
                 viewport: {width: 1584, height: 1024}, metrics, errors};
             console.log('PERF_RESULT ' + JSON.stringify(result));
             await info.attach('metrics', {body: JSON.stringify(result, null, 2), contentType: 'application/json'});

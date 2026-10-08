@@ -29,7 +29,7 @@ function makeLargeLibraryFixture(size, shape) {
     return data;
 }
 
-async function seedLargeLibrary(page, fixture) {
+async function seedLargeLibrary(page, fixture, onProgress = () => {}) {
     // Caller is the repository's temporary-profile Playwright fixture, never IAB.
     for (const [table, rows] of Object.entries(fixture)) {
         for (let offset = 0; offset < rows.length; offset += 500) {
@@ -48,6 +48,7 @@ async function seedLargeLibrary(page, fixture) {
         };
             }), {[table]: rows.slice(offset, offset + 500)});
         }
+        onProgress(table, rows.length);
     }
 }
 

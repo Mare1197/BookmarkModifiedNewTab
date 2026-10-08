@@ -2,7 +2,7 @@ import type {WorkspaceEntity, RelationshipRecord} from '../../workspace/types';
 import {workspaceClient as db} from './workspaceClient';
 import {parseSmartQuery, filterWorkspaceEntities} from './workspaceSearch';
 import {queryBrain} from './brainSelectors';
-import {compareLibraryRows, libraryQueryKey, type LibraryOrderRow} from './libraryOrdering';
+import {compareLibraryRows, compareLibraryIds, libraryQueryKey, type LibraryOrderRow} from './libraryOrdering';
 import type {WorkspaceSnapshot} from './workspaceRepository';
 import type {LibraryQuery, LibraryReadOptions, LibraryPage, LibraryCursor} from './libraryQueryTypes';
 
@@ -10,6 +10,16 @@ const PAGE_SIZE = 50;
 const SCAN_SIZE = 250;
 const abort = (signal?: AbortSignal) => {if (signal?.aborted) throw new DOMException('Query aborted', 'AbortError');};
 const uniqueLinks = (links: RelationshipRecord[]) => [...new Map(links.map(link => [link.id, link])).values()];
+
+export async function queryLibraryPosition(query: LibraryQuery, index: number, cursors: Array<LibraryCursor | undefined>, options: LibraryReadOptions = {}) {
+    const chain = [...cursors];
+    let pageIndex = index > 0 && !chain[index] ? 0 : index;
+    while (true) {
+        const page = await queryLibraryPage(query, {...options, cursor: chain[pageIndex]});
+        if (pageIndex >= index || !page.nextCursor) return {...page, pageIndex, cursors: chain};
+        chain[++pageIndex] = page.nextCursor;
+    }
+}
 
 async function candidateScope(query: LibraryQuery): Promise<Set<string> | undefined> {
     let ids: Set<string> | undefined;
@@ -108,20 +118,20 @@ async function* updatedBatches(scope: Set<string> | undefined, cursor: LibraryCu
         };
         if (upper !== undefined) {
             const ties = (await db.entities.where('updatedAt').equals(upper).primaryKeys())
-                .filter(id => !cursor?.lastId || id.localeCompare(cursor.lastId) > 0).sort((a, b) => a.localeCompare(b));
+                .filter(id => !cursor?.lastId || compareLibraryIds(id, cursor.lastId) > 0).sort(compareLibraryIds);
             yield* hydrate(ties);
         }
         while (true) {
             abort(options.signal);
             const keys = await (upper === undefined ? db.entities.orderBy('[updatedAt+id]') :
-                db.entities.where('[updatedAt+id]').below([upper, Dexie.minKey])).reverse().limit(SCAN_SIZE).keys() as [number, string][];
+                db.entities.where('[updatedAt+id]').below([upper, Dexie.minKey])).reverse().limit(SCAN_SIZE).keys() as unknown as [number, string][];
             if (!keys.length) return;
             const boundary = keys[keys.length - 1]![0];
             // Complete the boundary timestamp before locale ordering; a native
             // index slice can split ties in a different order from localeCompare.
             const ties = await db.entities.where('updatedAt').equals(boundary).primaryKeys();
             const ordered = [...keys.filter(key => key[0] > boundary), ...ties.map(id => [boundary, id] as [number, string])]
-                .sort((a, b) => b[0] - a[0] || a[1].localeCompare(b[1]));
+                .sort((a, b) => b[0] - a[0] || compareLibraryIds(a[1], b[1]));
             yield* hydrate(ordered.map(key => key[1]));
             if (keys.length < SCAN_SIZE) return;
             upper = boundary;
@@ -136,7 +146,7 @@ async function* updatedBatches(scope: Set<string> | undefined, cursor: LibraryCu
         abort(options.signal);
         const keys = await db.entities.where(field).equals(timestamp).primaryKeys();
         const ids = keys.filter(id => (!scope || scope.has(id)) &&
-            (timestamp !== cursor?.updatedAt || !cursor?.lastId || id.localeCompare(cursor.lastId) > 0)).sort((a, b) => a.localeCompare(b));
+            (timestamp !== cursor?.updatedAt || !cursor?.lastId || compareLibraryIds(id, cursor.lastId) > 0)).sort(compareLibraryIds);
         for (let offset = 0; offset < ids.length; offset += PAGE_SIZE + 1) {
             abort(options.signal);
             yield (await db.entities.bulkGet(ids.slice(offset, offset + PAGE_SIZE + 1))).filter((e): e is WorkspaceEntity => Boolean(e));

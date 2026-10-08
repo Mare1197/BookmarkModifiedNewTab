@@ -4,7 +4,7 @@ import {browser} from 'wxt/browser';
 import type {WorkspaceEntity} from '../../workspace/types';
 import {buildBrainContext} from './brainSelectors';
 import {workspaceClient} from './workspaceClient';
-import type {WorkspaceSnapshot} from './workspaceRepository';
+import {useWorkspaceQuery} from './useWorkspaceQuery';
 import {
     GEMINI_ORIGIN,
     clearConnectorConfig,
@@ -22,12 +22,10 @@ import {
 } from './workspaceRepository';
 
 export function AnalysisView({
-    snapshot,
     activeBoardId,
     entity,
     onSaved
 }: {
-    snapshot: WorkspaceSnapshot;
     activeBoardId: string;
     entity?: WorkspaceEntity;
     onSaved: () => Promise<void>;
@@ -44,7 +42,14 @@ export function AnalysisView({
     }>();
     const [running, setRunning] = useState(false);
     const [includeConnected, setIncludeConnected] = useState(false);
-    const context = entity ? buildBrainContext(entity.id, snapshot.entities, snapshot.relationships, {includeConnected}) : {text: '', included: [], excluded: []};
+    // Opening Analysis explicitly requests complete, policy-filtered context;
+    // a library page or board-only snapshot is not an equivalent substitute.
+    const preview = useWorkspaceQuery('analysis:' + entity?.id + ':' + includeConnected, async () => {
+        if (!entity) return {text: '', included: [], excluded: []};
+        const [entities, relationships] = await Promise.all([workspaceClient.entities.toArray(), workspaceClient.relationships.toArray()]);
+        return buildBrainContext(entity.id, entities, relationships, {includeConnected});
+    });
+    const context = preview.data || {text: '', included: [], excluded: []};
     const abortRef = useRef<AbortController | null>(null);
     useEffect(() => {
         void loadConnectorConfig().then(setConfig);
@@ -130,6 +135,8 @@ export function AnalysisView({
                 Include connected messages and reviewed memories in this request to Google
             </label>
             <details><summary>Review exact context ({context.text.length} characters; maximum 24,000)</summary>
+                {preview.loading && <p role="status">Loading complete context scope…</p>}
+                {preview.error && <p role="alert">{preview.error.message} <button onClick={preview.retry}>Retry preview</button></p>}
                 <pre style={{whiteSpace: 'pre-wrap', maxHeight: 240, overflow: 'auto'}}>{context.text}</pre>
                 <h3>Included</h3>{context.included.map(item => <p key={item.id}>{item.id}: {item.reason}{item.sourceIds.length ? ' · Sources: ' + item.sourceIds.join(', ') : ''}</p>)}
                 <h3>Excluded</h3>{context.excluded.map(item => <p key={item.id}>{item.id}: {item.reason}</p>)}

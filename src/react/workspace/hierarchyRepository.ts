@@ -15,14 +15,16 @@ async function destination(folderId?: string): Promise<WorkspaceFolder | undefin
     return folder;
 }
 
-export async function createWorkspaceFolder(title: string, parentId?: string): Promise<void> {
+export async function createWorkspaceFolder(title: string, parentId?: string): Promise<string> {
     if (!title.trim()) throw new Error('Enter a folder name.');
+    const id = 'folder:' + crypto.randomUUID();
     await db.transaction('rw', db.folders, async () => {
         await destination(parentId);
         const timestamp = Date.now();
-        await db.folders.add({id: 'folder:' + crypto.randomUUID(), title: title.trim(),
+        await db.folders.add({id, title: title.trim(),
             parentId, sourceKind: 'workspace', createdAt: timestamp, updatedAt: timestamp});
     });
+    return id;
 }
 
 export async function moveHierarchyItem(item: HierarchyItem, targetId?: string): Promise<void> {

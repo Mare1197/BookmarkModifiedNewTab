@@ -101,7 +101,7 @@ test('backup merging cannot silently restore a forgotten memory', async t => {
     assert.equal(old.tables.entities.find(entity => entity.id === memory.id).memory.status, 'active', 'backup input stays unchanged');
 });
 
-test('Brain table bounds rendered rows and exposes preview-first provider import', async t => {
+test('Brain shell waits for paged data and exposes preview-first provider import', async t => {
     const api = await fixture(t);
     const React = require('react');
     const {renderToStaticMarkup} = require('react-dom/server');
@@ -110,12 +110,13 @@ test('Brain table bounds rendered rows and exposes preview-first provider import
     const html = renderToStaticMarkup(React.createElement(api.ui.BrainWorkspace, {
         snapshot: {entities, relationships: [], tasks: [], activities: []}, onSelect() {}, onCanvas: async () => {}, onRefresh: async () => {}, onStatus() {}
     }));
-    assert.equal((html.match(/data-entity-id=/g) || []).length, 50);
+    assert.equal((html.match(/data-entity-id=/g) || []).length, 0);
+    assert.ok(html.includes('Searching'));
     assert.ok(html.includes('Next page'));
-    assert.ok(html.includes('Preview import'));
+    assert.ok(html.includes('Create an object or import a conversation'));
 });
 
-test('project homepage groups only confirmed canonical members', async t => {
+test('project homepage exposes its loading state before the scoped read resolves', async t => {
     const api = await fixture(t);
     const React = require('react');
     const {renderToStaticMarkup} = require('react-dom/server');
@@ -127,7 +128,7 @@ test('project homepage groups only confirmed canonical members', async t => {
         snapshot: {entities: await api.db.entities.toArray(), relationships: await api.db.relationships.toArray(), tasks: [], activities: []},
         onSelect() {}, onCanvas: async () => {}, onRefresh: async () => {}, onStatus() {}
     }));
-    assert.ok(html.includes('Chats (1)'));
+    assert.ok(html.includes('Loading project'));
     assert.ok(html.includes('Research (0)'));
 });
 
@@ -332,7 +333,7 @@ test('shared collection query retains IDs and filters confirmed project members 
     assert.deepEqual(api.views.queryBrain(entities, links, [], {type: 'idea'}), [entities[1]]);
 });
 
-test('Brain workspace renders real canonical rows and exposes view and import controls', async t => {
+test('Brain workspace renders view and import controls without a full-library snapshot', async t => {
     const api = await fixture(t);
     assert.equal(typeof api.ui.BrainWorkspace, 'function');
     const React = require('react');
@@ -342,10 +343,10 @@ test('Brain workspace renders real canonical rows and exposes view and import co
         snapshot: {entities: [entity], relationships: [], tasks: [], activities: []},
         onSelect() {}, onRefresh: async () => {}, onStatus() {}, onCanvas: async () => {}
     }));
-    for (const expected of ['Canonical project', 'Table', 'Tiles', 'Kanban', 'Timeline', 'AI Inbox', 'Paste conversation export JSON']) {
+    for (const expected of ['Searching', 'Table', 'Tiles', 'Kanban', 'Timeline', 'AI Inbox', 'Create an object or import a conversation']) {
         assert.ok(html.includes(expected), expected + ' is rendered');
     }
-    assert.ok(html.includes('data-entity-id="' + entity.id + '"'));
+    assert.ok(!html.includes('data-entity-id="' + entity.id + '"'));
 });
 
 test('object tools render navigable backlinks and separate unconfirmed suggestions', async t => {

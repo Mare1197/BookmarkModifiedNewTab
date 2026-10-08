@@ -3,6 +3,7 @@ import type {RelationshipRecord, WorkspaceEntity} from '../../workspace/types';
 import {createSourcedMemory, linkBrainObjects, setMemoryPolicy} from './brainRepository';
 import {objectConnections} from './brainSelectors';
 import type {BrainMode} from './BrainWorkspace';
+import {LibraryObjectPicker} from './LibraryObjectPicker';
 
 interface Props {
     entity: WorkspaceEntity;
@@ -58,18 +59,12 @@ export function BrainObjectTools({entity, entities, relationships, onSelect, onC
         {onEditor && <button onClick={onEditor}>Open in workspace</button>}
         {entity.source?.url && <a href={entity.source.url} target="_blank" rel="noreferrer">Open original</a>}
         <p><small>{entity.source ? entity.source.provider + ' · ' + entity.source.externalId : 'Local / browser source'}</small></p>
-        <label>Add to Project<select value={projectId} onChange={event => setProjectId(event.target.value)}>
-            <option value="">Choose project</option>{entities.filter(item => item.type === 'project' && item.id !== entity.id)
-                .map(project => <option key={project.id} value={project.id}>{project.title}</option>)}
-        </select></label>
+        <LibraryObjectPicker label="Add to Project" value={projectId} onChange={setProjectId} type="project" excludeId={entity.id} emptyLabel="Choose project" />
         <button disabled={busy || !projectId} onClick={() => void act(async () => {
             await linkBrainObjects(entity.id, projectId, 'project-member'); setProjectId('');
         }, 'Project membership added')}>Add to project</button>
         <details><summary>Connect to…</summary>
-            <label>Target object<select value={targetId} onChange={event => setTargetId(event.target.value)}>
-                <option value="">Choose object</option>{entities.filter(item => item.id !== entity.id)
-                    .map(item => <option key={item.id} value={item.id}>{item.title} ({item.type})</option>)}
-            </select></label>
+            <LibraryObjectPicker label="Target object" value={targetId} onChange={setTargetId} excludeId={entity.id} />
             <label>Link kind<select value={linkType} onChange={event => setLinkType(event.target.value)}>
                 <option value="related">Related to</option><option value="mentions">Mentions</option>
                 <option value="derived-from">Derived from</option>

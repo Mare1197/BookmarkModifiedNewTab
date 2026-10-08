@@ -9,6 +9,8 @@
 .workspaceHierarchy button[aria-pressed="true"] { background: #dceafe; border-color: #327bf2; }
 .workspaceHierarchy__root { border: 1px dashed #656c75; padding: 9px; }
 .workspaceHierarchy :focus-visible { outline: 2px solid #327bf2; outline-offset: 2px; }
+.workspaceHierarchy__row { display: flex; align-items: center; height: 36px; box-sizing: border-box; }
+.workspaceHierarchy__row button { margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 .workspaceWindow {
     position: absolute;
@@ -1284,4 +1286,13 @@
         transition-duration: 0.01ms !important;
         animation-duration: 0.01ms !important;
     }
+}
+.workspaceExplorer__tree.windowedObjectList {
+    display: block;
+    overflow: auto;
+}
+.windowedObjectList button {
+    height: 36px;
+    max-height: 36px;
+    white-space: nowrap;
 }

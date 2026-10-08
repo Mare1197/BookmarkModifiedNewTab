@@ -74,3 +74,16 @@ test('expanded graph retains cross-page edges between represented canonical IDs'
     assert.equal(graph.entities.length, 205); assert.equal(graph.relationships.length, 1);
     assert.equal(graph.hasMore, false);
 });
+test('collection companions omit history and timeline bodies are independently bounded', async t => {
+    const {db, load} = await workspaceFixture(t), reads = load('workspaceReads.ts');
+    await db.activities.bulkPut(Array.from({length: 123}, (_, i) => ({id: 'activity:' + String(i).padStart(3, '0'), entityId: 'one', createdAt: i, summary: 'Edit ' + i})));
+    let bodies = 0; db.activities.hook('reading', row => {bodies++; return row;});
+    const companions = await reads.loadPageCompanions(['one']);
+    assert.equal(companions.activities, undefined); assert.equal(bodies, 0);
+    const first = await reads.loadObjectActivityPage(['one'], 0);
+    assert.equal(first.activities.length, 50); assert.equal(first.activities[0].createdAt, 122);
+    assert.equal(bodies, 50);
+    const second = await reads.loadObjectActivityPage(['one'], 1);
+    assert.equal(second.activities.length, 50); assert.equal(second.activities[0].createdAt, 72);
+    assert.equal(second.hasMore, true); assert.equal(bodies, 100);
+});
