@@ -12,6 +12,7 @@ import type {
 
 interface WorkspaceExplorerProps {
     activeBoardId: string;
+    boardBusy: boolean;
     boards: BoardRecord[];
     counts: {entities: number; inbox: number; tasks: number; sessions: number};
     folders: WorkspaceFolder[];
@@ -35,6 +36,7 @@ interface WorkspaceExplorerProps {
 
 export function WorkspaceExplorer({
     activeBoardId,
+    boardBusy,
     boards,
     counts,
     folders,
@@ -69,8 +71,8 @@ export function WorkspaceExplorer({
                 ×
             </button>
             <div className="workspaceExplorer__actions">
-                <button type="button" onClick={onCreateBoard}>＋ New board</button>
-                <button type="button" title="Rename board" onClick={onRenameBoard}>Rename</button>
+                <button type="button" disabled={boardBusy} onClick={onCreateBoard}>＋ New board</button>
+                <button type="button" disabled={boardBusy} title="Rename board" onClick={onRenameBoard}>Rename</button>
             </div>
             <h2>Boards</h2>
             <nav aria-label="Boards">
@@ -80,6 +82,7 @@ export function WorkspaceExplorer({
                         key={board.id}
                         className={board.id === activeBoardId ? 'selected' : ''}
                         aria-current={board.id === activeBoardId ? 'page' : undefined}
+                        disabled={boardBusy}
                         onClick={() => onSelectBoard(board.id)}
                     >
                         <span>▣</span>{board.name}
@@ -87,8 +90,8 @@ export function WorkspaceExplorer({
                 ))}
             </nav>
             <div className="workspaceExplorer__boardActions">
-                <button type="button" onClick={onDuplicateBoard}>Duplicate</button>
-                <button type="button" onClick={onDeleteBoard}>Delete</button>
+                <button type="button" disabled={boardBusy} onClick={onDuplicateBoard}>Duplicate</button>
+                <button type="button" disabled={boardBusy} onClick={onDeleteBoard}>Delete</button>
             </div>
             <button type="button" className="workspaceExplorer__templateButton" onClick={onOpenTemplates}>
                 Board templates

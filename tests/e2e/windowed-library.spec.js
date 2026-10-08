@@ -1,5 +1,5 @@
 const {expect, test} = require('./fixtures');
-const {makeLargeLibraryFixture, seedLargeLibrary} = require('../helpers/largeLibraryFixture');
+const {makeLargeLibraryFixture, seedLargeLibrary, waitForSearchIndex} = require('../helpers/largeLibraryFixture');
 
 test('canvas visibility culling retains offscreen connections and Fit view restores saved cards', async ({context, extensionId}) => {
     const page = await context.newPage();
@@ -74,6 +74,8 @@ test('Explorer keyboard and drag interactions survive windowing and page changes
     await other.close();
     await pinned.dispatchEvent('dragend');
     await expect(pinned).toHaveCount(0);
+    await waitForSearchIndex(page);
+    await expect(page.getByRole('navigation', {name: 'Explorer pages', exact: true}).getByRole('status')).toHaveCount(0);
     await page.getByRole('navigation', {name: 'Explorer pages', exact: true}).getByRole('button', {name: 'Next page'}).click();
     await expect(page.getByRole('navigation', {name: 'Explorer pages', exact: true})).toContainText('Page 2');
     await expect(tree.getByRole('treeitem').first()).toBeVisible();

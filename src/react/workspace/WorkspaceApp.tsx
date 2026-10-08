@@ -179,6 +179,8 @@ function WorkspaceAppInner({onClose}: WorkspaceAppProps) {
     const [initializationError, setInitializationError] = useState<string>();
     const initialization = useRef<Promise<unknown> | undefined>(undefined);
     const [notice, setNotice] = useState('');
+    const [boardActionBusy, setBoardActionBusy] = useState(false);
+    const boardActionLock = useRef(false);
     useEffect(() => {
         const reloadNotice = () => setNotice('Workspace storage was upgraded in another tab. Export any unsaved draft, then reload this tab.');
         window.addEventListener('workspace-reload-required', reloadNotice);
@@ -296,6 +298,12 @@ function WorkspaceAppInner({onClose}: WorkspaceAppProps) {
             setNotice(error instanceof Error ? error.message : 'Action failed.');
         }
     };
+    const runBoardAction = async (action: () => Promise<string | void>, success: string) => {
+        if (boardActionLock.current) return;
+        boardActionLock.current = true; setBoardActionBusy(true);
+        try {await run(action, success);}
+        finally {boardActionLock.current = false; setBoardActionBusy(false);}
+    };
     const openObjectCanvas = async (entityId: string) => {
         await editorSession.current?.flush();
         const boardId = await openBrainCanvas(entityId, activeBoardId);
@@ -313,14 +321,14 @@ function WorkspaceAppInner({onClose}: WorkspaceAppProps) {
         if (entity.type !== 'project') await addPageReference(page.board.id, entityId);
         await refresh(page.board.id); setSelectedEntityId(entityId); setViewState('editor');
     };
-    const createNewBoard = () => void run(async () => {
+    const createNewBoard = () => void runBoardAction(async () => {
         const board = await createBoard();
         return board.id;
     }, 'Board created');
     const renameCurrentBoard = () => {
         const name = window.prompt('Board name', activeBoard?.name || '');
         if (name !== null && activeBoardId) {
-            void run(() => renameBoard(activeBoardId, name), 'Board renamed');
+            void runBoardAction(() => renameBoard(activeBoardId, name), 'Board renamed');
         }
     };
     const commands = useMemo<WorkspaceCommand[]>(() => [
@@ -351,6 +359,7 @@ function WorkspaceAppInner({onClose}: WorkspaceAppProps) {
             <div className="workspaceBody">
                 <WorkspaceExplorer
                     activeBoardId={activeBoardId}
+                    boardBusy={busy || boardActionBusy}
                     boards={snapshot.boards}
                     counts={shell.data?.counts || {entities: 0, inbox: 0, tasks: 0, sessions: 0}}
                     folders={snapshot.folders}
@@ -369,7 +378,7 @@ function WorkspaceAppInner({onClose}: WorkspaceAppProps) {
                     onOpenSessions={() => setView('sessions')}
                     onOpenTasks={() => setView('tasks')}
                     onOpenTemplates={() => setView('templates')}
-                    onDuplicateBoard={() => void run(async () => {
+                    onDuplicateBoard={() => void runBoardAction(async () => {
                         const board = await duplicateBoard(activeBoardId);
                         return board.id;
                     }, 'Board duplicated')}
@@ -377,7 +386,7 @@ function WorkspaceAppInner({onClose}: WorkspaceAppProps) {
                         if (!window.confirm('Move this board and its layout to Trash?')) {
                             return;
                         }
-                        void run(async () => {
+                        void runBoardAction(async () => {
                             const next = await deleteBoard(activeBoardId);
                             return next.id;
                         }, 'Board moved to Trash');
