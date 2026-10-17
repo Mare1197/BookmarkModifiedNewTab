@@ -34,3 +34,24 @@ test('five thousand and one candidates fall back rather than truncate results', 
     const controller = new AbortController(); controller.abort();
     await assert.rejects(read(db, query('needle'), controller.signal), {name: 'AbortError'});
 });
+
+test('same-count malformed derived rows cannot hide canonical matches', async t => {
+    const {db, load, ready} = await searchFixture(t, 12), read = candidates(load);
+    await ready();
+    const original = await db.searchDocuments.get('e00000');
+    for (const damaged of [
+        {id: original.id, epoch: original.epoch},
+        {...original, epoch: 'obsolete'},
+        {...original, brainGrams: ['invalid gram']},
+        {...original, fingerprint: 'unsupported'},
+        {...original, generation: original.generation + 100}
+    ]) {
+        await db.searchDocuments.put(damaged);
+        assert.equal(await db.searchDocuments.count(), 12);
+        assert.equal((await read(db, query('needle'))).kind, 'scan');
+        const page = await load('libraryQueryEngine.ts').readLibraryPage(db, query('needle'));
+        assert.deepEqual(page.items.map(row => row.id), ['e00000', 'e00011']);
+        await db.searchDocuments.put(original);
+        assert.equal((await read(db, query('needle'))).kind, 'indexed');
+    }
+});

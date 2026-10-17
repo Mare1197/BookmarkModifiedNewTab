@@ -1,6 +1,6 @@
 # New Tab OS — instructions to reproduce the current build
 
-Updated 8 October 2026. Reference branch: `feature/large-library-performance` in `Mare1197/BookmarkModifiedNewTab`; implemented application checkpoint: `c55211078890178c30b2d2776e8cfd0f27bace1b`. Subsequent reporting commits do not change that application checkpoint.
+Updated 17 October 2026. Reference branch: `feature/large-library-performance` in `Mare1197/BookmarkModifiedNewTab`. The earlier navigation checkpoint is `c55211078890178c30b2d2776e8cfd0f27bace1b`; subsequent search work and its verification limits are recorded in [local search verification](LOCAL_SEARCH_INDEX_VERIFICATION.md). Pending native-board optimization and 50k search acceptance are not delivered guarantees.
 
 Give this document to a builder when asking for the same functional application. It defines behavior and app logic without prescribing a technology stack or visual design. The [full product handoff](AI_BUILDER_PRODUCT_HANDOFF.md) and [connected knowledge requirements](CONNECTED_KNOWLEDGE_ADDENDUM.md) retain the broader requested roadmap. Features under “Remaining requested features” below are future work, not requirements already satisfied by this reference build.
 
@@ -99,6 +99,12 @@ Document/canvas edits have private local draft journals. Only acknowledged journ
 Content history and page history preview saved revisions and check current state before restoration. Page geometry is page-local; restoring shared content can affect every reference and must be disclosed. Ordinary backups omit private drafts/history; including recovery data is explicit. Recovery cannot repair erased browser storage, uninstall or disk loss.
 
 ## 9. Large-library behavior and failure states
+
+Search uses a rebuildable local cache of canonical object references. Preserve Explorer's separate searchable fields, Brain's combined fields and Smart Search syntax; do not substitute fuzzy ranking or token-only matching. A healthy ready cache narrows candidates, but canonical data determines actual matches, filters and order. Incomplete, stale, malformed or unavailable caches use exact scanning. Short and common queries can also scan without truncating their results.
+
+Provide local indexing status, processed counts, pending changes and Pause, Resume, Retry and Rebuild. Pausing survives closing and reopening the workspace. Rebuild clears only disposable search data. Canonical edits invalidate the cache with the same save, including imports, deletions and older desktop captures. Search remains usable during rebuilding. Healthy long searches retain their worker while reporting progress; failed workers leave navigation and unsaved Inspector drafts available.
+
+Never index private recovery drafts/history, credentials or file bytes. Search does not change AI recall eligibility: forgotten or excluded memory stays excluded from provider context. Ordinary and private-recovery exports omit the disposable cache; importing cache records cannot turn them into canonical content.
 
 Collection reads return at most 50 objects, with Previous/Next controls; selected objects and complete explicit operations use their actual intended scope. A fixed board must not hydrate unrelated library content. Stable traversal must return every match once, including equal timestamps and normalization-equivalent Unicode IDs.
 

@@ -82,31 +82,35 @@ function makeSearchIndexFixture(size, shape) {
 function isSearchIndexReady(state, {afterEpoch, minGeneration} = {}) {
     return Boolean(state && state.format === 1 && state.status === 'ready' && state.scanComplete && state.pending === 0 &&
         Number.isSafeInteger(state.generation) && state.generation === state.indexedGeneration &&
-        state.documentCount === state.entityCount && typeof state.epoch === 'string' && state.epoch &&
+        Number.isSafeInteger(state.documentCount) && state.documentCount === state.entityCount && typeof state.epoch === 'string' && state.epoch &&
         (afterEpoch === undefined || state.epoch !== afterEpoch) && (minGeneration === undefined || state.generation >= minGeneration));
 }
-async function readSearchIndexState(page) {
-    return page.evaluate(() => new Promise((resolve, reject) => {
+async function readSearchIndexState(page, {coverageWhenReady = false} = {}) {
+    return page.evaluate(coverageWhenReady => new Promise((resolve, reject) => {
         const request = indexedDB.open('browserOsWorkspace'); request.onerror = () => reject(request.error);
         request.onsuccess = () => {
             const db = request.result, tx = db.transaction(['searchState', 'searchChanges', 'searchDocuments', 'entities'], 'readonly');
             const state = tx.objectStore('searchState').get('main'), pending = tx.objectStore('searchChanges').count();
-            const documents = tx.objectStore('searchDocuments').count(), entities = tx.objectStore('entities').count();
+            let documents, entities;
+            state.onsuccess = () => {
+                if (coverageWhenReady && state.result?.status !== 'ready') return;
+                documents = tx.objectStore('searchDocuments').count(); entities = tx.objectStore('entities').count();
+            };
             tx.oncomplete = () => {db.close(); resolve({...state.result, pending: pending.result,
-                documentCount: documents.result, entityCount: entities.result});};
+                documentCount: documents?.result, entityCount: entities?.result});};
             tx.onabort = () => {db.close(); reject(tx.error || new Error('Index status read aborted'));};
         };
-    }));
+    }), coverageWhenReady);
 }
 async function waitForSearchIndex(page, options = {}) {
     const deadline = Date.now() + (options.timeoutMs || 180000);
     let state;
     do {
-        state = await readSearchIndexState(page);
+        state = await readSearchIndexState(page, {coverageWhenReady: true});
         if (isSearchIndexReady(state, options)) return state;
         if (state.status === 'error') throw new Error(state.lastError || 'Search cache build failed');
         await new Promise(resolve => setTimeout(resolve, 250));
     } while (Date.now() < deadline);
-    throw new Error('Search index did not become fresh: ' + JSON.stringify(state));
+    throw new Error('Search index did not become fresh: ' + JSON.stringify(await readSearchIndexState(page)));
 }
 module.exports = {makeLargeLibraryFixture, seedLargeLibrary, makeSearchIndexFixture, isSearchIndexReady, readSearchIndexState, waitForSearchIndex};

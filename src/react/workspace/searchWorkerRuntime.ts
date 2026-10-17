@@ -2,10 +2,12 @@ import type {WorkspaceClient} from './workspaceDatabase';
 import {readLibraryPage} from './libraryQueryEngine';
 import {claimSearchLease, runSearchIndexBatch, readSearchStatus, controlSearchIndex} from './searchIndexRepository';
 import {validSearchRequest, type SearchWorkerResponse} from './searchWorkerProtocol';
+import type {SearchLease} from './searchIndexTypes';
 
 export function createSearchWorkerRuntime(db: WorkspaceClient, post: (response: SearchWorkerResponse) => void) {
     const owner = crypto.randomUUID(), requests = new Map<string, AbortController>();
-    let stopped = false, scheduled = false, background = false;
+    let stopped = false, scheduled = false, background = false, building = false;
+    let lease: SearchLease | undefined;
     let timer: ReturnType<typeof setTimeout> | undefined, batch: AbortController | undefined;
     const send = (response: SearchWorkerResponse) => {if (!stopped) post(response);};
     function schedule(delay = 0) {
@@ -15,17 +17,20 @@ export function createSearchWorkerRuntime(db: WorkspaceClient, post: (response: 
     }
     async function build() {
         if (stopped || !background) return;
-        if (requests.size) {schedule(25); return;}
+        if (building || requests.size) {schedule(25); return;}
+        building = true;
         try {
-            const lease = await claimSearchLease(db, owner, Date.now());
+            lease ||= await claimSearchLease(db, owner, Date.now());
             if (requests.size) {schedule(25); return;}
             if (!stopped && lease) {
                 batch = new AbortController();
-                await runSearchIndexBatch(db, lease, {signal: batch.signal});
-                batch = undefined; schedule(); return;
+                const state = await runSearchIndexBatch(db, lease, {signal: batch.signal});
+                if (state.status !== 'building') lease = undefined;
+                schedule(state.status === 'ready' ? 1000 : 0); return;
             }
-        } catch { /* Persisted state determines retryability; queries still use the exact scanner. */ }
-        batch = undefined; schedule(1000);
+        } catch {lease = undefined; /* Persisted state determines retryability; queries still use the exact scanner. */ }
+        finally {batch = undefined; building = false;}
+        schedule(1000);
     }
     function dispose() {
         stopped = true; background = false; clearTimeout(timer); batch?.abort();
@@ -57,7 +62,7 @@ export function createSearchWorkerRuntime(db: WorkspaceClient, post: (response: 
                 if (!controller.signal.aborted) send({...envelope, type: 'page', queryKey: request.queryKey,
                     page, generation: after.generation, epoch: after.epoch});
             } else {
-                if (request.type === 'control') batch?.abort();
+                if (request.type === 'control') {batch?.abort(); lease = undefined;}
                 const state = request.type === 'control' ? await controlSearchIndex(db, request.command) : await readSearchStatus(db);
                 if (request.type !== 'status') {background = true; schedule();}
                 if (!controller.signal.aborted) send({...envelope, type: 'state', state});

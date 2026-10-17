@@ -2,6 +2,7 @@ import type {WorkspaceClient} from './workspaceDatabase';
 import type {LibraryQuery} from './libraryQueryTypes';
 import {queryGrams} from './searchGrams';
 import {initialSearchState} from '../../workspace/searchInvalidation.js';
+import {hasSearchIntegrity} from './searchIntegrity';
 
 export type SearchCandidates = {kind: 'scan'; reason: string} |
     {kind: 'indexed'; ids: readonly string[]; generation: number; epoch: string};
@@ -20,6 +21,7 @@ export async function readSearchCandidates(db: WorkspaceClient, query: LibraryQu
                 return {kind: 'scan', reason: 'Index incomplete or stale'};
             }
             if (await db.searchDocuments.count() !== await db.entities.count()) return {kind: 'scan', reason: 'Index coverage unavailable'};
+            if (!await hasSearchIntegrity(db, state, signal)) return {kind: 'scan', reason: 'Index integrity unavailable'};
             const field = query.dialect + 'Grams';
             // A subset only narrows conservatively. Bound planning requests for very long terms.
             const sample = [...new Set(Array.from({length: Math.min(12, grams.length)}, (_, i) =>

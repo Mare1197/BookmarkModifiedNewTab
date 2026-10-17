@@ -122,6 +122,13 @@ unrelated library relationships. See [routing and performance verification](docs
 
 ## Verification checkpoint
 
+The subsequent local search index provides Pause/Resume, Retry/Rebuild, exact
+fallback, background processing and cache-free exports. Its [verification report](docs/LOCAL_SEARCH_INDEX_VERIFICATION.md)
+records **20/30** successful baseline search cases: the 50k rebuilds timed out.
+Review corrections and new acceptance measurements are in progress. The older
+30/30 navigation result below does not certify this index. Native large-board
+optimization remains pending.
+
 The isolated `feature/large-library-performance` upgrade is documented in
 [large-library performance](docs/LARGE_LIBRARY_PERFORMANCE.md), including scoped reads,
 50-object collection pages, independently paged Timeline activity, searchable destination
@@ -133,7 +140,7 @@ variability and unmeasured large native-editor capacity are reported separately.
 The October 8 performance refactor (`c552110`) passed local lint/formatting, both
 TypeScript checks, **174 unit/integration tests**, **31 serial browser tests** and the
 production MV3 build. The immutable build also passed the 30-case synthetic performance
-matrix. This is the current-build checkpoint; the older results below
+matrix. This is the earlier navigation checkpoint; the older results below
 describe earlier releases, not the complete requested roadmap.
 
 The October 3 routing/indexed-read follow-up passed local lint, formatting, both

@@ -28,7 +28,7 @@ const browserGlobals = {
 
 module.exports = [
     {
-        ignores: ['.output/**', '.wxt/**', '.wxt-legacy/**', 'dist/**', 'lib/**', 'node_modules/**']
+        ignores: ['.output/**', '.wxt/**', '.wxt-legacy/**', '.superpowers/**', 'dist/**', 'lib/**', 'node_modules/**']
     },
     {
         files: ['*.js', 'src/**/*.js', 'tests/**/*.js', 'scripts/**/*.js'],

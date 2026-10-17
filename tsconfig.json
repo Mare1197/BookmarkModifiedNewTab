@@ -4,5 +4,6 @@
     "jsx": "react-jsx",
     "noUncheckedIndexedAccess": true,
     "strict": true
-  }
+  },
+  "exclude": ["**/node_modules", ".output", ".superpowers", "dist", ".wxt-legacy", "test-results", "playwright-report"]
 }

@@ -103,3 +103,72 @@ test('explicit retry recreates a failed worker instead of leaving indexing perma
     worker.reply({type: 'state', requestId: request.requestId, state: {...await db.searchState.get('main'), pending: 2}});
     await retry;
 });
+
+test('a progressing long search keeps its worker alive beyond the inactivity window', async t => {
+    const {db, load} = await searchFixture(t, 2), worker = fakeWorker();
+    const state = await db.searchState.get('main');
+    t.mock.timers.enable({apis: ['setTimeout']});
+    const client = api(load, 'searchWorkerClient', 'createSearchWorkerClient')(() => worker, db);
+    t.after(() => client.dispose());
+    const scanned = [], result = client.query(query('needle'), {onProgress: n => scanned.push(n)});
+    for (let i = 0; i < 10 && !worker.messages.length; i++) await Promise.resolve();
+    const request = worker.messages.find(m => m.type === 'query');
+    assert.ok(request);
+    for (const n of [250, 500, 750]) {
+        t.mock.timers.tick(10000);
+        worker.reply({type: 'progress', requestId: request.requestId, scanned: n});
+    }
+    assert.notEqual(worker.terminated, true, 'healthy progress must not disable indexing');
+    worker.reply({type: 'page', requestId: request.requestId, queryKey: request.queryKey,
+        generation: state.generation, epoch: state.epoch, page: {items: [], hasMore: false, scanned: 750}});
+    assert.deepEqual((await result).items, []);
+    assert.deepEqual(scanned, [250, 500, 750]);
+});
+
+test('a worker that stops responding after progress still times out and falls back', async t => {
+    const {db, load} = await searchFixture(t, 2), worker = fakeWorker();
+    t.mock.timers.enable({apis: ['setTimeout']});
+    const client = api(load, 'searchWorkerClient', 'createSearchWorkerClient')(() => worker, db);
+    t.after(() => client.dispose());
+    const result = client.status();
+    for (let i = 0; i < 10 && !worker.messages.length; i++) await Promise.resolve();
+    // Unsolicited progress is not a heartbeat for a status/control request.
+    worker.reply({type: 'progress', requestId: worker.messages[0].requestId, scanned: 100});
+    t.mock.timers.tick(15001);
+    assert.equal(worker.terminated, true);
+    assert.match((await result).lastError, /unavailable/i);
+});
+
+test('background rebuild reuses its fenced lease between batches', async t => {
+    const {db, load} = await searchFixture(t, 123), repository = load('searchIndexRepository.ts');
+    const claim = repository.claimSearchLease; let claims = 0;
+    repository.claimSearchLease = (...args) => {claims++; return claim(...args);};
+    const runtime = api(load, 'searchWorkerRuntime', 'createSearchWorkerRuntime')(db, () => {});
+    t.after(() => runtime.dispose());
+    await runtime.handle({protocol: 1, type: 'ensureIndex', requestId: 'start'});
+    const deadline = Date.now() + 10000;
+    while ((await db.searchState.get('main')).status !== 'ready' && Date.now() < deadline) await tick();
+    runtime.dispose();
+    assert.equal((await db.searchState.get('main')).status, 'ready');
+    assert.equal(await db.searchDocuments.count(), 123);
+    assert.equal(claims, 1, 'each batch already renews and validates the lease atomically');
+});
+
+test('rebuild controls cannot start overlapping background batches', async t => {
+    const {db, load} = await searchFixture(t, 123), repository = load('searchIndexRepository.ts');
+    const run = repository.runSearchIndexBatch;
+    let release, entered, active = 0, peak = 0;
+    const started = new Promise(resolve => {entered = resolve;});
+    const hold = new Promise(resolve => {release = resolve;});
+    repository.runSearchIndexBatch = async (...args) => {
+        active++; peak = Math.max(peak, active); entered();
+        try {await hold; return await run(...args);} finally {active--;}
+    };
+    const runtime = api(load, 'searchWorkerRuntime', 'createSearchWorkerRuntime')(db, () => {});
+    t.after(() => {release(); runtime.dispose();});
+    await runtime.handle({protocol: 1, type: 'ensureIndex', requestId: 'start'});
+    await started;
+    await runtime.handle({protocol: 1, type: 'control', requestId: 'rebuild', command: 'rebuild'});
+    await new Promise(resolve => setTimeout(resolve, 60));
+    assert.equal(peak, 1, 'an aborted batch must settle before another batch can start');
+});

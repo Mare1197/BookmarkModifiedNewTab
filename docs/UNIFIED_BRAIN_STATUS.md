@@ -1,5 +1,11 @@
 # Unified Brain: implementation status
 
+October 17 search follow-up: derived substring candidates, atomic invalidation,
+background processing, exact fallback and indexing controls are implemented.
+[Search verification](LOCAL_SEARCH_INDEX_VERIFICATION.md) records 20/30 baseline
+benchmark successes and ten 50k rebuild timeouts. Review corrections and new
+acceptance are in progress. Large native-board optimization remains pending.
+
 Updated October 8, 2026. The shared-Brain improvements, persistent BlockSuite workspace, and local recovery upgrade are implemented as the bounded slice below. The full five-reference product specification is **not finished**.
 
 Current isolated performance branch: scoped database reads, observable 50-object collection pages, independent 50-record Timeline pages, aggregate Explorer/folder windowing, searchable object/project/folder pickers and deferred optional modules. [Performance verification and limitations](LARGE_LIBRARY_PERFORMANCE.md) separate implemented behavior from benchmark certification. No merge into the preserved branch is included.

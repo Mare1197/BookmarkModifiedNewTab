@@ -58,9 +58,15 @@ export function createSearchWorkerClient(factory?: () => Worker, db: WorkspaceCl
                 entry.cleanup(); pending.delete(requestId); reject(abortError());
                 try {current.postMessage({protocol: 1, type: 'cancel', requestId: crypto.randomUUID(), targetId: requestId});} catch {fail();}
             };
-            const timeout = setTimeout(fail, 15000);
+            let timeout = setTimeout(fail, 15000), lastScanned = -1;
             const cleanup = () => {clearTimeout(timeout); options.signal?.removeEventListener('abort', cancel);};
-            pending.set(requestId, {resolve, reject, cleanup, queryKey: body.type === 'query' ? body.queryKey : undefined, progress: options.onProgress});
+            const progress = body.type === 'query' ? (scanned: number) => {
+                if (!Number.isSafeInteger(scanned) || scanned <= lastScanned) return;
+                lastScanned = scanned;
+                clearTimeout(timeout); timeout = setTimeout(fail, 15000);
+                options.onProgress?.(scanned);
+            } : undefined;
+            pending.set(requestId, {resolve, reject, cleanup, queryKey: body.type === 'query' ? body.queryKey : undefined, progress});
             options.signal?.addEventListener('abort', cancel, {once: true});
             try {current.postMessage({...body, protocol: 1, requestId});} catch {fail();}
         });

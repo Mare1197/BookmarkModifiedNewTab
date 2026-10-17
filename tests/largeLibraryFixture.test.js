@@ -59,3 +59,26 @@ test('benchmark readiness requires generation parity not counts', async t => {
     const resultIds = result.items.map(item => item.id);
     assert.deepEqual(resultIds, [fixture.selectiveEntityId]);
 });
+
+test('rebuild polling checks full coverage only after the ready state', async t => {
+    const helper = require('./helpers/largeLibraryFixture');
+    const {workspaceFixture} = require('./helpers/workspaceFixture');
+    const {db, load} = await workspaceFixture(t);
+    const originalOpen = indexedDB.open, originalCount = IDBObjectStore.prototype.count;
+    indexedDB.open = function (_name, ...args) {return originalOpen.call(this, db.name, ...args);};
+    const counted = [];
+    IDBObjectStore.prototype.count = function (...args) {counted.push(this.name); return originalCount.apply(this, args);};
+    t.after(() => {indexedDB.open = originalOpen; IDBObjectStore.prototype.count = originalCount;});
+    const page = {evaluate: async (run, input) => run(input)};
+    const incomplete = await helper.readSearchIndexState(page, {coverageWhenReady: true});
+    assert.equal(helper.isSearchIndexReady(incomplete), false);
+    assert.equal(counted.includes('entities'), false);
+    assert.equal(counted.includes('searchDocuments'), false);
+    const api = load('searchIndexRepository.ts'), lease = await api.claimSearchLease(db, 'poll-test', Date.now());
+    await api.runSearchIndexBatch(db, lease);
+    counted.length = 0;
+    const ready = await helper.readSearchIndexState(page, {coverageWhenReady: true});
+    assert.equal(helper.isSearchIndexReady(ready), true);
+    assert.ok(counted.includes('entities'));
+    assert.ok(counted.includes('searchDocuments'));
+});
