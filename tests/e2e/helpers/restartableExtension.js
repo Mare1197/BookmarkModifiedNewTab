@@ -2,7 +2,8 @@ const path = require('node:path');
 const {chromium} = require('@playwright/test');
 
 async function launchRestartableExtension(profilePath) {
-    const extensionPath = path.resolve(__dirname, '../../../dist');
+    const extensionPath = process.env.WORKSPACE_EXTENSION_PATH ?
+        path.resolve(process.env.WORKSPACE_EXTENSION_PATH) : path.resolve(__dirname, '../../../dist');
     const context = await chromium.launchPersistentContext(profilePath, {
         channel: 'chromium', headless: true,
         args: [`--disable-extensions-except=${extensionPath}`, `--load-extension=${extensionPath}`]

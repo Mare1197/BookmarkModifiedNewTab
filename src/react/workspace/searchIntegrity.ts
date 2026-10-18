@@ -29,6 +29,9 @@ export async function hasSearchIntegrity(db: WorkspaceClient, state: SearchState
         const rows: SearchDocument[] = await (lastId === undefined ? db.searchDocuments.orderBy('id') :
             db.searchDocuments.where('id').above(lastId)).limit(250).toArray();
         if (!rows.every(row => validDocument(row, state))) return false;
+        const canonicalIds = await (lastId === undefined ? db.entities.orderBy('id') :
+            db.entities.where('id').above(lastId)).limit(250).primaryKeys();
+        if (canonicalIds.length !== rows.length || canonicalIds.some((id, index) => id !== rows[index]!.id)) return false;
         if (rows.length < 250) return true;
         lastId = rows.at(-1)!.id;
     }

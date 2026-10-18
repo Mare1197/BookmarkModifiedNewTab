@@ -125,7 +125,7 @@ test('a progressing long search keeps its worker alive beyond the inactivity win
     assert.deepEqual(scanned, [250, 500, 750]);
 });
 
-test('a worker that stops responding after progress still times out and falls back', async t => {
+test('unsolicited progress cannot keep a stalled status request alive', async t => {
     const {db, load} = await searchFixture(t, 2), worker = fakeWorker();
     t.mock.timers.enable({apis: ['setTimeout']});
     const client = api(load, 'searchWorkerClient', 'createSearchWorkerClient')(() => worker, db);
@@ -137,6 +137,25 @@ test('a worker that stops responding after progress still times out and falls ba
     t.mock.timers.tick(15001);
     assert.equal(worker.terminated, true);
     assert.match((await result).lastError, /unavailable/i);
+});
+
+test('a query that stalls after valid progress still times out and returns exact fallback rows', async t => {
+    const {db, load} = await searchFixture(t, 2), worker = fakeWorker();
+    t.mock.timers.enable({apis: ['setTimeout']});
+    const client = api(load, 'searchWorkerClient', 'createSearchWorkerClient')(() => worker, db);
+    t.after(() => client.dispose());
+    const result = client.query(query('needle'));
+    for (let i = 0; i < 10 && !worker.messages.length; i++) await Promise.resolve();
+    const request = worker.messages.find(m => m.type === 'query');
+    t.mock.timers.tick(10000);
+    worker.reply({type: 'progress', requestId: request.requestId, scanned: 250});
+    t.mock.timers.tick(14999);
+    assert.notEqual(worker.terminated, true);
+    worker.reply({type: 'progress', requestId: request.requestId, scanned: 250});
+    t.mock.timers.tick(2);
+    assert.equal(worker.terminated, true, 'repeated progress does not mask stalled work');
+    t.mock.timers.reset();
+    assert.deepEqual((await result).items.map(row => row.id), ['e00000']);
 });
 
 test('background rebuild reuses its fenced lease between batches', async t => {

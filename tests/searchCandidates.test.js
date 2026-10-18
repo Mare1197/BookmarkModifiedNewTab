@@ -55,3 +55,17 @@ test('same-count malformed derived rows cannot hide canonical matches', async t 
         assert.equal((await read(db, query('needle'))).kind, 'indexed');
     }
 });
+
+test('same-count cache identity replacement falls back to canonical results', async t => {
+    const {db, load, ready} = await searchFixture(t, 12);
+    await ready();
+    const original = await db.searchDocuments.get('e00000');
+    await db.transaction('rw', db.searchDocuments, async () => {
+        await db.searchDocuments.delete(original.id);
+        await db.searchDocuments.put({...original, id: 'unrelated-cache-id'});
+    });
+    assert.equal(await db.searchDocuments.count(), 12);
+    assert.equal((await candidates(load)(db, query('needle'))).kind, 'scan');
+    const page = await load('libraryQueryEngine.ts').readLibraryPage(db, query('needle'));
+    assert.deepEqual(page.items.map(row => row.id), ['e00000', 'e00011']);
+});
