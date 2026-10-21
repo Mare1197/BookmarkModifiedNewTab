@@ -43,8 +43,8 @@ test('edits before the rebuild cursor are replayed without count or timestamp sh
     await db.entities.put(entity('a000', 'needle after cursor'));
     await db.entities.put(entity('a120', 'ahead needle'));
     await finish(db, api);
-    assert.ok((await db.searchDocuments.get('a000')).brainGrams.includes('nee'));
-    assert.ok((await db.searchDocuments.get('a120')).brainGrams.includes('nee'));
+    assert.ok((await db.searchDocuments.get('a000')).grams.includes('nee'));
+    assert.ok((await db.searchDocuments.get('a120')).grams.includes('nee'));
 });
 test('stale fences cannot publish or drain newer edits', async t => {
     const {db, api} = await setup(t, 60), old = await api.claimSearchLease(db, 'old', 1000);
@@ -56,7 +56,7 @@ test('stale fences cannot publish or drain newer edits', async t => {
     await assert.rejects(api.runSearchIndexBatch(db, old, {now: 16002}), /lease/i);
     assert.deepEqual(await db.searchChanges.toArray(), changes);
     await finish(db, api, 'new', 16003);
-    assert.ok((await db.searchDocuments.get('a000')).brainGrams.includes('nee'));
+    assert.ok((await db.searchDocuments.get('a000')).grams.includes('nee'));
 });
 test('paused builds persist progress and resume after ownership changes', async t => {
     const {db, api} = await setup(t, 70), lease = await api.claimSearchLease(db, 'worker', 1000);
@@ -119,5 +119,5 @@ test('an edit between snapshot and derived commit keeps its newer invalidation',
     await api.runSearchIndexBatch(db, lease, {now: 1000});
     await edit; db.entities.hook('reading').unsubscribe(reading);
     await finish(db, api);
-    assert.ok((await db.searchDocuments.get('a000')).brainGrams.includes('nee'));
+    assert.ok((await db.searchDocuments.get('a000')).grams.includes('nee'));
 });

@@ -3,12 +3,24 @@
     if (typeof module === 'object' && module.exports) module.exports = api;
     else root.workspaceSearchInvalidation = api;
 }(typeof globalThis !== 'undefined' ? globalThis : this, function() {
-    const SEARCH_SCHEMA = {searchState: 'key', searchChanges: 'id,generation',
+    const SEARCH_SCHEMA_V6 = {searchState: 'key', searchChanges: 'id,generation',
         searchDocuments: 'id,epoch,*explorerGrams,*brainGrams,*smartGrams,*overflowDialects'};
-    const initialSearchState = () => ({key: 'main', format: 1, locale: Intl.DateTimeFormat().resolvedOptions().locale,
+    const SEARCH_SCHEMA = {searchState: 'key', searchChanges: 'id,generation',
+        searchDocuments: 'id,epoch,*grams,*overflowDialects'};
+    const initialSearchState = () => ({key: 'main', format: 2, locale: Intl.DateTimeFormat().resolvedOptions().locale,
         generation: 0, indexedGeneration: -1, buildGeneration: 0, epoch: crypto.randomUUID(),
         status: 'unbuilt', processed: 0, owner: '', leaseUntil: 0, fence: 0, scanComplete: false});
     const initializeSearchState = transaction => transaction.table('searchState').put(initialSearchState()).then(() => {});
+    async function upgradeSearchState(transaction) {
+        const states = transaction.table('searchState'), previous = await states.get('main');
+        // Discard only derived content. Preserve the user's pause and fence old owners.
+        await transaction.table('searchDocuments').clear();
+        await transaction.table('searchChanges').clear();
+        await states.put(Object.assign(initialSearchState(), previous ? {
+            generation: previous.generation, buildGeneration: previous.generation, fence: previous.fence + 1,
+            status: previous.status === 'paused' ? 'paused' : 'unbuilt'
+        } : {}));
+    }
     function changedState(state, reset) {
         const next = Object.assign({}, state || initialSearchState());
         delete next.total;
@@ -58,5 +70,5 @@
             await db.table('searchChanges').put({id: 'reset', generation: state.generation, kind: 'reset'});
         });
     }
-    return {SEARCH_SCHEMA, initialSearchState, initializeSearchState, installSearchInvalidation, invalidateSearch};
+    return {SEARCH_SCHEMA_V6, SEARCH_SCHEMA, initialSearchState, initializeSearchState, upgradeSearchState, installSearchInvalidation, invalidateSearch};
 }));

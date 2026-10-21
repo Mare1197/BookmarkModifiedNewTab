@@ -89,7 +89,8 @@
             folderMemberships: 'id,folderId,entityId,sourceKind,position,[folderId+entityId],[folderId+position+id]',
             activities: 'id,type,boardId,entityId,sessionId,createdAt,[entityId+createdAt+id]'
         });
-        db.version(6).stores(search.SEARCH_SCHEMA).upgrade(search.initializeSearchState);
+        db.version(6).stores(search.SEARCH_SCHEMA_V6).upgrade(search.initializeSearchState);
+        db.version(7).stores(search.SEARCH_SCHEMA).upgrade(search.upgradeSearchState);
         db.on('populate', search.initializeSearchState);
         search.installSearchInvalidation(db);
         db.on('versionchange', () => {db.close();

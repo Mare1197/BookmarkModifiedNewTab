@@ -42,7 +42,7 @@ test('same-count malformed derived rows cannot hide canonical matches', async t 
     for (const damaged of [
         {id: original.id, epoch: original.epoch},
         {...original, epoch: 'obsolete'},
-        {...original, brainGrams: ['invalid gram']},
+        {...original, grams: ['invalid gram']},
         {...original, fingerprint: 'unsupported'},
         {...original, generation: original.generation + 100}
     ]) {

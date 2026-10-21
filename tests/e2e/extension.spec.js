@@ -204,7 +204,7 @@ test('loads the unpacked extension and preserves legacy plus resource workflows'
             migrationErrors: app.workspaceMigrationReport.errors.length
         };
     });
-    expect(workspaceState.databaseVersion).toBe(6);
+    expect(workspaceState.databaseVersion).toBe(7);
     expect(workspaceState.entityCount).toBeGreaterThanOrEqual(3);
     expect(workspaceState.sourceRefCount).toBeGreaterThanOrEqual(3);
     expect(workspaceState.migrationErrors).toBe(0);

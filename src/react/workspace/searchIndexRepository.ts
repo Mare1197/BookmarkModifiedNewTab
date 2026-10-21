@@ -20,7 +20,7 @@ export async function claimSearchLease(db: WorkspaceClient, owner: string, now: 
     return db.transaction('rw', db.searchState, db.searchChanges, db.searchDocuments, db.entities, async () => {
         let state = stateOrInitial(await db.searchState.get('main'));
         const locale = initialSearchState().locale;
-        if (state.format !== 1 || state.locale !== locale) {
+        if (state.format !== 2 || state.locale !== locale) {
             state = {...initialSearchState(), generation: state.generation, fence: state.fence + 1,
                 status: state.status === 'paused' ? 'paused' : 'unbuilt'};
             await db.searchState.put(state); await db.searchDocuments.clear(); await db.searchChanges.clear();

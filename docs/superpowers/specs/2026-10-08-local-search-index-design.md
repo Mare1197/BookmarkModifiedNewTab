@@ -37,6 +37,16 @@ Sources: [FlexSearch tokenization](https://github.com/nextapps-de/flexsearch#tok
 
 ## Storage and writer coverage
 
+### October 21 performance amendment
+
+The original version-6 per-dialect postings below are retained as design history. Write profiling and a disposable 10k-record IndexedDB comparison found repeated postings to be the dominant rebuild cost: two shared-postings trials took 49.1/57.6 seconds, compared with 107.5/115.5 seconds in the three-index trials. The same records produced 2,347,097 dialect postings versus 953,629 distinct shared postings. See the [archived diagnostic and application acceptance status](../../LOCAL_SEARCH_INDEX_VERIFICATION.md).
+
+Use mirrored schema **7** and derived format **2**: derive each dialect with its original limits and field boundaries, but persist the deduplicated union in one `grams` posting index, bounded by 12,288 entries (three times the existing per-dialect cap). Keep dialect-specific overflow flags. Exact canonical predicates still decide every result; shared postings can admit extra candidates but cannot remove a match. Retain the 5,000-candidate scanner threshold. Migration clears only the three derived stores, fences old workers, preserves canonical generation and a paused state, and rebuilds asynchronously; canonical content and recovery data are untouched. Do not reuse old format-1 rows or change the definition of schema 6.
+
+This is an adapter/storage optimization, not a change to query semantics. Extra candidates may make some queries fall back sooner. Full integrity checks, privacy, atomic invalidation and the original performance/correctness acceptance gates remain required. The original 50k timeouts remain recorded, and the microbenchmark is not application acceptance.
+
+### Original version-6 design
+
 Add mirrored schema version 6 in both database constructors. Add explicitly derived stores:
 
 - `searchState`: singleton index-format/locale fingerprint, canonical mutation generation, active build epoch, rebuild state, progress and owner lease/fence.

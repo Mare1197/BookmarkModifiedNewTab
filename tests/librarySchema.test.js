@@ -19,7 +19,7 @@ for (const entry of ['react', 'legacy']) test(`version 4 upgrades through ${entr
     const peer = entry === 'react' ? createWorkspaceDatabase(name) : new Client(name);
     t.after(async () => {peer.close(); await db.delete();});
     await db.open(); await peer.open();
-    assert.equal(db.verno, 6);
+    assert.equal(db.verno, 7);
     assert.deepEqual(await db.entities.get('kept'), entity);
     assert.deepEqual(await db.workspaceDrafts.get('draft'), draft);
     for (const [table, index] of [['entities', '[updatedAt+id]'], ['placements', '[boardId+id]'],

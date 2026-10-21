@@ -1,0 +1,78 @@
+{
+  "label": "8da0680-50k-diagnostic",
+  "revision": "8da06805ea1d0c1db95a4a0643eea76ed9375990",
+  "harnessRevision": "8da06805ea1d0c1db95a4a0643eea76ed9375990",
+  "workingTreeDirty": false,
+  "artifactDigest": "f4ab6a680bdf1be395c990a3b3bae15a97b9b0907867785757943ab962036b8d",
+  "size": 50000,
+  "shape": "small-board",
+  "sample": 0,
+  "browser": "151.0.7922.34",
+  "viewport": {
+    "width": 1584,
+    "height": 1024
+  },
+  "metrics": {
+    "initialSetup": {
+      "ms": 2353.3073,
+      "ok": true
+    },
+    "fixtureSetup": {
+      "ms": 158255.72939999998,
+      "ok": true
+    },
+    "freshDocumentStartup": {
+      "ms": 4259.846300000005,
+      "ok": true
+    },
+    "incomplete": {
+      "key": "main",
+      "format": 1,
+      "locale": "en-US",
+      "generation": 2,
+      "indexedGeneration": 1,
+      "buildGeneration": 2,
+      "epoch": "c4099f72-2c5d-4e14-9e8f-3be8d9b45f61",
+      "status": "paused",
+      "processed": 0,
+      "owner": "",
+      "leaseUntil": 0,
+      "fence": 3,
+      "scanComplete": false,
+      "pending": 1,
+      "documentCount": 1,
+      "entityCount": 50001
+    },
+    "storageBefore": {
+      "quota": 10809360943,
+      "usage": 71942703,
+      "usageDetails": {
+        "indexedDB": 71939241,
+        "serviceWorkerRegistrations": 3462
+      }
+    },
+    "incompleteScannerSelective": {
+      "ms": 6643.65850000002,
+      "ok": true,
+      "value": {
+        "text": "000051",
+        "ids": [
+          "perf:object:000051"
+        ],
+        "scanned": 50001,
+        "indexed": false,
+        "hasMore": false
+      }
+    },
+    "inputWhileBuilding": {
+      "ms": 88.44729999999981,
+      "ok": true
+    },
+    "coldRebuild": {
+      "ms": 602309.0401,
+      "ok": false,
+      "error": "Search index did not become fresh: {\"key\":\"main\",\"format\":1,\"locale\":\"en-US\",\"generation\":2,\"indexedGeneration\":-1,\"buildGeneration\":2,\"epoch\":\"0bb17797-aed7-45b4-9260-cf3726973a60\",\"status\":\"building\",\"processed\":38350,\"owner\":\"a629ade7-ef33-4b1b-aa33-2e632e6a49d8\",\"leaseUntil\":1792368991768,\"fence\":5,\"scanComplete\":false,\"lastId\":\"perf:object:038348\",\"pending\":0,\"documentCount\":38350,\"entityCount\":50001}"
+    }
+  },
+  "errors": []
+}

@@ -35,7 +35,7 @@ test('seeding splits large fixtures into bounded protocol messages', async () =>
 test('benchmark readiness requires generation parity not counts', async t => {
     const helper = require('./helpers/largeLibraryFixture');
     assert.equal(typeof helper.isSearchIndexReady, 'function');
-    const state = {status: 'ready', format: 1, scanComplete: true, generation: 7, indexedGeneration: 6,
+    const state = {status: 'ready', format: 2, scanComplete: true, generation: 7, indexedGeneration: 6,
         epoch: 'new', pending: 0, documentCount: 1000, entityCount: 1000};
     assert.equal(helper.isSearchIndexReady(state), false);
     assert.equal(helper.isSearchIndexReady({...state, indexedGeneration: 7, pending: 1}), false);

@@ -1,5 +1,5 @@
 import Dexie, {type EntityTable, type Table} from 'dexie';
-import {SEARCH_SCHEMA, installSearchInvalidation, initializeSearchState} from '../../workspace/searchInvalidation.js';
+import {SEARCH_SCHEMA_V6, SEARCH_SCHEMA, installSearchInvalidation, initializeSearchState, upgradeSearchState} from '../../workspace/searchInvalidation.js';
 import type {SearchState, SearchChange, SearchDocument} from './searchIndexTypes';
 import type {DraftRecord, RevisionRecord} from '../../workspace/recoveryTypes';
 
@@ -106,7 +106,8 @@ export class WorkspaceClient extends Dexie {
             folderMemberships: 'id,folderId,entityId,sourceKind,position,[folderId+entityId],[folderId+position+id]',
             activities: 'id,type,boardId,entityId,sessionId,createdAt,[entityId+createdAt+id]'
         });
-        this.version(6).stores(SEARCH_SCHEMA).upgrade(initializeSearchState);
+        this.version(6).stores(SEARCH_SCHEMA_V6).upgrade(initializeSearchState);
+        this.version(7).stores(SEARCH_SCHEMA).upgrade(upgradeSearchState);
         this.on('populate', initializeSearchState);
         installSearchInvalidation(this);
         this.on('versionchange', () => {this.reloadRequired = true; this.close();

@@ -125,7 +125,9 @@ unrelated library relationships. See [routing and performance verification](docs
 The subsequent local search index provides Pause/Resume, Retry/Rebuild, exact
 fallback, background processing and cache-free exports. Its [verification report](docs/LOCAL_SEARCH_INDEX_VERIFICATION.md)
 records **20/30** successful baseline search cases: the 50k rebuilds timed out.
-Review corrections and new acceptance measurements are in progress. The older
+Review corrections pass 234 source tests and all 37 serial browser tests at
+`8da0680`. The October 21 compact-postings update passes 239 source tests;
+its browser checks and 50k performance acceptance are still pending. The older
 30/30 navigation result below does not certify this index. Native large-board
 optimization remains pending.
 

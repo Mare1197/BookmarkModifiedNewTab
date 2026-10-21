@@ -1,6 +1,6 @@
 # New Tab OS — instructions to reproduce the current build
 
-Updated 17 October 2026. Reference branch: `feature/large-library-performance` in `Mare1197/BookmarkModifiedNewTab`. The earlier navigation checkpoint is `c55211078890178c30b2d2776e8cfd0f27bace1b`; subsequent search work and its verification limits are recorded in [local search verification](LOCAL_SEARCH_INDEX_VERIFICATION.md). Pending native-board optimization and 50k search acceptance are not delivered guarantees.
+Updated 21 October 2026. Reference branch: `feature/large-library-performance` in `Mare1197/BookmarkModifiedNewTab`. The earlier navigation checkpoint is `c55211078890178c30b2d2776e8cfd0f27bace1b`; subsequent search work and its verification limits are recorded in [local search verification](LOCAL_SEARCH_INDEX_VERIFICATION.md). Correctness checks at `8da0680` pass 234 source tests and 37 browser cases. The newer compact-postings update passes 239 source tests; its browser verification is pending. Pending native-board optimization and 50k search acceptance are not delivered guarantees.
 
 Give this document to a builder when asking for the same functional application. It defines behavior and app logic without prescribing a technology stack or visual design. The [full product handoff](AI_BUILDER_PRODUCT_HANDOFF.md) and [connected knowledge requirements](CONNECTED_KNOWLEDGE_ADDENDUM.md) retain the broader requested roadmap. Features under “Remaining requested features” below are future work, not requirements already satisfied by this reference build.
 

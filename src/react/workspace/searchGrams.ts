@@ -36,8 +36,10 @@ function boundedGrams(entity: WorkspaceEntity, dialect: SearchDialect): {grams: 
 }
 export function deriveSearchDocument(entity: WorkspaceEntity, generation: number, epoch: string, locale: string): SearchDocument {
     const explorer = boundedGrams(entity, 'explorer'), brain = boundedGrams(entity, 'brain'), smart = boundedGrams(entity, 'smart');
-    return {id: entity.id, generation, epoch, fingerprint: JSON.stringify([1, locale, entity.type, 'explorer', 'brain', 'smart']),
-        explorerGrams: explorer.grams, brainGrams: brain.grams, smartGrams: smart.grams,
+    // Share overlapping postings, never the final predicate. Extra dialect
+    // candidates are harmless because canonical matching still verifies them.
+    return {id: entity.id, generation, epoch, fingerprint: JSON.stringify([2, locale, entity.type, 'explorer', 'brain', 'smart']),
+        grams: [...new Set([...explorer.grams, ...brain.grams, ...smart.grams])],
         overflowDialects: (['explorer', 'brain', 'smart'] as const).filter(d => ({explorer, brain, smart})[d].overflow)};
 }
 export function queryTextTerms(query: LibraryQuery): string[] {

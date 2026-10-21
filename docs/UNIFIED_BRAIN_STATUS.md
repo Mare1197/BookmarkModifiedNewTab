@@ -1,10 +1,12 @@
 # Unified Brain: implementation status
 
-October 17 search follow-up: derived substring candidates, atomic invalidation,
+October 19 search follow-up: derived substring candidates, atomic invalidation,
 background processing, exact fallback and indexing controls are implemented.
 [Search verification](LOCAL_SEARCH_INDEX_VERIFICATION.md) records 20/30 baseline
-benchmark successes and ten 50k rebuild timeouts. Review corrections and new
-acceptance are in progress. Large native-board optimization remains pending.
+benchmark successes and ten 50k rebuild timeouts. Review corrections pass 234
+source tests and 37 browser cases at `8da0680`. The October 21 compact-postings
+update passes 239 source tests; its browser checks and 50k performance acceptance
+remain pending. Large native-board optimization remains pending.
 
 Updated October 8, 2026. The shared-Brain improvements, persistent BlockSuite workspace, and local recovery upgrade are implemented as the bounded slice below. The full five-reference product specification is **not finished**.
 

@@ -80,7 +80,7 @@ function makeSearchIndexFixture(size, shape) {
     return {data, selectiveText: '000051', selectiveEntityId: 'perf:object:000051'};
 }
 function isSearchIndexReady(state, {afterEpoch, minGeneration} = {}) {
-    return Boolean(state && state.format === 1 && state.status === 'ready' && state.scanComplete && state.pending === 0 &&
+    return Boolean(state && state.format === 2 && state.status === 'ready' && state.scanComplete && state.pending === 0 &&
         Number.isSafeInteger(state.generation) && state.generation === state.indexedGeneration &&
         Number.isSafeInteger(state.documentCount) && state.documentCount === state.entityCount && typeof state.epoch === 'string' && state.epoch &&
         (afterEpoch === undefined || state.epoch !== afterEpoch) && (minGeneration === undefined || state.generation >= minGeneration));

@@ -11,13 +11,11 @@ async function api(t) {
     assert.equal(typeof module.deriveSearchDocument, 'function', 'bounded gram derivation must exist');
     return module;
 }
-test('dialects preserve field boundary semantics without mutating objects', async t => {
+test('shared grams include every dialect without mutating canonical objects', async t => {
     const {deriveSearchDocument} = await api(t), before = structuredClone(base);
     const doc = deriveSearchDocument(base, 2, 'epoch', 'en-US');
-    assert.ok(doc.brainGrams.includes('ha ')); assert.ok(doc.brainGrams.includes('  b'));
-    assert.ok(doc.smartGrams.includes('  b')); assert.equal(doc.explorerGrams.includes('ha '), false);
-    assert.equal(doc.explorerGrams.includes('bet'), false); assert.ok(doc.brainGrams.includes('tag'));
-    assert.equal(doc.smartGrams.includes('tag'), false);
+    for (const gram of ['ha ', '  b', 'bet', 'tag', 'not']) assert.ok(doc.grams.includes(gram));
+    assert.equal(doc.grams.length, new Set(doc.grams).size);
     assert.deepEqual(base, before); assert.equal(doc.id, 'one'); assert.equal(doc.generation, 2);
     assert.equal(Object.hasOwn(doc, 'body'), false);
 });
@@ -30,20 +28,20 @@ test('query grams retain parser and UTF-16 literal semantics', async t => {
     for (const text of ['', 'a', 'ab', 'alpha a']) assert.equal(queryGrams(query('brain', text)), undefined);
     assert.equal(queryGrams(query('smart', 'type:note')), undefined);
     const doc = deriveSearchDocument({...base, title: '🙂汉字 İ CAFÉ é'}, 1, 'e', 'en-US');
-    assert.ok(doc.explorerGrams.includes('🙂汉')); assert.ok(doc.explorerGrams.includes('汉字 '));
-    assert.ok(doc.explorerGrams.includes('afé')); assert.ok(doc.explorerGrams.includes(' é'));
-    assert.ok(doc.explorerGrams.includes('i̇ '));
+    assert.ok(doc.grams.includes('🙂汉')); assert.ok(doc.grams.includes('汉字 '));
+    assert.ok(doc.grams.includes('afé')); assert.ok(doc.grams.includes(' é'));
+    assert.ok(doc.grams.includes('i̇ '));
 });
 test('overflow retains late substring candidates with bounded arrays', async t => {
     const {deriveSearchDocument} = await api(t);
     const doc = deriveSearchDocument({...base, metadata: {body: 'a'.repeat(65536) + 'late needle'}}, 1, 'e', 'en-US');
     assert.deepEqual(doc.overflowDialects.sort(), ['brain', 'smart']);
-    assert.deepEqual(doc.brainGrams, []); assert.deepEqual(doc.smartGrams, []);
-    assert.ok(doc.explorerGrams.includes('alp'));
+    assert.equal(doc.grams.includes('lat'), false); assert.ok(doc.grams.includes('alp'));
     const varied = Array.from({length: 7000}, (_, i) => String.fromCharCode(i + 32)).join('');
     const capped = deriveSearchDocument({...base, title: varied}, 1, 'e', 'en-US');
     assert.ok(capped.overflowDialects.includes('explorer'));
-    for (const field of ['brainGrams', 'explorerGrams', 'smartGrams']) assert.ok(capped[field].length <= 4096);
+    assert.deepEqual(capped.overflowDialects.sort(), ['brain', 'explorer', 'smart']);
+    assert.deepEqual(capped.grams, []);
 });
 test('derivation never reads credentials, recovery or asset payloads', async t => {
     const {deriveSearchDocument} = await api(t);

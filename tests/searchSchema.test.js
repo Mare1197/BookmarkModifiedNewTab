@@ -16,7 +16,7 @@ for (const writer of ['react', 'legacy']) test(`${writer} upgrades v5 without ch
     await old.table('entities').put(entity); await old.table('workspaceDrafts').put(draft); old.close();
     const db = writer === 'react' ? new WorkspaceClient(name) : createWorkspaceDatabase(name);
     t.after(() => db.delete()); await db.open();
-    assert.equal(db.verno, 6);
+    assert.equal(db.verno, 7);
     assert.deepEqual(await db.entities.get('kept'), entity);
     assert.deepEqual(await db.workspaceDrafts.get('private'), draft);
     const state = await db.searchState.get('main');
