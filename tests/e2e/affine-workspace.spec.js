@@ -315,17 +315,34 @@ test('conflicting note draft blocks navigation and supports explicit replacement
     await inspector.getByRole('button', {name: 'Save', exact: true}).click();
     await page.getByRole('button', {name: 'Brain', exact: true}).click();
     // Depending on event timing, the draft may have saved before the second tab.
-    // Force the conflict deterministically in the test context by advancing the stored revision
-    // while the next local edit is queued, without changing production code.
+    // Hold a real canonical writer BEFORE editing. Opening it after fill races
+    // the 400ms autosave, which can legitimately finish before the revision bump.
     if (!await ws.isVisible()) await page.getByRole('button', {name: 'Workspace', exact: true}).click();
-    await page.locator('workspace-reference-block rich-text [contenteditable="true"]').first().fill('Keep this conflict draft');
-    await page.evaluate(() => new Promise(resolve => {
-        const open = indexedDB.open('browserOsWorkspace'); open.onsuccess = () => {
-            const db = open.result, tx = db.transaction('entities', 'readwrite'), store = tx.objectStore('entities'), req = store.getAll();
-            req.onsuccess = () => {const note = req.result.find(e => e.type === 'note'); store.put({...note, contentRevision: (note.contentRevision || 0) + 1});};
-            tx.oncomplete = () => {db.close(); resolve();};
+    const editable = page.locator('workspace-reference-block rich-text [contenteditable="true"]').first();
+    await expect(editable).toBeVisible();
+    const noteId = await page.locator('article[data-brain-reference]').filter({has: page.locator('rich-text [contenteditable="true"]')})
+        .first().getAttribute('data-brain-reference');
+    expect(noteId).toBeTruthy();
+    await page.evaluate(id => new Promise((resolve, reject) => {
+        window.holdConflictRevision = true; window.conflictRevisionCommitted = false;
+        const open = indexedDB.open('browserOsWorkspace'); open.onerror = () => reject(open.error);
+        open.onsuccess = () => {
+            const db = open.result, tx = db.transaction('entities', 'readwrite'), store = tx.objectStore('entities'), req = store.get(id);
+            req.onsuccess = () => {
+                if (!req.result) {tx.abort(); return;}
+                const note = req.result, write = store.put({...note, contentRevision: (note.contentRevision || 0) + 1});
+                const keepAlive = () => {const read = store.get(id); read.onsuccess = () => {if (window.holdConflictRevision) keepAlive();};};
+                write.onsuccess = () => {keepAlive(); resolve();};
+            };
+            tx.oncomplete = () => {window.conflictRevisionCommitted = true; db.close();};
+            tx.onabort = () => {db.close(); reject(tx.error || new Error('Conflict fixture aborted'));};
         };
-    }));
+    }), noteId);
+    try {
+        await editable.fill('Keep this conflict draft');
+        await expect(ws).toContainText('Keep this conflict draft');
+    } finally {await page.evaluate(() => {window.holdConflictRevision = false;});}
+    await expect.poll(() => page.evaluate(() => window.conflictRevisionCommitted)).toBe(true);
     await page.getByRole('button', {name: 'Brain', exact: true}).click();
     await expect(ws).toBeVisible();
     await expect(ws.getByRole('status').first()).toContainText('conflict');
