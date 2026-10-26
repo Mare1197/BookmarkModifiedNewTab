@@ -1,0 +1,303 @@
+{
+  "label": "cc483d2-50k-diagnostic",
+  "revision": "cc483d2a4e1a23119ecc29a717834507e0f620d2",
+  "harnessRevision": "2e181a7bbd7c126cc22a590a7c4f10d06ef2e4ed",
+  "workingTreeDirty": false,
+  "artifactDigest": "99fc0e15c32384ef16f4ebadb48217f2ca799a680104508d20e84b0f74ae781b",
+  "size": 50000,
+  "shape": "small-board",
+  "sample": 0,
+  "browser": "151.0.7922.34",
+  "viewport": {
+    "width": 1584,
+    "height": 1024
+  },
+  "metrics": {
+    "initialSetup": {
+      "ms": 2799.8385999999996,
+      "ok": true
+    },
+    "fixtureSetup": {
+      "ms": 130165.44699999999,
+      "ok": true
+    },
+    "freshDocumentStartup": {
+      "ms": 3538.515000000014,
+      "ok": true
+    },
+    "incomplete": {
+      "key": "main",
+      "format": 2,
+      "locale": "en-US",
+      "generation": 2,
+      "indexedGeneration": 1,
+      "buildGeneration": 2,
+      "epoch": "aa12573f-0f23-42b3-9ddf-a8c137891c09",
+      "status": "paused",
+      "processed": 0,
+      "owner": "",
+      "leaseUntil": 0,
+      "fence": 3,
+      "scanComplete": false,
+      "pending": 1,
+      "documentCount": 1,
+      "entityCount": 50001
+    },
+    "storageBefore": {
+      "quota": 10813494951,
+      "usage": 76076711,
+      "usageDetails": {
+        "indexedDB": 76073249,
+        "serviceWorkerRegistrations": 3462
+      }
+    },
+    "incompleteScannerSelective": {
+      "ms": 5659.092499999999,
+      "ok": true,
+      "value": {
+        "text": "000051",
+        "ids": [
+          "perf:object:000051"
+        ],
+        "scanned": 50001,
+        "indexed": false,
+        "hasMore": false
+      }
+    },
+    "inputWhileBuilding": {
+      "ms": 117.12630000000354,
+      "ok": true
+    },
+    "coldRebuild": {
+      "ms": 318377.66109999997,
+      "ok": true,
+      "value": {
+        "key": "main",
+        "format": 2,
+        "locale": "en-US",
+        "generation": 2,
+        "indexedGeneration": 2,
+        "buildGeneration": 2,
+        "epoch": "6314d7a6-f0d5-4c9a-9e84-245fb606d05f",
+        "status": "ready",
+        "processed": 50001,
+        "owner": "",
+        "leaseUntil": 0,
+        "fence": 5,
+        "scanComplete": true,
+        "lastId": "perf:object:049999",
+        "pending": 0,
+        "documentCount": 50001,
+        "entityCount": 50001
+      }
+    },
+    "rebuildResponsiveness": {
+      "frames": 9551,
+      "totalMs": 318366.516,
+      "maxMs": 34.40000000002328,
+      "over50ms": 0,
+      "longTasks": 0,
+      "longTaskMs": 0
+    },
+    "readySelective": {
+      "ms": 2518.001099999994,
+      "ok": true,
+      "value": {
+        "text": "000051",
+        "ids": [
+          "perf:object:000051"
+        ],
+        "scanned": 200,
+        "indexed": true,
+        "hasMore": false
+      }
+    },
+    "singleEditCatchUp": {
+      "ms": 8765.700199999963,
+      "ok": true,
+      "value": {
+        "key": "main",
+        "format": 2,
+        "locale": "en-US",
+        "generation": 3,
+        "indexedGeneration": 3,
+        "buildGeneration": 2,
+        "epoch": "6314d7a6-f0d5-4c9a-9e84-245fb606d05f",
+        "status": "ready",
+        "processed": 50001,
+        "owner": "",
+        "leaseUntil": 0,
+        "fence": 6,
+        "scanComplete": true,
+        "lastId": "perf:object:049999",
+        "pending": 0,
+        "documentCount": 50001,
+        "entityCount": 50001
+      }
+    },
+    "readyBroad": {
+      "ms": 6124.114699999976,
+      "ok": true,
+      "value": {
+        "text": "research",
+        "ids": [
+          "perf:object:000051",
+          "perf:object:049990",
+          "perf:object:049991",
+          "perf:object:049992",
+          "perf:object:049993",
+          "perf:object:049994",
+          "perf:object:049995",
+          "perf:object:049996",
+          "perf:object:049997",
+          "perf:object:049998",
+          "perf:object:049999",
+          "perf:object:049980",
+          "perf:object:049981",
+          "perf:object:049982",
+          "perf:object:049983",
+          "perf:object:049984",
+          "perf:object:049985",
+          "perf:object:049986",
+          "perf:object:049987",
+          "perf:object:049988",
+          "perf:object:049989",
+          "perf:object:049970",
+          "perf:object:049971",
+          "perf:object:049972",
+          "perf:object:049973",
+          "perf:object:049974",
+          "perf:object:049975",
+          "perf:object:049976",
+          "perf:object:049977",
+          "perf:object:049978",
+          "perf:object:049979",
+          "perf:object:049960",
+          "perf:object:049961",
+          "perf:object:049962",
+          "perf:object:049963",
+          "perf:object:049964",
+          "perf:object:049965",
+          "perf:object:049966",
+          "perf:object:049967",
+          "perf:object:049968",
+          "perf:object:049969",
+          "perf:object:049950",
+          "perf:object:049951",
+          "perf:object:049952",
+          "perf:object:049953",
+          "perf:object:049954",
+          "perf:object:049955",
+          "perf:object:049956",
+          "perf:object:049957",
+          "perf:object:049958"
+        ],
+        "scanned": 102,
+        "indexed": false,
+        "hasMore": true
+      }
+    },
+    "readyShortFallback": {
+      "ms": 5590.381999999983,
+      "ok": true,
+      "value": {
+        "text": "qq",
+        "ids": [],
+        "scanned": 50001,
+        "indexed": false,
+        "hasMore": false
+      }
+    },
+    "storageAfter": {
+      "quota": 10894624933,
+      "usage": 157206693,
+      "usageDetails": {
+        "indexedDB": 157203231,
+        "serviceWorkerRegistrations": 3462
+      }
+    },
+    "derivedStorageDiagnostic": {
+      "ms": 2189.953200000047,
+      "ok": true,
+      "value": {
+        "records": 50001,
+        "jsonBytes": 38402277,
+        "excludesIdbIndexes": true
+      }
+    },
+    "derivedSerialization": {
+      "records": 50001,
+      "jsonBytes": 38402277,
+      "excludesIdbIndexes": true
+    },
+    "final": {
+      "nodes": 490,
+      "mainHeapBytes": 21362697,
+      "excludesWorkerHeap": true
+    },
+    "requestedFiles": [
+      {
+        "file": "chunks/newtab-DTPsSxKP.js",
+        "sourceBytes": 88570
+      },
+      {
+        "file": "chunks/rolldown-runtime-DiigMGAj.js",
+        "sourceBytes": 856
+      },
+      {
+        "file": "chunks/richContent-WIJdkVbV.js",
+        "sourceBytes": 2158
+      },
+      {
+        "file": "chunks/brainRepository-6YUJaftL.js",
+        "sourceBytes": 138857
+      },
+      {
+        "file": "chunks/workspaceRepository-3CLTiotd.js",
+        "sourceBytes": 283490
+      },
+      {
+        "file": "chunks/brainSelectors-D90IKWdG.js",
+        "sourceBytes": 2703
+      },
+      {
+        "file": "chunks/useWorkspaceQuery-DdrkDzK1.js",
+        "sourceBytes": 1883
+      },
+      {
+        "file": "assets/newtab-MvjV3a2h.css",
+        "sourceBytes": 36618
+      },
+      {
+        "file": "legacy/index.min.css",
+        "sourceBytes": 24956
+      },
+      {
+        "file": "legacy/index.min.js",
+        "sourceBytes": 262919
+      },
+      {
+        "file": "chunks/WorkspaceGraphView-BAxAqohn.js",
+        "sourceBytes": 203747
+      },
+      {
+        "file": "chunks/searchWorkerFactory-DTCIrZ70.js",
+        "sourceBytes": 211
+      },
+      {
+        "file": "assets/searchWorker-vsmSkIdV.js",
+        "sourceBytes": 123595
+      },
+      {
+        "file": "chunks/WorkspaceWorkflows-BX4M1kPi.js",
+        "sourceBytes": 12112
+      },
+      {
+        "file": "chunks/BrainWorkspace-uWuamnp0.js",
+        "sourceBytes": 14798
+      }
+    ],
+    "resourceScope": "Observed workspace/worker requests; extension background startup can precede observation. Source bytes are not transfer or heap bytes."
+  },
+  "errors": []
+}

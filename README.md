@@ -124,12 +124,14 @@ unrelated library relationships. See [routing and performance verification](docs
 
 The subsequent local search index provides Pause/Resume, Retry/Rebuild, exact
 fallback, background processing and cache-free exports. Its [verification report](docs/LOCAL_SEARCH_INDEX_VERIFICATION.md)
-records **20/30** successful baseline search cases: the 50k rebuilds timed out.
-Review corrections pass 234 source tests and all 37 serial browser tests at
-`8da0680`. The October 21 compact-postings update passes 239 source tests;
-its browser checks and 50k performance acceptance are still pending. The older
-30/30 navigation result below does not certify this index. Native large-board
-optimization remains pending.
+preserves the earlier 50k rebuild failures and the subsequent **30/30 passing
+search cases**, including five samples per board shape at 1k/10k/50k objects.
+The compact-postings update passes **239 source tests**, the production build and
+**37/37 serial browser tests**. At 50k, median selective ready search is about
+2.53 seconds versus 5.53–6.70 seconds for scanning; the sub-second target is not
+met. Rebuilds take about four minutes, edit catch-up can take 26 seconds, and
+frame gaps/storage costs remain documented limitations. Native large-board
+optimization remains pending; search results do not certify native-editor capacity.
 
 The isolated `feature/large-library-performance` upgrade is documented in
 [large-library performance](docs/LARGE_LIBRARY_PERFORMANCE.md), including scoped reads,

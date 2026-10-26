@@ -2,6 +2,33 @@
 
 The isolated `feature/large-library-performance` branch contains a persistent, disposable local substring index over canonical Brain objects. Explorer, Brain and Smart Search retain their matching and ordering rules. Short/common queries, unavailable workers and incomplete indexes use exact scanning. Pause, Resume, Retry and Rebuild affect only disposable search data.
 
+## Current measured checkpoint — reviewed October 26, 2026
+
+The compact-postings build passed **239 source tests**, the production MV3 build, **37/37 serial browser cases**, and the complete **30/30 search matrix**, without retries. The matrix ran on October 22 and took 1.5 hours. Source: `cc483d2a4e1a23119ecc29a717834507e0f620d2`; harness: `2e181a7bbd7c126cc22a590a7c4f10d06ef2e4ed`; clean tree at measurement start. Frozen artifact SHA-256: `99fc0e15c32384ef16f4ebadb48217f2ca799a680104508d20e84b0f74ae781b`. Chromium 151.0.7922.34 / Playwright 1.62.1 / Windows / 1584 × 1024. No application, harness or frozen-artifact edits occurred during measurement.
+
+Five independent synthetic profiles per size and shape returned the exact selective object ID through the ready index, with complete coverage, generation parity and no pending changes. Every 50k rebuild completed within the unchanged 600-second deadline. The preceding [single successful diagnostic](evidence/local-search-cc483d2-diagnostic.json) is separate from these five-sample results. The [full matrix archive](evidence/local-search-cc483d2.json) retains every sample, phase, resource request and diagnostic; older failures below are not discarded.
+
+Times are milliseconds, median [minimum–maximum]. A small board has 50 references; a large board has one per fixture object. **The native editor is not opened**, so this does not certify large native-board capacity. Each fixture also retains one starter object.
+
+| Objects / shape | Paused exact scan | Ready selective query | Cold rebuild | Single-edit catch-up |
+| --- | --- | --- | --- | --- |
+| 1,000 / small | 496.7 [383.2–1197.5] | 247.7 [167.6–355.1] | 3181.8 [2998.4–5915.1] | 807.8 [732.4–1235.3] |
+| 1,000 / large | 378.5 [233.0–1057.0] | 233.2 [212.4–392.6] | 2809.7 [2429.3–3749.9] | 829.5 [723.2–1618.1] |
+| 10,000 / small | 1499.2 [1450.7–1552.0] | 979.6 [971.7–1018.2] | 37015.1 [33050.0–46279.8] | 2338.8 [2086.3–2653.4] |
+| 10,000 / large | 1473.1 [1454.6–2019.4] | 960.0 [943.0–984.8] | 35013.4 [33928.8–42203.5] | 5306.6 [4989.4–5993.1] |
+| 50,000 / small | 6703.0 [5088.1–9174.0] | 2528.1 [2489.9–3019.7] | 244719.4 [236762.6–256228.5] | 8408.6 [8029.8–9558.0] |
+| 50,000 / large | 5534.1 [5067.9–6066.5] | 2527.2 [2485.7–2616.3] | 236657.4 [227827.5–255604.2] | 23425.5 [22815.8–26259.6] |
+
+The ratio of group medians is **2.65× / 2.19×** faster for the selective ready-index query at 50k (small/large). This is a material improvement, but **the sub-second engineering target is not met**. Full structural/cache-ID integrity validation is included in query time; exact predicates and overflow handling were not weakened. Broad/short queries still have scanner costs: their 50k medians were 5.58/6.06 seconds on small boards and 5.58/5.58 seconds on large boards. Broad queries at 1k legitimately use the index under the unchanged candidate threshold.
+
+Preparation is additional work, not hidden inside the speedup: fixture setup medians were 3.0/3.7 seconds at 1k, 22.3/22.7 seconds at 10k, and 133.9/122.2 seconds at 50k (small/large). Fresh-document startup medians were 1.24/1.19, 1.85/2.99 and 4.12/8.58 seconds respectively. These sequential phases do not represent a cold browser process or controlled cold OS cache. At 50k, rebuilding took 3.80–4.27 minutes, and edit-to-fresh-index catch-up reached 26.26 seconds; catch-up is not a measure of canonical save time alone.
+
+Input acknowledgment (textbox value plus two animation frames) had group medians of 98.4–119.4 ms, but individual probes reached 524.7 ms. No main-thread long tasks were recorded by this probe during rebuild. **Animation-frame gaps nevertheless reached 465.8 ms**; the 50k runs recorded 58–95 gaps over 50 ms each. Their cause was not isolated, so zero recorded long tasks is not a claim of uninterrupted smooth rendering or a certified maximum interaction latency. Preserve these observations for subsequent responsiveness work.
+
+Storage is not free. At 50k, whole-origin usage estimates before/after indexing had medians of 67.7/175.7 MB (small) and 78.6/178.1 MB (large); they include browser storage behavior, not just the logical cache. The derived JSON was 38.4 MB and excludes posting-index overhead. Final main-thread heap medians were 16.3 MB and 238.4 MB respectively; these are point-in-time diagnostics, not retained-memory measurements, and exclude worker heap. Requested source bytes are not transferred bytes. No hardware-independent speed, memory, native-editor capacity or frame-time guarantee follows.
+
+The review's missing-50k-evidence finding is now addressed by the complete matrix. The watchdog and malformed-cache corrections have their recorded failing/passing regressions plus the complete passing suites. These are author-verified fixes, **not a second independent review**. Native-board performance remains the next separate stage.
+
 ## Baseline evidence
 
 Application and harness: `c5b6de50a1e6531acee71ea281fc6c3685d9e697`. Frozen artifact SHA-256: `6564fc0f8a202a9d3b58e9a2e2053ffa775809bad785bfb182fb5e2c594ccbb6`. Windows Chromium 151.0.7922.34, Playwright 1.62.1, viewport 1584 × 1024. Temporary synthetic profiles only. Source checks, 225 unit/integration tests, production MV3 build and 37 serial browser tests passed on this baseline.
@@ -33,7 +60,7 @@ A fresh read-only whole-stage review identified three Important items: total-dur
 - Benchmark polling counts full coverage after Ready; incomplete polls read progress only. Generation, epoch, pending changes and full coverage are still checked together before acceptance. Timeout diagnostics retain counts.
 - Generated benchmark scratch is excluded from lint and TypeScript discovery.
 
-Each behavioral correction has a regression observed failing before the fix and passing afterwards. **Performance acceptance remains pending:** attributed post-correction measurements, especially 50k readiness and selective-search performance. Native-board optimization is a separate subsequent stage.
+Each behavioral correction has a regression observed failing before the fix and passing afterwards. Performance acceptance was pending at this checkpoint; the attributed complete compact-postings matrix above supplies the subsequent evidence. Native-board optimization is a separate subsequent stage.
 
 ## October 19 correctness checkpoint
 
@@ -53,9 +80,9 @@ A [controlled synthetic IndexedDB diagnostic](evidence/local-search-postings-dia
 
 The implementation uses mirrored schema 7 and cache format 2. It derives each search dialect with the original limits, stores their deduplicated union once, and retains dialect-specific overflow flags. Exact canonical predicates and the existing broad-query scanner threshold are unchanged. The union is bounded to 12,288 entries per object. Migration discards only derived data, preserves canonical objects, recovery drafts, canonical generation and a user's paused state, and fences old workers.
 
-Five new shared-posting/migration regressions failed before implementation and passed after it. The focused suite passes 44/44, including complete indexed/scanned query parity, overflow, invalidation, migrations and lifecycle checks. Fresh lint, formatting, both type checks and **239/239 source tests** pass; the **41.42 MB production build** succeeds (existing large-chunk warning remains). Browser verification and attributed 50k application measurements are still required for this change. Shared postings can increase false-positive candidates and cause earlier exact-scanner fallback; no matching semantics are relaxed.
+Five new shared-posting/migration regressions failed before implementation and passed after it. The focused suite passes 44/44, including complete indexed/scanned query parity, overflow, invalidation, migrations and lifecycle checks. Fresh lint, formatting, both type checks and **239/239 source tests** pass; the **41.42 MB production build** succeeds (existing large-chunk warning remains). Subsequent browser verification and attributed 50k application measurements are recorded above. Shared postings can increase false-positive candidates and cause earlier exact-scanner fallback; no matching semantics are relaxed.
 
-The first complete browser run on frozen `cc483d2` finished **35/37** on October 22 (11.3 minutes). The draft-conflict test's raw revision increment raced the 400ms autosave; its trace shows the draft already saved before navigation, so the setup did not reliably create a conflict. The harness now holds a real canonical writer before editing and commits the conflicting revision after the draft exists. All original blocked-navigation/recovery/explicit-replacement assertions remain. The other failure was a conversation-order test's Chromium context teardown timeout, not a failed content assertion. Both cases passed in three fresh profiles each (**6/6**, no retries); the conversation case and production artifact were unchanged. This does not establish a root cause for intermittent teardown delays. Full-suite verification remains required; the failed run and traces are retained, and its gated 50k benchmark never started.
+The first complete browser run on frozen `cc483d2` finished **35/37** on October 22 (11.3 minutes). The draft-conflict test's raw revision increment raced the 400ms autosave; its trace shows the draft already saved before navigation, so the setup did not reliably create a conflict. The harness now holds a real canonical writer before editing and commits the conflicting revision after the draft exists. All original blocked-navigation/recovery/explicit-replacement assertions remain. The other failure was a conversation-order test's Chromium context teardown timeout, not a failed content assertion. Both cases passed in three fresh profiles each (**6/6**, no retries); the conversation case and production artifact were unchanged. This does not establish a root cause for intermittent teardown delays. The subsequent complete suite passed **37/37** without retries in 6.2 minutes; the failed run and traces are retained, and its gated 50k benchmark never started.
 
 ## Reproduction
 
