@@ -3,6 +3,8 @@ const test = require('node:test');
 const fs = require('node:fs');
 const path = require('node:path');
 const {spawn} = require('node:child_process');
+const {spawnSync} = require('node:child_process');
+const os = require('node:os');
 
 for (const mode of ['document', 'canvas', 'mixed']) test(`native fixture preserves all identities and endpoints in ${mode}`, () => {
     const {makeNativeBoardFixture} = require('./helpers/nativeBoardFixture');
@@ -72,4 +74,16 @@ test('hung teardown after a result remains a failed bounded probe', async () => 
         workerEnv: {NATIVE_PROBE_TEST_MODE: 'hang-after-result'}});
     assert.equal(result.ok, false); assert.equal(result.timedOut, true);
     assert.equal(result.metrics.references, 50);
+});
+
+test('failed probe marker survives a new test worker process', t => {
+    const {recordProbeFailure} = require('./helpers/nativeProbeFailures');
+    const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'native-marker-test-'));
+    t.after(() => fs.rmSync(directory, {recursive: true, force: true}));
+    recordProbeFailure(directory, 'mixed/500');
+    const modulePath = require.resolve('./helpers/nativeProbeFailures');
+    const child = spawnSync(process.execPath, ['-e',
+        'const api=require(process.argv[1]);process.exit(api.hasProbeFailure(process.argv[2], "mixed/500") && !api.hasProbeFailure(process.argv[2], "canvas/500") ? 0 : 42)',
+        modulePath, directory], {windowsHide: true, encoding: 'utf8'});
+    assert.equal(child.status, 0, child.stderr);
 });
