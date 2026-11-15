@@ -1,4 +1,5 @@
 import {BlockComponent} from '@blocksuite/block-std';
+import {EdgelessNoteBlockComponent} from '@blocksuite/blocks';
 import {defineBlockSchema, type SchemaToModel} from '@blocksuite/store';
 import {html} from 'lit';
 import {liveQuery, type Subscription} from 'dexie';
@@ -28,6 +29,15 @@ export interface ReferenceContext {
     colors: Map<string, string>;
 }
 export const referenceContexts = new Map<string, ReferenceContext>();
+// Brain cards have canonical dimensions. Native notes otherwise grow/shrink
+// from asynchronous body measurements, which would look like user resizing.
+export class WorkspaceReferenceNote extends EdgelessNoteBlockComponent {
+    override connectedCallback() {super.connectedCallback(); this.classList.add('brainReferenceNote');}
+    override getRenderingRect() {
+        const rect = super.getRenderingRect();
+        return {...rect, h: (JSON.parse(this.model.xywh) as number[])[3]! / (this.model.edgeless.scale ?? 1)};
+    }
+}
 export class WorkspaceReferenceBlock extends BlockComponent<ReferenceModel> {
     private subscription?: Subscription;
     private card = document.createElement('article');

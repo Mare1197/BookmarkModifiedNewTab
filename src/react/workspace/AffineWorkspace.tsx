@@ -21,6 +21,9 @@ interface Props {
 }
 export function AffineWorkspace(props: Props) {
     const host = useRef<HTMLDivElement>(null), editor = useRef<PageEditorSession | undefined>(undefined);
+    const preparation = useRef<AbortController | undefined>(undefined);
+    const cancelRequested = useRef(false);
+    const [preparing, setPreparing] = useState(true), [ready, setReady] = useState(false);
     const callbacks = useRef(props); callbacks.current = props;
     const [page, setPage] = useState<PageSnapshot>(), [mode, setMode] = useState<PageMode>('document');
     const [status, setStatus] = useState('Loading workspace…'), [mountKey, setMountKey] = useState(0);
@@ -30,26 +33,37 @@ export function AffineWorkspace(props: Props) {
     const upload = useRef<HTMLInputElement>(null);
     useEffect(() => {
         let cancelled = false;
+        cancelRequested.current = false; setReady(false); setPreparing(true);
         void openWorkspacePage(props.boardId).then(next => {
             if (!cancelled) {setPage(next); setMode(next.presentation.mode); setSelected([]);}
-        }).catch(e => {if (!cancelled) setStatus(String(e));});
+        }).catch(e => {if (!cancelled) {setPreparing(false); setStatus(String(e));}});
         return () => {cancelled = true;};
     }, [props.boardId]);
     useEffect(() => {
-        if (!host.current || !page || page.board.id !== props.boardId) return;
+        if (!host.current || !page || page.board.id !== props.boardId || cancelRequested.current) return;
         let cancelled = false; const node = host.current; let mounted: PageEditorSession | undefined;
+        const controller = new AbortController(); preparation.current = controller;
+        setPreparing(true); setReady(false);
         setStatus('Loading local editor…');
         void import('./blocksuiteWorkspaceAdapter').then(async ({mountWorkspaceEditor}) => {
-            if (cancelled) return;
+            if (cancelled || controller.signal.aborted) return;
             mounted = await mountWorkspaceEditor(node, {snapshot: page, mode,
                 onUndo: token => {if (!cancelled) setUndoToken(token);},
                 onSelect: (id, placementId) => {if (placementId) setSelected([placementId]); callbacks.current.onSelect(id, placementId);},
                 onOpenPage: id => callbacks.current.onOpenPage(id), onAction: (id, action) => callbacks.current.onAction(id, action),
-                onStatus: message => {if (!cancelled) setStatus(message);}});
+                onStatus: message => {if (!cancelled) setStatus(message);}}, {
+                signal: controller.signal,
+                onProgress: (done, total) => {if (!cancelled) setStatus(done === total ? 'Preparing editor controls…' : `Preparing workspace: ${done}/${total}`);},
+                onMeasure: (phase, ms) => {
+                    if (cancelled) return;
+                    const end = performance.now(), name = 'native-workspace:' + phase;
+                    performance.clearMeasures(name); performance.measure(name, {start: end - ms, end});
+                }
+            });
             if (cancelled) {mounted.dispose(); return;}
-            editor.current = mounted; callbacks.current.onSession(mounted); setStatus('saved');
-        }).catch(e => {if (!cancelled) setStatus(String(e));});
-        return () => {cancelled = true; mounted?.dispose(); editor.current = undefined; callbacks.current.onSession(undefined);};
+            editor.current = mounted; callbacks.current.onSession(mounted); setPreparing(false); setReady(true); setStatus('saved');
+        }).catch(e => {if (!cancelled) {setPreparing(false); setStatus(e instanceof DOMException && e.name === 'AbortError' ? 'Preparation cancelled. You can retry.' : String(e));}});
+        return () => {cancelled = true; controller.abort(); mounted?.dispose(); editor.current = undefined; callbacks.current.onSession(undefined);};
         // Snapshot changes are applied only after flush via the explicit mount generation.
     }, [page?.board.id, mode, mountKey, props.boardId]);
     useEffect(() => {
@@ -60,10 +74,16 @@ export function AffineWorkspace(props: Props) {
     }, []);
     const run = async (action: () => Promise<void>) => {
         if (busy) return;
+        if (!editor.current) {setStatus('Prepare the workspace before editing.'); return;}
         setBusy(true);
         try {await editor.current?.flush(); await action();} catch (e) {setStatus(String(e));} finally {setBusy(false);}
     };
     const reload = async () => {const next = await loadPageSnapshot(props.boardId); setPage(next); setMountKey(k => k + 1);};
+    const navigate = (boardId: string) => {
+        if (boardId === props.boardId) return;
+        if (editor.current) void run(async () => {callbacks.current.onOpenPage(boardId);});
+        else {cancelRequested.current = true; preparation.current?.abort(); callbacks.current.onOpenPage(boardId);}
+    };
     const command = (c: PageCommand) => run(async () => {
         const current = await loadPageSnapshot(props.boardId);
         const next = await applyPageCommand(props.boardId, current.version, c); setUndoToken(next.undoToken); setPage(next); setMountKey(k => k + 1);
@@ -87,17 +107,17 @@ export function AffineWorkspace(props: Props) {
         void run(async () => {await addPageReference(props.boardId, id); await reload();});
     }}>
         <header><h2>{page?.owner.title || 'Workspace'}</h2>
-            <WorkspacePages boardId={props.boardId} busy={busy} onOpen={id => void run(async () => {callbacks.current.onOpenPage(id);})} />
-            {page?.parent && <button onClick={() => void run(() => openParent(page.parent!.id))}>↑ {page.parent.title}</button>}
-            <div className="affineControls">{(['document', 'canvas', 'mixed'] as PageMode[]).map(value => <button key={value} disabled={busy}
+            <WorkspacePages boardId={props.boardId} busy={busy} onOpen={navigate} />
+            {page?.parent && <button disabled={busy || !ready} onClick={() => void run(() => openParent(page.parent!.id))}>↑ {page.parent.title}</button>}
+            <div className="affineControls">{(['document', 'canvas', 'mixed'] as PageMode[]).map(value => <button key={value} disabled={busy || !ready}
                 aria-pressed={mode === value} onClick={() => void run(async () => {
                     const current = await loadPageSnapshot(props.boardId);
                     const next = await applyPageCommand(props.boardId, current.version, {type: 'view', mode: value, viewport: current.presentation.viewport});
                     setPage(next); setMode(value);
                 })}>{value[0]!.toUpperCase() + value.slice(1)}</button>)}
-                <button onClick={() => void run(async () => {})}>Save now</button>
+                <button disabled={!ready || busy} onClick={() => void run(async () => {})}>Save now</button>
                 <button onClick={props.onHistory}>Page history</button>
-                <button disabled={busy} onClick={() => void run(async () => {
+                <button disabled={busy || !ready} onClick={() => void run(async () => {
                     const current = await loadPageSnapshot(props.boardId); if (!current.placements.length) return;
                     const minX = Math.min(...current.placements.map(p => p.x)), minY = Math.min(...current.placements.map(p => p.y));
                     const maxX = Math.max(...current.placements.map(p => p.x + p.width)), maxY = Math.max(...current.placements.map(p => p.y + p.height));
@@ -105,28 +125,39 @@ export function AffineWorkspace(props: Props) {
                     const next = await applyPageCommand(props.boardId, current.version, {type: 'view', mode, viewport: {x: (minX + maxX) / 2, y: (minY + maxY) / 2, zoom}});
                     setPage(next); setMountKey(k => k + 1);
                 })}>Fit cards</button>
-                <button disabled={!undoToken || busy} onClick={() => void run(async () => {await undoPageCommand(props.boardId, undoToken!); setUndoToken(undefined); await reload();})}>Undo layout</button>
+                <button disabled={!undoToken || busy || !ready} onClick={() => void run(async () => {await undoPageCommand(props.boardId, undoToken!); setUndoToken(undefined); await reload();})}>Undo layout</button>
             </div>
             <p role="status">{status === 'recoverable' ? 'Recoverable draft · waiting to save' : status === 'saving-local' ? 'Saving draft locally…' : status}</p>
+            {!ready && <div className="brainNativePreparation" aria-label="Workspace preparation">
+                {preparing ? <button onClick={() => {cancelRequested.current = true; preparation.current?.abort(); setPreparing(false); setStatus('Preparation cancelled. You can retry.');}}>Cancel preparation</button>
+                    : <button disabled={busy} onClick={() => {
+                        cancelRequested.current = false; setPreparing(true);
+                        const boardId = props.boardId;
+                        void openWorkspacePage(boardId).then(next => {
+                            if (callbacks.current.boardId !== boardId || cancelRequested.current) return;
+                            setPage(next); setMode(next.presentation.mode); setMountKey(key => key + 1);
+                        }).catch(e => {if (callbacks.current.boardId === boardId) {setPreparing(false); setStatus(String(e));}});
+                    }}>Retry preparation</button>}
+            </div>}
             {/error|conflict|failed|unavailable/i.test(status) && <div className="affineControls">
                 <button onClick={props.onRecovery}>Review conflicting draft</button>
                 <button onClick={() => void run(async () => {})}>Retry save</button><button onClick={downloadDraft}>Export draft</button>
                 <button onClick={() => {if (window.confirm('Discard unsaved drafts and reload canonical data?')) void editor.current?.reload().then(reload).catch(e => setStatus(String(e)));}}>Discard draft and reload</button>
             </div>}
             <div className="affineControls"><label>New note title<input value={noteTitle} onChange={e => setNoteTitle(e.target.value)} /></label>
-                <button disabled={busy || !noteTitle.trim()} onClick={() => void run(async () => {
+                <button disabled={busy || !ready || !noteTitle.trim()} onClick={() => void run(async () => {
                     await db.transaction('rw', [db.entities, db.tasks, db.activities, db.boards, db.settings, db.relationships, db.placements, db.workspaceRevisions], async () => {
                         const note = await createBrainObject({type: 'note', title: noteTitle}); await addPageReference(props.boardId, note.id);
                     }); setNoteTitle(current => current === noteTitle ? '' : current); await reload();
                 })}>New note</button>
                 <LibraryObjectPicker label="Existing object" value={objectId} onChange={setObjectId} emptyLabel="Choose an object" />
-                <button disabled={!objectId || busy} onClick={() => void run(async () => {await addPageReference(props.boardId, objectId); await reload();})}>Add existing object</button>
-                <button onClick={() => upload.current?.click()}>Upload file</button><input hidden type="file" ref={upload} onChange={e => {
+                <button disabled={!objectId || busy || !ready} onClick={() => void run(async () => {await addPageReference(props.boardId, objectId); await reload();})}>Add existing object</button>
+                <button disabled={!ready || busy} onClick={() => upload.current?.click()}>Upload file</button><input hidden type="file" ref={upload} onChange={e => {
                     const file = e.target.files?.[0]; if (file) void run(async () => {await addPageFile(props.boardId, file); await reload();}); e.target.value = '';
                 }} />
             </div>
             <details><summary>Pages and layout controls</summary>
-                <fieldset className="brainLayoutControls" disabled={busy}>
+                <fieldset className="brainLayoutControls" disabled={busy || !ready}>
                 <div className="affineControls"><button onClick={() => void run(async () => {
                     const title = window.prompt('Child page title'); if (!title || !page) return;
                     const child = await createWorkspacePage(title, page.owner.id); callbacks.current.onOpenPage(child.board.id);
@@ -164,7 +195,7 @@ export function AffineWorkspace(props: Props) {
                 </fieldset>
             </details>
         </header>
-        <div ref={host} className={'affineNativeHost ' + mode} />
+        <div ref={host} className={'affineNativeHost ' + mode} inert={!ready} aria-busy={preparing} />
     </section>;
 }
 import {LibraryObjectPicker} from './LibraryObjectPicker';

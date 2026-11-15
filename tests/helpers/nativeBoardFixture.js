@@ -40,4 +40,15 @@ function makeNativeBoardFixture(count, mode) {
     data.settings.push({key: 'workspace-page:' + boardId, value: presentation, updatedAt: time});
     return {boardId, data};
 }
-module.exports = {makeNativeBoardFixture};
+async function seedNativeBoardFixture(page, fixture) {
+    const {seedLargeLibrary} = require('./largeLibraryFixture');
+    const {assets, ...tables} = fixture.data;
+    await seedLargeLibrary(page, tables);
+    await page.evaluate(records => new Promise((resolve, reject) => {
+        const request = indexedDB.open('browserOsWorkspace'); request.onerror = () => reject(request.error);
+        request.onsuccess = () => {const db = request.result, tx = db.transaction('assets', 'readwrite');
+            for (const {bytes, ...asset} of records) tx.objectStore('assets').put({...asset, blob: new Blob([new Uint8Array(bytes)], {type: asset.mimeType})});
+            tx.oncomplete = () => {db.close(); resolve();}; tx.onabort = () => {db.close(); reject(tx.error);};};
+    }), assets);
+}
+module.exports = {makeNativeBoardFixture, seedNativeBoardFixture};

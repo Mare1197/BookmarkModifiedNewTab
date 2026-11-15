@@ -6,6 +6,7 @@ import {createPagePersistenceQueue} from './pagePersistenceQueue';
 import {createSessionJournal} from './sessionJournal';
 import {layoutSnapshot} from './revisionRepository';
 import {targetKey} from './recoveryValidation';
+import type {NativeMountOptions} from './cooperativeProjection';
 
 export interface WorkspaceEditorInput {
     snapshot: PageSnapshot; mode: PageMode;
@@ -15,12 +16,12 @@ export interface WorkspaceEditorInput {
     onStatus: (status: string) => void;
     onUndo?: (token: string) => void;
 }
-export async function mountWorkspaceEditor(host: HTMLElement, input: WorkspaceEditorInput): Promise<PageEditorSession> {
+export async function mountWorkspaceEditor(host: HTMLElement, input: WorkspaceEditorInput, options: NativeMountOptions = {}): Promise<PageEditorSession> {
     let snapshot = input.snapshot, status: SaveStatus = 'saved', disposed = false;
     let layoutStatus: SaveStatus = 'saved';
     let error: unknown, timer: ReturnType<typeof setTimeout> | undefined;
     let flushing: Promise<void> | undefined;
-    const report = (e: unknown) => {error = e; status = /conflict/i.test(String(e)) ? 'conflict' : 'error'; input.onStatus(String(e));};
+    const report = (e: unknown) => {if (disposed) return; error = e; status = /conflict/i.test(String(e)) ? 'conflict' : 'error'; input.onStatus(String(e));};
     const session = createPageEditorSession(snapshot.entities, undefined, next => {
         status = next; input.onStatus(getStatus());
         if (next === 'unsaved' || next === 'saving-local') schedule();
@@ -47,14 +48,20 @@ export async function mountWorkspaceEditor(host: HTMLElement, input: WorkspaceEd
             snapshot = result.value;
         }});
     function schedule() {clearTimeout(timer); timer = setTimeout(() => {void flush().catch(report);}, 400);}
-    const projection = await mountPageProjection(host, snapshot, input.mode, {
+    let projection: Awaited<ReturnType<typeof mountPageProjection>>;
+    try {projection = await mountPageProjection(host, snapshot, input.mode, {
         session, onSelect: input.onSelect, onAction: input.onAction, onError: report, collapsed: new Set(), colors: new Map()
     }, command => {
+        if (disposed || options.signal?.aborted) return;
         layoutJournal.enqueue({kind: 'page', id: snapshot.board.id}, layoutSnapshot(snapshot), {kind: 'page', value: snapshot.version},
             {kind: 'page', command}, snapshot.board.id);
         queue.enqueue(command);
         status = 'saving-local'; input.onStatus(status); schedule();
-    });
+    }, options);} catch (failure) {
+        disposed = true; clearTimeout(timer); queue.dispose();
+        await Promise.all([session.dispose(), layoutJournal.dispose()]);
+        throw failure;
+    }
     async function flush() {
         if (disposed) throw new Error('Editor session is closed.');
         clearTimeout(timer); projection.flushGeometry();

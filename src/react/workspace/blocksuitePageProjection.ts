@@ -4,71 +4,99 @@ import {AffineSchemas, PageEditorBlockSpecs, EdgelessEditorBlockSpecs, getSurfac
 import {effects as blockEffects} from '@blocksuite/blocks/effects';
 import {PageEditor, EdgelessEditor} from '@blocksuite/presets';
 import {effects as presetEffects} from '@blocksuite/presets/effects';
-import {BlockViewExtension, WidgetViewMapIdentifier} from '@blocksuite/block-std';
+import {BlockViewExtension, BlockViewIdentifier, WidgetViewMapIdentifier} from '@blocksuite/block-std';
 import {GfxController} from '@blocksuite/block-std/gfx';
 import {DocCollection, Schema, type Y} from '@blocksuite/store';
 import {literal} from 'lit/static-html.js';
-import {PageReferenceSchema, WorkspaceReferenceBlock, referenceContexts, type ReferenceContext} from './blocksuiteBrainReference';
+import {PageReferenceSchema, WorkspaceReferenceBlock, WorkspaceReferenceNote, referenceContexts, type ReferenceContext} from './blocksuiteBrainReference';
 import type {PageSnapshot} from './pageRepository';
 import {planNativeProjection} from './nativeProjectionPlan';
 import {validateGeometry} from './pageValidation';
 import {mountConnectorRouting} from './blocksuiteConnectorRouting';
 import {attachNativeClientOffsets} from './nativeClientOffsets';
 import {attachNativePointerCoordinates} from './nativePointerCoordinates';
+import {prepareNativeMount, runProjectionBatches, type NativeMountScope, type NativeMountOptions} from './cooperativeProjection';
+import {createViewportChanges} from './nativeViewportChanges';
 import type {PageCommand, PageMode} from '../../workspace/pageTypes';
 import '@toeverything/theme/style.css';
 
 let registered = false;
 const colors: Record<string, string> = {default: '#ffffff', blue: '#e5efff', green: '#e5f5ea', yellow: '#fff6d8', purple: '#f0e8ff'};
 export async function mountPageProjection(container: HTMLElement, snapshot: PageSnapshot, mode: PageMode, context: ReferenceContext,
-    onCommand: (command: PageCommand) => void) {
+    onCommand: (command: PageCommand) => void, options: NativeMountOptions = {}) {
+    const start = performance.now();
+    const mounted = await prepareNativeMount(scope => buildPageProjection(container, snapshot, mode, context, onCommand, scope, options), options);
+    options.onMeasure?.('projection-total', performance.now() - start);
+    return {...mounted.value, dispose: mounted.dispose};
+}
+async function buildPageProjection(container: HTMLElement, snapshot: PageSnapshot, mode: PageMode, context: ReferenceContext,
+    onCommand: (command: PageCommand) => void, scope: NativeMountScope, options: NativeMountOptions) {
+    scope.check();
     const plan = planNativeProjection(snapshot);
     if (!registered) {
         blockEffects(); presetEffects();
-        customElements.define('workspace-reference-block', WorkspaceReferenceBlock); registered = true;
+        customElements.define('workspace-reference-block', WorkspaceReferenceBlock);
+        customElements.define('workspace-reference-note', WorkspaceReferenceNote); registered = true;
     }
     const collection = new DocCollection({schema: new Schema().register([...AffineSchemas, PageReferenceSchema])});
-    collection.meta.initialize(); const doc = collection.createDoc(); doc.load();
-    const root = doc.addBlock('affine:page', {});
-    doc.addBlock('affine:surface', {}, root);
-    const surface = getSurfaceBlock(doc)!;
+    scope.own(() => collection.dispose());
+    collection.meta.initialize(); const doc = collection.createDoc();
+    scope.own(() => doc.dispose());
+    doc.load();
+    let root = '';
+    let surface!: NonNullable<ReturnType<typeof getSurfaceBlock>>;
     const notes = new Map<string, string>(), placementIds = new Map<string, string>(), connectors = new Map<string, string>();
     const groups = new Map<string, string>();
     let hydrating = true, disposed = false, timer: ReturnType<typeof setTimeout> | undefined;
     const dirtyNotes = new Set<string>();
     const disposables: Array<{dispose(): void}> = [];
     let routing: ReturnType<typeof mountConnectorRouting> | undefined;
+    const editors: Array<PageEditor | EdgelessEditor> = [], panes: HTMLElement[] = [];
+    let removePaste = () => {};
+    scope.own(() => {
+        disposed = true; clearTimeout(timer); routing?.dispose(); disposables.forEach(d => d.dispose()); removePaste();
+        editors.forEach(editor => editor.remove()); panes.forEach(pane => pane.remove()); referenceContexts.delete(doc.id);
+    });
+    const operations: Array<() => void> = [() => {root = doc.addBlock('affine:page', {});},
+        () => {doc.addBlock('affine:surface', {}, root); surface = getSurfaceBlock(doc)!;}];
     const placements = plan.placements;
     for (const {p, presentation} of placements) {
         const collapsed = plan.collapsedByPlacement.get(p.id)!;
         if (collapsed) context.collapsed.add(p.id);
         context.colors.set(p.id, colors[presentation.color]!);
-        const note = doc.addBlock('affine:note', {xywh: `[${p.x},${p.y},${p.width},${p.height}]`,
-            background: colors[presentation.color]}, root);
-        const model = doc.getBlockById(note) as NoteBlockModel;
-        doc.updateBlock(model, {edgeless: {...model.edgeless, collapse: collapsed, collapsedHeight: 100}});
-        notes.set(p.id, note); placementIds.set(note, p.id);
-        doc.addBlock('affine:embed-workspace-object', {entityId: p.entityId, placementId: p.id}, note);
+        operations.push(() => {
+            const note = doc.addBlock('affine:note', {xywh: `[${p.x},${p.y},${p.width},${p.height}]`, background: colors[presentation.color]}, root);
+            notes.set(p.id, note); placementIds.set(note, p.id);
+        }, () => {
+            const model = doc.getBlockById(notes.get(p.id)!) as NoteBlockModel;
+            doc.updateBlock(model, {edgeless: {...model.edgeless, collapse: collapsed, collapsedHeight: 100}});
+        }, () => {doc.addBlock('affine:embed-workspace-object', {entityId: p.entityId, placementId: p.id}, notes.get(p.id)!);});
     }
-    for (const group of snapshot.presentation.groups) {
+    for (const group of snapshot.presentation.groups) operations.push(() => {
         const children = new DocCollection.Y.Map<boolean>();
         for (const id of plan.groupChildren.get(group.id)!) children.set(notes.get(id)!, true);
         const id = surface.addElement({type: 'group', children, title: new DocCollection.Y.Text(group.label)});
         groups.set(group.id, id);
-    }
+    });
     for (const group of snapshot.presentation.groups) if (group.parentId) {
-        const parent = surface.getElementById(groups.get(group.parentId)!);
-        if (parent && 'children' in parent) (parent.children as Y.Map<boolean>).set(groups.get(group.id)!, true);
+        const parentId = group.parentId;
+        operations.push(() => {
+            const parent = surface.getElementById(groups.get(parentId)!);
+            if (parent && 'children' in parent) (parent.children as Y.Map<boolean>).set(groups.get(group.id)!, true);
+        });
     }
     const modes = {straight: ConnectorMode.Straight, orthogonal: ConnectorMode.Orthogonal, curve: ConnectorMode.Curve};
-    for (const c of plan.connectors) {
+    for (const c of plan.connectors) operations.push(() => {
         const id = surface.addElement({type: 'connector', mode: modes[c.mode], stroke: c.color, strokeStyle: c.dashed ? StrokeStyle.Dash : StrokeStyle.Solid,
             source: {id: notes.get(c.fromPlacementId), position: [c.anchors?.source.x ?? 1, c.anchors?.source.y ?? 0.5]},
             target: {id: notes.get(c.toPlacementId), position: [c.anchors?.target.x ?? 0, c.anchors?.target.y ?? 0.5]}});
         connectors.set(id, c.id);
-    }
+    });
+    const modelStart = performance.now(), total = operations.length + placements.length;
+    await runProjectionBatches(operations, {...options, onProgress: done => options.onProgress?.(done, total)});
+    scope.check(); options.onMeasure?.('projection-models', performance.now() - modelStart);
     referenceContexts.set(doc.id, context);
-    const editors: Array<PageEditor | EdgelessEditor> = [];
+    const renderStart = performance.now();
     for (const kind of mode === 'mixed' ? ['document', 'canvas'] : [mode]) {
         const editor = kind === 'document' ? new PageEditor() : new EdgelessEditor();
         // Canonical notes own their rich-text toolbar. The native format bar assumes
@@ -76,15 +104,22 @@ export async function mountPageProjection(container: HTMLElement, snapshot: Page
         const widgets = {...(kind === 'document' ? pageRootWidgetViewMap : edgelessRootWidgetViewMap)};
         delete (widgets as Record<string, unknown>)[AFFINE_FORMAT_BAR_WIDGET];
         editor.specs = [...(kind === 'document' ? PageEditorBlockSpecs : EdgelessEditorBlockSpecs),
-            {setup: di => {di.override(WidgetViewMapIdentifier('affine:page'), () => widgets);}},
+            {setup: di => {
+                di.override(WidgetViewMapIdentifier('affine:page'), () => widgets);
+                if (kind === 'canvas') di.override(BlockViewIdentifier('affine:note'), () => literal`workspace-reference-note`);
+            }},
             BlockViewExtension('affine:embed-workspace-object', literal`workspace-reference-block`)];
         editor.doc = doc; editor.classList.add('brainNativeEditor');
-        const pane = document.createElement('div'); pane.className = 'brainNativePane'; pane.append(editor); container.append(pane);
+        scope.check();
+        const pane = document.createElement('div'); pane.className = 'brainNativePane'; pane.append(editor); panes.push(pane); container.append(pane);
         editors.push(editor);
         await editor.updateComplete;
+        scope.check();
         if (editors.length === 1) {
             const nextIndex = editor.std.get(GfxController).layer.createIndexGenerator();
-            for (const id of notes.values()) doc.updateBlock(doc.getBlockById(id)!, {index: nextIndex()});
+            await runProjectionBatches([...notes.values()].map(id => () => {doc.updateBlock(doc.getBlockById(id)!, {index: nextIndex()});}),
+                {...options, onProgress: done => options.onProgress?.(operations.length + done, total)});
+            scope.check();
         }
         if (editor instanceof EdgelessEditor) {
             routing = mountConnectorRouting(pane, surface, editor.std.get(GfxController), snapshot, connectors, placementIds, onCommand, context.onError);
@@ -92,11 +127,13 @@ export async function mountPageProjection(container: HTMLElement, snapshot: Page
             disposables.push({dispose: attachNativePointerCoordinates(editor.std.host, editor.std.event)});
             disposables.push({dispose: attachNativeClientOffsets(pane, container.parentElement || container, viewport)});
             const v = snapshot.presentation.viewport; viewport.setViewport(v.zoom, [v.x, v.y]);
+            const changedViewport = createViewportChanges(v, next => onCommand({type: 'view', mode, viewport: next}));
             disposables.push(viewport.viewportUpdated.on(({zoom, center}) => {
-                if (!hydrating && !disposed) onCommand({type: 'view', mode, viewport: {x: center[0], y: center[1], zoom}});
+                if (!hydrating && !disposed) changedViewport({x: center[0], y: center[1], zoom});
             }));
         }
     }
+    scope.check(); options.onMeasure?.('projection-render-and-index', performance.now() - renderStart);
     function flushGeometry() {
         clearTimeout(timer);
         routing?.flush();
@@ -149,10 +186,7 @@ export async function mountPageProjection(container: HTMLElement, snapshot: Page
         context.onError(new Error('Paste into a note or use Add existing object / Upload file.'));
     };
     container.addEventListener('paste', blockUnsupported, true);
+    removePaste = () => container.removeEventListener('paste', blockUnsupported, true);
     hydrating = false;
-    return {flushGeometry, dispose() {
-        disposed = true; clearTimeout(timer); routing?.dispose(); disposables.forEach(d => d.dispose());
-        container.removeEventListener('paste', blockUnsupported, true);
-        editors.forEach(e => e.remove()); container.replaceChildren(); referenceContexts.delete(doc.id); doc.dispose(); collection.dispose();
-    }};
+    return {flushGeometry};
 }
