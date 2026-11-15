@@ -9,7 +9,8 @@ import {GfxController} from '@blocksuite/block-std/gfx';
 import {DocCollection, Schema, type Y} from '@blocksuite/store';
 import {literal} from 'lit/static-html.js';
 import {PageReferenceSchema, WorkspaceReferenceBlock, referenceContexts, type ReferenceContext} from './blocksuiteBrainReference';
-import {placementPresentation, type PageSnapshot} from './pageRepository';
+import type {PageSnapshot} from './pageRepository';
+import {planNativeProjection} from './nativeProjectionPlan';
 import {validateGeometry} from './pageValidation';
 import {mountConnectorRouting} from './blocksuiteConnectorRouting';
 import {attachNativeClientOffsets} from './nativeClientOffsets';
@@ -21,6 +22,7 @@ let registered = false;
 const colors: Record<string, string> = {default: '#ffffff', blue: '#e5efff', green: '#e5f5ea', yellow: '#fff6d8', purple: '#f0e8ff'};
 export async function mountPageProjection(container: HTMLElement, snapshot: PageSnapshot, mode: PageMode, context: ReferenceContext,
     onCommand: (command: PageCommand) => void) {
+    const plan = planNativeProjection(snapshot);
     if (!registered) {
         blockEffects(); presetEffects();
         customElements.define('workspace-reference-block', WorkspaceReferenceBlock); registered = true;
@@ -36,11 +38,9 @@ export async function mountPageProjection(container: HTMLElement, snapshot: Page
     const dirtyNotes = new Set<string>();
     const disposables: Array<{dispose(): void}> = [];
     let routing: ReturnType<typeof mountConnectorRouting> | undefined;
-    const placements = snapshot.placements.map((p, i) => ({p, presentation: placementPresentation(p, i)}))
-        .sort((a, b) => a.presentation.order - b.presentation.order);
+    const placements = plan.placements;
     for (const {p, presentation} of placements) {
-        let groupId = presentation.groupId, collapsed = presentation.collapsed;
-        while (groupId) {const group = snapshot.presentation.groups.find(g => g.id === groupId); if (!group) break; collapsed ||= group.collapsed; groupId = group.parentId;}
+        const collapsed = plan.collapsedByPlacement.get(p.id)!;
         if (collapsed) context.collapsed.add(p.id);
         context.colors.set(p.id, colors[presentation.color]!);
         const note = doc.addBlock('affine:note', {xywh: `[${p.x},${p.y},${p.width},${p.height}]`,
@@ -52,7 +52,7 @@ export async function mountPageProjection(container: HTMLElement, snapshot: Page
     }
     for (const group of snapshot.presentation.groups) {
         const children = new DocCollection.Y.Map<boolean>();
-        for (const {p, presentation} of placements) if (presentation.groupId === group.id) children.set(notes.get(p.id)!, true);
+        for (const id of plan.groupChildren.get(group.id)!) children.set(notes.get(id)!, true);
         const id = surface.addElement({type: 'group', children, title: new DocCollection.Y.Text(group.label)});
         groups.set(group.id, id);
     }
@@ -61,8 +61,7 @@ export async function mountPageProjection(container: HTMLElement, snapshot: Page
         if (parent && 'children' in parent) (parent.children as Y.Map<boolean>).set(groups.get(group.id)!, true);
     }
     const modes = {straight: ConnectorMode.Straight, orthogonal: ConnectorMode.Orthogonal, curve: ConnectorMode.Curve};
-    for (const c of snapshot.presentation.connectors) {
-        if (!notes.has(c.fromPlacementId) || !notes.has(c.toPlacementId)) continue;
+    for (const c of plan.connectors) {
         const id = surface.addElement({type: 'connector', mode: modes[c.mode], stroke: c.color, strokeStyle: c.dashed ? StrokeStyle.Dash : StrokeStyle.Solid,
             source: {id: notes.get(c.fromPlacementId), position: [c.anchors?.source.x ?? 1, c.anchors?.source.y ?? 0.5]},
             target: {id: notes.get(c.toPlacementId), position: [c.anchors?.target.x ?? 0, c.anchors?.target.y ?? 0.5]}});

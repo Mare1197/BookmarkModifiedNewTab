@@ -1,0 +1,30 @@
+{
+  "scope": "Synthetic in-process planning only, 1000 placements/500 nested groups. Not native render/readiness capacity. Old loops mirror predecessor ancestry and group child scans; new planner additionally builds identity maps. Five serial paired samples, old then new, no randomization or isolated process/cache control.",
+  "samples": [
+    {
+      "sample": 0,
+      "oldMs": 1181.1572,
+      "newMs": 3.283600000000206
+    },
+    {
+      "sample": 1,
+      "oldMs": 1146.4510999999998,
+      "newMs": 1.7994000000003325
+    },
+    {
+      "sample": 2,
+      "oldMs": 1155.7903999999999,
+      "newMs": 1.6015999999999622
+    },
+    {
+      "sample": 3,
+      "oldMs": 1143.9200999999994,
+      "newMs": 1.4858000000003813
+    },
+    {
+      "sample": 4,
+      "oldMs": 1134.3544000000002,
+      "newMs": 1.0842000000002372
+    }
+  ]
+}

@@ -21,6 +21,26 @@ async function records(page, table) {
     }), table);
 }
 
+async function nativePointerBoxes(page, root, locators) {
+    await locators[0].hover();
+    let boxes;
+    await expect(async () => {
+        const before = await Promise.all(locators.map(locator => locator.boundingBox()));
+        await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+        const offset = await root.evaluate(element => {
+            const rect = element.closest('.brainNativePane').getBoundingClientRect(), viewport = element.service.viewport;
+            return Math.max(Math.abs(viewport.top - rect.top), Math.abs(viewport.left - rect.left));
+        });
+        expect(offset).toBeLessThan(1);
+        boxes = await Promise.all(locators.map(locator => locator.boundingBox()));
+        boxes.forEach((box, i) => {
+            expect(box).toBeTruthy(); expect(before[i]).toBeTruthy();
+            expect(Math.max(...['x', 'y', 'width', 'height'].map(key => Math.abs(box[key] - before[i][key])))).toBeLessThan(1);
+        });
+    }).toPass({timeout: 8000});
+    return boxes;
+}
+
 test('native connector endpoint and bend drags persist across reload without erasing the original link', async ({context, extensionId}) => {
     const page = await openWorkspace(context, extensionId), workspace = page.getByRole('region', {name: 'AFFiNE workspace'});
     const errors = []; page.on('pageerror', error => errors.push(error.message));
@@ -72,8 +92,8 @@ test('native connector endpoint and bend drags persist across reload without era
     };
     await selectLine();
     const endpoint = workspace.locator('edgeless-connector-handle .line-end');
-    await endpoint.hover(); const handle = await endpoint.boundingBox();
-    const target = await workspace.locator('[data-brain-reference]').filter({hasText: 'Routing C'}).boundingBox();
+    const [handle, target] = await nativePointerBoxes(page, native,
+        [endpoint, workspace.locator('[data-brain-reference]').filter({hasText: 'Routing C'})]);
     await page.mouse.move(handle.x + handle.width / 2, handle.y + handle.height / 2);
     await page.mouse.down(); await page.mouse.move(target.x + 5, target.y + target.height / 2, {steps: 12}); await page.mouse.up();
     await workspace.getByRole('button', {name: 'Save now', exact: true}).click();
@@ -81,12 +101,16 @@ test('native connector endpoint and bend drags persist across reload without era
     expect((await records(page, 'relationships')).some(r => r.id === initial.relationshipId)).toBe(true);
     await selectLine();
     await workspace.getByRole('button', {name: 'Add route bend', exact: true}).click();
+    await expect.poll(async () => (await records(page, 'settings')).find(s => s.key.startsWith('workspace-page:')).value.connectors[0].points.length).toBe(1);
+    await expect(workspace.getByRole('status').first()).toHaveText('saved');
+    const addedPoints = (await records(page, 'settings')).find(s => s.key.startsWith('workspace-page:')).value.connectors[0].points;
     const bend = workspace.getByRole('button', {name: 'Route bend 1', exact: true});
-    await bend.hover(); const bendBox = await bend.boundingBox();
+    const [bendBox] = await nativePointerBoxes(page, native, [bend]);
     await page.mouse.move(bendBox.x + bendBox.width / 2, bendBox.y + bendBox.height / 2);
     await page.mouse.down(); await page.mouse.move(bendBox.x + 65, bendBox.y - 35, {steps: 10}); await page.mouse.up();
     await workspace.getByRole('button', {name: 'Save now', exact: true}).click();
     await expect(workspace.getByRole('status').first()).toHaveText('saved');
+    await expect.poll(async () => (await records(page, 'settings')).find(s => s.key.startsWith('workspace-page:')).value.connectors[0].points).not.toEqual(addedPoints);
     let saved = (await records(page, 'settings')).find(s => s.key.startsWith('workspace-page:')).value.connectors[0];
     expect(saved.points).toHaveLength(1); expect(saved.anchors).toBeTruthy();
     await workspace.getByRole('button', {name: 'Undo layout', exact: true}).click();
