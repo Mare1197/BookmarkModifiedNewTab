@@ -10,6 +10,7 @@ import {setMemoryPolicy} from './brainRepository';
 import {updateTask} from './workspaceRepository';
 import {loadConversationMessages} from './conversationMessages';
 import type {ContentSession} from './pageEditorSession';
+import type {createReferenceHydration} from './referenceHydration';
 
 export const PageReferenceSchema = defineBlockSchema({
     flavour: 'affine:embed-workspace-object', props: () => ({entityId: '', placementId: ''}),
@@ -27,6 +28,7 @@ export interface ReferenceContext {
     onError: (error: unknown) => void;
     collapsed: Set<string>;
     colors: Map<string, string>;
+    hydration?: ReturnType<typeof createReferenceHydration>;
 }
 export const referenceContexts = new Map<string, ReferenceContext>();
 // Brain cards have canonical dimensions. Native notes otherwise grow/shrink

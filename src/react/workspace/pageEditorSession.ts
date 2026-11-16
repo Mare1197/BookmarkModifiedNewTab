@@ -103,6 +103,7 @@ export function createPageEditorSession(initial: WorkspaceEntity[], dependencies
         } catch (error) {errorStatus(error); throw error;}
     }
     return {read, edit, flush, flushJournal: journal.flushJournal, reload, undo, getDraftIds: journal.getDraftIds, dirtyCount: () => drafts.size,
+        isDirty: (entityId: string) => drafts.has(entityId),
         async reconcileRecovery() {
             await running?.catch(() => {});
             const reviewedDrafts = new Map(drafts);

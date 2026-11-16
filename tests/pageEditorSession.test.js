@@ -2,6 +2,21 @@ const assert = require('node:assert/strict');
 const test = require('node:test');
 const {workspaceFixture} = require('./helpers/workspaceFixture');
 
+test('isDirty follows per-object draft ownership through save failure and explicit reload', async t => {
+    const {db, load} = await workspaceFixture(t), create = load('brainRepository.ts').createBrainObject;
+    const a = await create({type: 'note', title: 'A'}), b = await create({type: 'note', title: 'B'});
+    const session = load('pageEditorSession.ts').createPageEditorSession([a, b], {
+        save: async () => {throw new Error('disk full');}, read: id => db.entities.get(id)
+    });
+    assert.equal(session.isDirty(a.id), false); session.edit(a.id, load('richContent.ts').plainToRichContent('Retain me'));
+    assert.equal(session.isDirty(a.id), true); assert.equal(session.isDirty(b.id), false);
+    await assert.rejects(session.flush(), /disk full/); assert.equal(session.isDirty(a.id), true);
+    await session.reload(); assert.equal(session.isDirty(a.id), false); await session.dispose();
+    const saved = load('pageEditorSession.ts').createPageEditorSession([a]);
+    saved.edit(a.id, load('richContent.ts').plainToRichContent('Saved')); await saved.flush();
+    assert.equal(saved.isDirty(a.id), false); await saved.dispose();
+});
+
 test('an edit arriving during recovery reconciliation is never cleared or reported saved', async t => {
     const {db, load} = await workspaceFixture(t);
     const note = await load('brainRepository.ts').createBrainObject({type: 'note', title: 'Note'});
