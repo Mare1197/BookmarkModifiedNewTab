@@ -78,7 +78,7 @@ export async function mountWorkspaceEditor(host: HTMLElement, input: WorkspaceEd
         if (content !== 'saved') return content;
         return queue.pending().length ? (layoutStatus === 'saved' ? 'saving' : layoutStatus) : content;
     }
-    return {flush,
+    return {flush, setSelectedReferences: projection.setSelectedReferences,
         async reconcileRecovery() {
             clearTimeout(timer); await flushing?.catch(() => {});
             await session.reconcileRecovery();

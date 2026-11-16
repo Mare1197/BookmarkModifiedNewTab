@@ -31,6 +31,7 @@ export function AffineWorkspace(props: Props) {
     const [groupName, setGroupName] = useState('Group'), [targetId, setTargetId] = useState(''), [parentId, setParentId] = useState('');
     const [busy, setBusy] = useState(false), [undoToken, setUndoToken] = useState<string>();
     const upload = useRef<HTMLInputElement>(null);
+    useEffect(() => {editor.current?.setSelectedReferences?.(selected);}, [selected, ready]);
     useEffect(() => {
         let cancelled = false;
         cancelRequested.current = false; setReady(false); setPreparing(true);

@@ -23,7 +23,7 @@ export function observeCanvasReferences(viewport: Pick<Viewport, 'center' | 'wid
         for (const id of previous.keys()) if (!current.has(id)) {previous.delete(id); publish(id, false);}
     };
     const subscriptions = [viewport.viewportUpdated.on(update), viewport.sizeUpdated.on(update)]; update();
-    return () => {closed = true; subscriptions.forEach(subscription => subscription.dispose()); previous.clear();};
+    return Object.assign(() => {closed = true; subscriptions.forEach(subscription => subscription.dispose()); previous.clear();}, {refresh: update});
 }
 const documentPanes = new WeakMap<HTMLElement, {observer: IntersectionObserver; targets: Map<Element, (visible: boolean) => void>}>();
 export function observeDocumentReference(node: HTMLElement, pane: HTMLElement, publish: (visible: boolean) => void) {

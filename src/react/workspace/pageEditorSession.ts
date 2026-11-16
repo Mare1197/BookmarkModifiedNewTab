@@ -12,6 +12,7 @@ export const hasUnsavedWork = (status: SaveStatus) => status !== 'saved';
 export interface PageEditorSession {
     flush(): Promise<void>; flushJournal(): Promise<void>; reload(): Promise<void>; getDraftIds(): string[];
     getStatus(): SaveStatus; exportDrafts(): string; dispose(): void; reconcileRecovery(): Promise<void>;
+    setSelectedReferences?(placementIds: readonly string[]): void;
 }
 export function createPageEditorSession(initial: WorkspaceEntity[], dependencies: {
     save: typeof saveRichContent; read: (id: string) => Promise<WorkspaceEntity | undefined>; journal?: JournalRepository;

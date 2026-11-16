@@ -22,7 +22,9 @@ test('canvas visibility observes camera and size without changing model geometry
     assert.deepEqual([...states], [['a', true], ['b', false]]);
     viewport.center.x = 2000; listeners.forEach(fn => fn());
     assert.deepEqual([...states], [['a', false], ['b', true]]);
-    dispose(); assert.equal(listeners.size, 0); assert.deepEqual(placements, original);
+    assert.deepEqual(placements, original);
+    placements[0].x = 2000; dispose.refresh(); assert.equal(states.get('a'), true);
+    dispose(); assert.equal(listeners.size, 0);
 });
 
 test('document observer uses pane overscan and releases observation', async t => {

@@ -8,7 +8,7 @@ import {BlockViewExtension, BlockViewIdentifier, WidgetViewMapIdentifier} from '
 import {GfxController} from '@blocksuite/block-std/gfx';
 import {DocCollection, Schema, type Y} from '@blocksuite/store';
 import {literal} from 'lit/static-html.js';
-import {PageReferenceSchema, WorkspaceReferenceBlock, WorkspaceReferenceNote, referenceContexts, type ReferenceContext} from './blocksuiteBrainReference';
+import {PageReferenceSchema, WorkspaceReferenceBlock, WorkspaceReferenceNote, referenceContexts, type ReferenceInput, type ReferenceContext} from './blocksuiteBrainReference';
 import type {PageSnapshot} from './pageRepository';
 import {planNativeProjection} from './nativeProjectionPlan';
 import {validateGeometry} from './pageValidation';
@@ -17,22 +17,39 @@ import {attachNativeClientOffsets} from './nativeClientOffsets';
 import {attachNativePointerCoordinates} from './nativePointerCoordinates';
 import {prepareNativeMount, runProjectionBatches, type NativeMountScope, type NativeMountOptions} from './cooperativeProjection';
 import {createViewportChanges} from './nativeViewportChanges';
+import {workspaceClient} from './workspaceClient';
+import {createReferenceDataSource} from './referenceDataSource';
+import {createReferenceHydration} from './referenceHydration';
+import {createReferenceResources} from './referenceResources';
+import {loadReferenceContent} from './referenceContent';
+import {observeCanvasReferences} from './referenceVisibility';
 import type {PageCommand, PageMode} from '../../workspace/pageTypes';
 import '@toeverything/theme/style.css';
 
 let registered = false;
 const colors: Record<string, string> = {default: '#ffffff', blue: '#e5efff', green: '#e5f5ea', yellow: '#fff6d8', purple: '#f0e8ff'};
-export async function mountPageProjection(container: HTMLElement, snapshot: PageSnapshot, mode: PageMode, context: ReferenceContext,
+export async function mountPageProjection(container: HTMLElement, snapshot: PageSnapshot, mode: PageMode, context: ReferenceInput,
     onCommand: (command: PageCommand) => void, options: NativeMountOptions = {}) {
     const start = performance.now();
     const mounted = await prepareNativeMount(scope => buildPageProjection(container, snapshot, mode, context, onCommand, scope, options), options);
     options.onMeasure?.('projection-total', performance.now() - start);
     return {...mounted.value, dispose: mounted.dispose};
 }
-async function buildPageProjection(container: HTMLElement, snapshot: PageSnapshot, mode: PageMode, context: ReferenceContext,
+async function buildPageProjection(container: HTMLElement, snapshot: PageSnapshot, mode: PageMode, input: ReferenceInput,
     onCommand: (command: PageCommand) => void, scope: NativeMountScope, options: NativeMountOptions) {
     scope.check();
     const plan = planNativeProjection(snapshot);
+    const data = createReferenceDataSource(workspaceClient, snapshot, input.onError); scope.own(() => data.dispose());
+    const hydration = createReferenceHydration({maxConcurrent: 4, onError: input.onError});
+    const resources = createReferenceResources({session: input.session, hydration,
+        load: (entityId, signal) => loadReferenceContent(entityId, signal, input)});
+    scope.own(() => resources.dispose());
+    const visibility = new Map<string, Set<() => void>>();
+    const context: ReferenceContext = {...input, data, resources, canvasVisibility: new Map(),
+        subscribeVisibility(id, listener) {
+            const listeners = visibility.get(id) || new Set(); listeners.add(listener); visibility.set(id, listeners);
+            return () => {listeners.delete(listener); if (!listeners.size) visibility.delete(id);};
+        }};
     if (!registered) {
         blockEffects(); presetEffects();
         customElements.define('workspace-reference-block', WorkspaceReferenceBlock);
@@ -52,9 +69,10 @@ async function buildPageProjection(container: HTMLElement, snapshot: PageSnapsho
     const disposables: Array<{dispose(): void}> = [];
     let routing: ReturnType<typeof mountConnectorRouting> | undefined;
     const editors: Array<PageEditor | EdgelessEditor> = [], panes: HTMLElement[] = [];
+    let canvasVisibility: ReturnType<typeof observeCanvasReferences> | undefined, visibilityFrame = 0;
     let removePaste = () => {};
     scope.own(() => {
-        disposed = true; clearTimeout(timer); routing?.dispose(); disposables.forEach(d => d.dispose()); removePaste();
+        disposed = true; clearTimeout(timer); cancelAnimationFrame(visibilityFrame); routing?.dispose(); disposables.forEach(d => d.dispose()); removePaste();
         editors.forEach(editor => editor.remove()); panes.forEach(pane => pane.remove()); referenceContexts.delete(doc.id);
     });
     const operations: Array<() => void> = [() => {root = doc.addBlock('affine:page', {});},
@@ -127,6 +145,26 @@ async function buildPageProjection(container: HTMLElement, snapshot: PageSnapsho
             disposables.push({dispose: attachNativePointerCoordinates(editor.std.host, editor.std.event)});
             disposables.push({dispose: attachNativeClientOffsets(pane, container.parentElement || container, viewport)});
             const v = snapshot.presentation.viewport; viewport.setViewport(v.zoom, [v.x, v.y]);
+            const gfx = editor.std.get(GfxController);
+            canvasVisibility = observeCanvasReferences(viewport, () => placements.map(({p}) => {
+                const note = doc.getBlockById(notes.get(p.id)!) as NoteBlockModel;
+                const [x, y, width, height] = JSON.parse(note.xywh) as number[];
+                return {id: p.id, x: x!, y: y!, width: width!, height: height!};
+            }), (id, visible) => {context.canvasVisibility.set(id, visible); visibility.get(id)?.forEach(listener => listener());});
+            disposables.push({dispose: canvasVisibility});
+            const select = () => {
+                const queue = [...gfx.selection.selectedIds], seen = new Set<string>(), selected: string[] = [];
+                while (queue.length) {
+                    const id = queue.pop()!; if (seen.has(id)) continue; seen.add(id);
+                    const placement = placementIds.get(id); if (placement) selected.push(placement);
+                    else {
+                        const group = surface.getElementById(id);
+                        if (group?.type === 'group' && 'children' in group) queue.push(...(group.children as Y.Map<boolean>).keys());
+                    }
+                }
+                resources.setSelected(selected, 'native');
+            };
+            disposables.push(gfx.selection.slots.updated.on(select)); select();
             const changedViewport = createViewportChanges(v, next => onCommand({type: 'view', mode, viewport: next}));
             disposables.push(viewport.viewportUpdated.on(({zoom, center}) => {
                 if (!hydrating && !disposed) changedViewport({x: center[0], y: center[1], zoom});
@@ -154,6 +192,7 @@ async function buildPageProjection(container: HTMLElement, snapshot: PageSnapsho
             if (event.props.key === 'xywh' && mode !== 'document') {
                 dirtyNotes.add(event.id); clearTimeout(timer); timer = setTimeout(flushGeometry, 250);
                 queueMicrotask(() => routing?.refresh());
+                if (!visibilityFrame) visibilityFrame = requestAnimationFrame(() => {visibilityFrame = 0; if (!disposed) canvasVisibility?.refresh();});
             }
             if (event.props.key === 'edgeless') {
                 const note = doc.getBlockById(event.id) as NoteBlockModel;
@@ -186,7 +225,13 @@ async function buildPageProjection(container: HTMLElement, snapshot: PageSnapsho
         context.onError(new Error('Paste into a note or use Add existing object / Upload file.'));
     };
     container.addEventListener('paste', blockUnsupported, true);
-    removePaste = () => container.removeEventListener('paste', blockUnsupported, true);
+    const down = () => resources.setDragging(true), up = () => resources.setDragging(false);
+    container.addEventListener('pointerdown', down, true); document.addEventListener('pointerup', up, true);
+    document.addEventListener('pointercancel', up, true);
+    removePaste = () => {
+        container.removeEventListener('paste', blockUnsupported, true); container.removeEventListener('pointerdown', down, true);
+        document.removeEventListener('pointerup', up, true); document.removeEventListener('pointercancel', up, true);
+    };
     hydrating = false;
-    return {flushGeometry};
+    return {flushGeometry, setSelectedReferences: (ids: readonly string[]) => resources.setSelected(ids)};
 }
