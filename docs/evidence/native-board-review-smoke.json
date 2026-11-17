@@ -1,0 +1,1074 @@
+{
+  "scope": "One-sample follow-up diagnostic per50/500-reference mode on the final author-fix artifact. Separate from all five-sample pre-review medians; no new1000-reference or library-capacity certificate. Failed/skipped cases, if present, remain failures/skips.",
+  "applicationFixCommit": "fb696661c9832aac5b5ba64881c811997a05e697",
+  "frozenSourceCommit": "d9d320b1170cfca05d54b7e03ee5fc141aaeaee8",
+  "planned": 6,
+  "attempted": 6,
+  "passed": 6,
+  "failed": 0,
+  "cases": [
+    {
+      "label": "native-post-review-smoke",
+      "sourceRevision": "d9d320b1170cfca05d54b7e03ee5fc141aaeaee8",
+      "harnessRevision": "d9d320b1170cfca05d54b7e03ee5fc141aaeaee8",
+      "dirty": false,
+      "artifactDigest": "879cd42e9f58e9a165dccbf87a7d11ac755742ded6f7f7497a29856407484bd7",
+      "count": 50,
+      "mode": "document",
+      "sample": 0,
+      "ok": true,
+      "timedOut": false,
+      "workerStillRunning": false,
+      "supervisorException": false,
+      "ownedPid": 20144,
+      "metrics": {
+        "fixtureSetup": {
+          "ms": 255.86169999999993,
+          "ok": true
+        },
+        "freshDocumentStartup": {
+          "ms": 417.21540000000005,
+          "ok": true
+        },
+        "browser": "151.0.7922.34",
+        "viewport": {
+          "width": 1584,
+          "height": 1024
+        },
+        "workspaceReady": {
+          "ms": 1758.5953,
+          "ok": true
+        },
+        "initialVisibleContentReady": {
+          "ms": 24.659599999999955,
+          "ok": true
+        },
+        "render": {
+          "stats": {
+            "longTasks": 2,
+            "longTaskMs": 651,
+            "reads": {
+              "entities:get": 158,
+              "boards:get": 3,
+              "settings:getAll": 1,
+              "settings:get": 2,
+              "relationships:get": 5,
+              "searchState:get": 2
+            },
+            "firstReferenceAt": 2291.900000035763,
+            "firstPaneAt": 2178.900000035763
+          },
+          "startedAt": 803.6999999880791,
+          "modelReferences": 50,
+          "distinctNativeDocs": 1,
+          "completeIdentityAndGeometry": true,
+          "nativeSurfaceConnectors": 5,
+          "nativeGroups": 2,
+          "contentLoading": 0,
+          "hydratedResources": 3,
+          "peakContentLoading": 3,
+          "projectionMeasures": [
+            {
+              "phase": "native-workspace:projection-total",
+              "ms": 346.5
+            },
+            {
+              "phase": "native-workspace:projection-models",
+              "ms": 135.29999995231628
+            },
+            {
+              "phase": "native-workspace:projection-indexes",
+              "ms": 29
+            },
+            {
+              "phase": "native-workspace:projection-render",
+              "ms": 147.0999999642372
+            }
+          ],
+          "renderedReferences": 50,
+          "richEditors": 1,
+          "images": 0,
+          "rawLayerConnectorEntries": null,
+          "modelConnectors": null,
+          "connectorIds": [],
+          "mainHeapBytes": 40311810,
+          "excludesWorkerHeap": true
+        },
+        "firstUsableEdit": {
+          "ms": 48.32600000000002,
+          "ok": true
+        },
+        "save": {
+          "ms": 545.9549999999999,
+          "ok": true
+        },
+        "canonicalEditVerified": {
+          "ms": 20.708200000000033,
+          "ok": true,
+          "value": true
+        },
+        "revealMixedContentKinds": {
+          "ms": 304.14770000000044,
+          "ok": true,
+          "value": true
+        },
+        "offscreenResourceRelease": {
+          "ms": 111.03269999999975,
+          "ok": true,
+          "value": {
+            "loading": 0,
+            "hydrated": 4,
+            "peak": 3
+          }
+        },
+        "postPanSave": {
+          "ms": 830.6358,
+          "ok": true,
+          "value": true
+        },
+        "completeAfterReveal": {
+          "references": 50,
+          "connectors": 5
+        },
+        "requestedReferences": 50,
+        "librarySize": 0,
+        "measurementScope": "workspaceReady retains the baseline definition: canonical loading, import, projection and native shell/controller readiness. Initial visible content is measured separately before initial resource capture/edit/save. Mixed content kinds are explicitly revealed later; this replaces the old eager firstMixedContentReady phase and is not a directly comparable latency. Projection measures are elapsed wall time, not CPU. Read counts count requests, not returned rows. Heap excludes worker. Pan starts from restored initial camera."
+      },
+      "errors": [],
+      "output": "(node:20144) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\n(Use `node --trace-warnings ...` to show where the warning was created)\n",
+      "elapsedMs": 10125.9589
+    },
+    {
+      "label": "native-post-review-smoke",
+      "sourceRevision": "d9d320b1170cfca05d54b7e03ee5fc141aaeaee8",
+      "harnessRevision": "d9d320b1170cfca05d54b7e03ee5fc141aaeaee8",
+      "dirty": false,
+      "artifactDigest": "879cd42e9f58e9a165dccbf87a7d11ac755742ded6f7f7497a29856407484bd7",
+      "count": 50,
+      "mode": "canvas",
+      "sample": 0,
+      "ok": true,
+      "timedOut": false,
+      "workerStillRunning": false,
+      "supervisorException": false,
+      "ownedPid": 19780,
+      "metrics": {
+        "fixtureSetup": {
+          "ms": 242.29039999999986,
+          "ok": true
+        },
+        "freshDocumentStartup": {
+          "ms": 409.08849999999984,
+          "ok": true
+        },
+        "browser": "151.0.7922.34",
+        "viewport": {
+          "width": 1584,
+          "height": 1024
+        },
+        "workspaceReady": {
+          "ms": 2364.593,
+          "ok": true
+        },
+        "initialVisibleContentReady": {
+          "ms": 40.76389999999992,
+          "ok": true
+        },
+        "render": {
+          "stats": {
+            "longTasks": 3,
+            "longTaskMs": 737,
+            "reads": {
+              "boards:get": 4,
+              "entities:get": 170,
+              "settings:getAll": 1,
+              "settings:get": 2,
+              "relationships:get": 5,
+              "searchState:get": 2
+            },
+            "firstReferenceAt": 2430.100000023842,
+            "firstPaneAt": 2251.800000011921
+          },
+          "startedAt": 789.9000000357628,
+          "modelReferences": 50,
+          "distinctNativeDocs": 1,
+          "completeIdentityAndGeometry": true,
+          "nativeSurfaceConnectors": 5,
+          "nativeGroups": 2,
+          "contentLoading": 0,
+          "hydratedResources": 9,
+          "peakContentLoading": 4,
+          "projectionMeasures": [
+            {
+              "phase": "native-workspace:projection-total",
+              "ms": 785.9000000357628
+            },
+            {
+              "phase": "native-workspace:projection-models",
+              "ms": 156.5999999642372
+            },
+            {
+              "phase": "native-workspace:projection-indexes",
+              "ms": 19.19999998807907
+            },
+            {
+              "phase": "native-workspace:projection-render",
+              "ms": 570.6999999880791
+            }
+          ],
+          "renderedReferences": 50,
+          "richEditors": 3,
+          "images": 0,
+          "rawLayerConnectorEntries": 10,
+          "modelConnectors": 5,
+          "connectorIds": [
+            "unob0nnSui",
+            "cPWKYEaBJo",
+            "imIx3w2O-8",
+            "C1tw7yVz8I",
+            "CL8T2pVP8k",
+            "unob0nnSui",
+            "cPWKYEaBJo",
+            "imIx3w2O-8",
+            "C1tw7yVz8I",
+            "CL8T2pVP8k"
+          ],
+          "mainHeapBytes": 52634431,
+          "excludesWorkerHeap": true
+        },
+        "firstUsableEdit": {
+          "ms": 38.35730000000058,
+          "ok": true
+        },
+        "save": {
+          "ms": 220.70569999999952,
+          "ok": true
+        },
+        "canonicalEditVerified": {
+          "ms": 42.60639999999967,
+          "ok": true,
+          "value": true
+        },
+        "revealMixedContentKinds": {
+          "ms": 194.51429999999982,
+          "ok": true,
+          "value": true
+        },
+        "nativeCameraPan": {
+          "ms": 63.72479999999996,
+          "ok": true,
+          "value": {
+            "x": 500,
+            "y": 300
+          }
+        },
+        "offscreenResourceRelease": {
+          "ms": 284.35059999999976,
+          "ok": true,
+          "value": {
+            "loading": 0,
+            "hydrated": 10,
+            "peak": 4
+          }
+        },
+        "postPanSave": {
+          "ms": 324.3760000000002,
+          "ok": true,
+          "value": true
+        },
+        "completeAfterReveal": {
+          "references": 50,
+          "connectors": 5
+        },
+        "requestedReferences": 50,
+        "librarySize": 0,
+        "measurementScope": "workspaceReady retains the baseline definition: canonical loading, import, projection and native shell/controller readiness. Initial visible content is measured separately before initial resource capture/edit/save. Mixed content kinds are explicitly revealed later; this replaces the old eager firstMixedContentReady phase and is not a directly comparable latency. Projection measures are elapsed wall time, not CPU. Read counts count requests, not returned rows. Heap excludes worker. Pan starts from restored initial camera."
+      },
+      "errors": [],
+      "output": "(node:19780) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\n(Use `node --trace-warnings ...` to show where the warning was created)\n",
+      "elapsedMs": 8841.866100000001
+    },
+    {
+      "label": "native-post-review-smoke",
+      "sourceRevision": "d9d320b1170cfca05d54b7e03ee5fc141aaeaee8",
+      "harnessRevision": "d9d320b1170cfca05d54b7e03ee5fc141aaeaee8",
+      "dirty": false,
+      "artifactDigest": "879cd42e9f58e9a165dccbf87a7d11ac755742ded6f7f7497a29856407484bd7",
+      "count": 50,
+      "mode": "mixed",
+      "sample": 0,
+      "ok": true,
+      "timedOut": false,
+      "workerStillRunning": false,
+      "supervisorException": false,
+      "ownedPid": 3112,
+      "metrics": {
+        "fixtureSetup": {
+          "ms": 298.3484000000003,
+          "ok": true
+        },
+        "freshDocumentStartup": {
+          "ms": 461.50629999999956,
+          "ok": true
+        },
+        "browser": "151.0.7922.34",
+        "viewport": {
+          "width": 1584,
+          "height": 1024
+        },
+        "workspaceReady": {
+          "ms": 2343.5093000000006,
+          "ok": true
+        },
+        "initialVisibleContentReady": {
+          "ms": 32.0653999999995,
+          "ok": true
+        },
+        "render": {
+          "stats": {
+            "longTasks": 3,
+            "longTaskMs": 848,
+            "reads": {
+              "boards:get": 4,
+              "entities:get": 176,
+              "settings:getAll": 1,
+              "settings:get": 2,
+              "relationships:get": 5,
+              "searchState:get": 2
+            },
+            "firstReferenceAt": 2320.699999988079,
+            "firstPaneAt": 2229.800000011921
+          },
+          "startedAt": 817.8000000119209,
+          "modelReferences": 50,
+          "distinctNativeDocs": 1,
+          "completeIdentityAndGeometry": true,
+          "nativeSurfaceConnectors": 5,
+          "nativeGroups": 2,
+          "contentLoading": 0,
+          "hydratedResources": 11,
+          "peakContentLoading": 4,
+          "projectionMeasures": [
+            {
+              "phase": "native-workspace:projection-total",
+              "ms": 820.0999999642372
+            },
+            {
+              "phase": "native-workspace:projection-models",
+              "ms": 141.60000002384186
+            },
+            {
+              "phase": "native-workspace:projection-indexes",
+              "ms": 15.400000035762787
+            },
+            {
+              "phase": "native-workspace:projection-render",
+              "ms": 626.2999999523163
+            }
+          ],
+          "renderedReferences": 100,
+          "richEditors": 4,
+          "images": 0,
+          "rawLayerConnectorEntries": 10,
+          "modelConnectors": 5,
+          "connectorIds": [
+            "Dz0xsRY1rV",
+            "xYtZxfDNuB",
+            "SpoBw9z81y",
+            "03KTRN9SfF",
+            "TH8F2lphbi",
+            "Dz0xsRY1rV",
+            "xYtZxfDNuB",
+            "SpoBw9z81y",
+            "03KTRN9SfF",
+            "TH8F2lphbi"
+          ],
+          "mainHeapBytes": 45065940,
+          "excludesWorkerHeap": true
+        },
+        "firstUsableEdit": {
+          "ms": 58.625,
+          "ok": true
+        },
+        "save": {
+          "ms": 274.72279999999955,
+          "ok": true
+        },
+        "canonicalEditVerified": {
+          "ms": 58.26440000000002,
+          "ok": true,
+          "value": true
+        },
+        "revealMixedContentKinds": {
+          "ms": 527.9035999999996,
+          "ok": true,
+          "value": true
+        },
+        "nativeCameraPan": {
+          "ms": 65.45690000000013,
+          "ok": true,
+          "value": {
+            "x": 500,
+            "y": 300
+          }
+        },
+        "offscreenResourceRelease": {
+          "ms": 173.88839999999982,
+          "ok": true,
+          "value": {
+            "loading": 0,
+            "hydrated": 11,
+            "peak": 4
+          }
+        },
+        "postPanSave": {
+          "ms": 365.1341000000011,
+          "ok": true,
+          "value": true
+        },
+        "completeAfterReveal": {
+          "references": 50,
+          "connectors": 5
+        },
+        "requestedReferences": 50,
+        "librarySize": 0,
+        "measurementScope": "workspaceReady retains the baseline definition: canonical loading, import, projection and native shell/controller readiness. Initial visible content is measured separately before initial resource capture/edit/save. Mixed content kinds are explicitly revealed later; this replaces the old eager firstMixedContentReady phase and is not a directly comparable latency. Projection measures are elapsed wall time, not CPU. Read counts count requests, not returned rows. Heap excludes worker. Pan starts from restored initial camera."
+      },
+      "errors": [],
+      "output": "(node:3112) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\n(Use `node --trace-warnings ...` to show where the warning was created)\n",
+      "elapsedMs": 9172.8878
+    },
+    {
+      "label": "native-post-review-smoke",
+      "sourceRevision": "d9d320b1170cfca05d54b7e03ee5fc141aaeaee8",
+      "harnessRevision": "d9d320b1170cfca05d54b7e03ee5fc141aaeaee8",
+      "dirty": false,
+      "artifactDigest": "879cd42e9f58e9a165dccbf87a7d11ac755742ded6f7f7497a29856407484bd7",
+      "count": 500,
+      "mode": "document",
+      "sample": 0,
+      "ok": true,
+      "timedOut": false,
+      "workerStillRunning": false,
+      "supervisorException": false,
+      "ownedPid": 16432,
+      "metrics": {
+        "fixtureSetup": {
+          "ms": 1176.9408000000003,
+          "ok": true
+        },
+        "freshDocumentStartup": {
+          "ms": 475.2413000000006,
+          "ok": true
+        },
+        "browser": "151.0.7922.34",
+        "viewport": {
+          "width": 1584,
+          "height": 1024
+        },
+        "workspaceReady": {
+          "ms": 11085.324100000002,
+          "ok": true
+        },
+        "initialVisibleContentReady": {
+          "ms": 108.36409999999887,
+          "ok": true
+        },
+        "render": {
+          "stats": {
+            "longTasks": 68,
+            "longTaskMs": 9498,
+            "reads": {
+              "boards:get": 4,
+              "entities:get": 1508,
+              "settings:getAll": 1,
+              "settings:get": 2,
+              "relationships:get": 50,
+              "searchState:get": 2
+            },
+            "firstReferenceAt": 11597.099999964237,
+            "firstPaneAt": 9434.800000011921
+          },
+          "startedAt": 1000.3999999761581,
+          "modelReferences": 500,
+          "distinctNativeDocs": 1,
+          "completeIdentityAndGeometry": true,
+          "nativeSurfaceConnectors": 50,
+          "nativeGroups": 2,
+          "contentLoading": 0,
+          "hydratedResources": 3,
+          "peakContentLoading": 3,
+          "projectionMeasures": [
+            {
+              "phase": "native-workspace:projection-total",
+              "ms": 9269.300000011921
+            },
+            {
+              "phase": "native-workspace:projection-models",
+              "ms": 3847.599999964237
+            },
+            {
+              "phase": "native-workspace:projection-indexes",
+              "ms": 1871.5
+            },
+            {
+              "phase": "native-workspace:projection-render",
+              "ms": 3511.699999988079
+            }
+          ],
+          "renderedReferences": 500,
+          "richEditors": 1,
+          "images": 0,
+          "rawLayerConnectorEntries": null,
+          "modelConnectors": null,
+          "connectorIds": [],
+          "mainHeapBytes": 85686676,
+          "excludesWorkerHeap": true
+        },
+        "firstUsableEdit": {
+          "ms": 380.2423999999992,
+          "ok": true
+        },
+        "save": {
+          "ms": 838.1975999999995,
+          "ok": true
+        },
+        "canonicalEditVerified": {
+          "ms": 379.5820999999996,
+          "ok": true,
+          "value": true
+        },
+        "revealMixedContentKinds": {
+          "ms": 1424.7494000000006,
+          "ok": true,
+          "value": true
+        },
+        "offscreenResourceRelease": {
+          "ms": 212.88809999999648,
+          "ok": true,
+          "value": {
+            "loading": 0,
+            "hydrated": 4,
+            "peak": 3
+          }
+        },
+        "postPanSave": {
+          "ms": 474.3898999999983,
+          "ok": true,
+          "value": true
+        },
+        "completeAfterReveal": {
+          "references": 500,
+          "connectors": 50
+        },
+        "requestedReferences": 500,
+        "librarySize": 0,
+        "measurementScope": "workspaceReady retains the baseline definition: canonical loading, import, projection and native shell/controller readiness. Initial visible content is measured separately before initial resource capture/edit/save. Mixed content kinds are explicitly revealed later; this replaces the old eager firstMixedContentReady phase and is not a directly comparable latency. Projection measures are elapsed wall time, not CPU. Read counts count requests, not returned rows. Heap excludes worker. Pan starts from restored initial camera."
+      },
+      "errors": [],
+      "output": "(node:16432) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\n(Use `node --trace-warnings ...` to show where the warning was created)\n",
+      "elapsedMs": 21555.8212
+    },
+    {
+      "label": "native-post-review-smoke",
+      "sourceRevision": "d9d320b1170cfca05d54b7e03ee5fc141aaeaee8",
+      "harnessRevision": "d9d320b1170cfca05d54b7e03ee5fc141aaeaee8",
+      "dirty": false,
+      "artifactDigest": "879cd42e9f58e9a165dccbf87a7d11ac755742ded6f7f7497a29856407484bd7",
+      "count": 500,
+      "mode": "canvas",
+      "sample": 0,
+      "ok": true,
+      "timedOut": false,
+      "workerStillRunning": false,
+      "supervisorException": false,
+      "ownedPid": 21272,
+      "metrics": {
+        "fixtureSetup": {
+          "ms": 1453.7482000000005,
+          "ok": true
+        },
+        "freshDocumentStartup": {
+          "ms": 475.90819999999985,
+          "ok": true
+        },
+        "browser": "151.0.7922.34",
+        "viewport": {
+          "width": 1584,
+          "height": 1024
+        },
+        "workspaceReady": {
+          "ms": 15308.158300000001,
+          "ok": true
+        },
+        "initialVisibleContentReady": {
+          "ms": 151.97450000000026,
+          "ok": true
+        },
+        "render": {
+          "stats": {
+            "longTasks": 77,
+            "longTaskMs": 10909,
+            "reads": {
+              "boards:get": 4,
+              "entities:get": 1520,
+              "settings:getAll": 1,
+              "settings:get": 2,
+              "relationships:get": 50,
+              "searchState:get": 2
+            },
+            "firstReferenceAt": 12165,
+            "firstPaneAt": 10452.5
+          },
+          "startedAt": 1085.5,
+          "modelReferences": 500,
+          "distinctNativeDocs": 1,
+          "completeIdentityAndGeometry": true,
+          "nativeSurfaceConnectors": 50,
+          "nativeGroups": 2,
+          "contentLoading": 0,
+          "hydratedResources": 9,
+          "peakContentLoading": 4,
+          "projectionMeasures": [
+            {
+              "phase": "native-workspace:projection-total",
+              "ms": 13587.899999976158
+            },
+            {
+              "phase": "native-workspace:projection-models",
+              "ms": 4057.5
+            },
+            {
+              "phase": "native-workspace:projection-indexes",
+              "ms": 2361
+            },
+            {
+              "phase": "native-workspace:projection-render",
+              "ms": 7123.699999988079
+            }
+          ],
+          "renderedReferences": 500,
+          "richEditors": 3,
+          "images": 0,
+          "rawLayerConnectorEntries": 100,
+          "modelConnectors": 50,
+          "connectorIds": [
+            "fsxN8RKUsy",
+            "x9J7NMIlcf",
+            "kQTQbBEVZ1",
+            "Pu0qx81ule",
+            "vJDGNdlXV9",
+            "__tkSTRbNP",
+            "8Ch9GaLTGL",
+            "_JeG5-g_4h",
+            "VWz36OoRhO",
+            "4jLaKZyiZV",
+            "_HcTrYDhnC",
+            "z9QCASUUqh",
+            "YSjK87GA5h",
+            "0nCuDyZJL1",
+            "zb8NzQRilK",
+            "sRnX1wFV_x",
+            "EsfK67oepz",
+            "yrZYd0v61S",
+            "pyUMG7Rzsv",
+            "e9zqgUYcfo",
+            "zWyigcEpIe",
+            "nvNKmi5zFS",
+            "XWh0UdNVmT",
+            "_PAl4B5Vg8",
+            "Brd2SM_P3A",
+            "qyFYjUMKBb",
+            "x5ld5pRsAK",
+            "A5aV8cjiW6",
+            "leE-kMS36M",
+            "xaDXUE_VtL",
+            "XMWigoA1nV",
+            "9LNdHmpJKT",
+            "e7qKprEnwK",
+            "17ST9DqJF0",
+            "Lng4UG8TSu",
+            "_dDPTsDj19",
+            "WgbmdQv2My",
+            "2Kyr-Xy7Fw",
+            "eSYjsBdHrd",
+            "3EStqjNZgZ",
+            "LZ3C2o6SOG",
+            "xPsxrWutN4",
+            "CdRSrgt2iT",
+            "7NpTlCGHi2",
+            "nxHVQ-OZKf",
+            "iyiAXxCrts",
+            "7gj2afOBCy",
+            "jU5YYQos0Q",
+            "DcD4JkPUDw",
+            "l6MjDBQxU8",
+            "fsxN8RKUsy",
+            "x9J7NMIlcf",
+            "kQTQbBEVZ1",
+            "Pu0qx81ule",
+            "vJDGNdlXV9",
+            "__tkSTRbNP",
+            "8Ch9GaLTGL",
+            "_JeG5-g_4h",
+            "VWz36OoRhO",
+            "4jLaKZyiZV",
+            "_HcTrYDhnC",
+            "z9QCASUUqh",
+            "YSjK87GA5h",
+            "0nCuDyZJL1",
+            "zb8NzQRilK",
+            "sRnX1wFV_x",
+            "EsfK67oepz",
+            "yrZYd0v61S",
+            "pyUMG7Rzsv",
+            "e9zqgUYcfo",
+            "zWyigcEpIe",
+            "nvNKmi5zFS",
+            "XWh0UdNVmT",
+            "_PAl4B5Vg8",
+            "Brd2SM_P3A",
+            "qyFYjUMKBb",
+            "x5ld5pRsAK",
+            "A5aV8cjiW6",
+            "leE-kMS36M",
+            "xaDXUE_VtL",
+            "XMWigoA1nV",
+            "9LNdHmpJKT",
+            "e7qKprEnwK",
+            "17ST9DqJF0",
+            "Lng4UG8TSu",
+            "_dDPTsDj19",
+            "WgbmdQv2My",
+            "2Kyr-Xy7Fw",
+            "eSYjsBdHrd",
+            "3EStqjNZgZ",
+            "LZ3C2o6SOG",
+            "xPsxrWutN4",
+            "CdRSrgt2iT",
+            "7NpTlCGHi2",
+            "nxHVQ-OZKf",
+            "iyiAXxCrts",
+            "7gj2afOBCy",
+            "jU5YYQos0Q",
+            "DcD4JkPUDw",
+            "l6MjDBQxU8"
+          ],
+          "mainHeapBytes": 93196796,
+          "excludesWorkerHeap": true
+        },
+        "firstUsableEdit": {
+          "ms": 379.9733000000015,
+          "ok": true
+        },
+        "save": {
+          "ms": 1167.486100000002,
+          "ok": true
+        },
+        "canonicalEditVerified": {
+          "ms": 405.43299999999726,
+          "ok": true,
+          "value": true
+        },
+        "revealMixedContentKinds": {
+          "ms": 3870.053899999999,
+          "ok": true,
+          "value": true
+        },
+        "nativeCameraPan": {
+          "ms": 309.02939999999944,
+          "ok": true,
+          "value": {
+            "x": 500,
+            "y": 300
+          }
+        },
+        "offscreenResourceRelease": {
+          "ms": 2681.2890000000043,
+          "ok": true,
+          "value": {
+            "loading": 0,
+            "hydrated": 10,
+            "peak": 4
+          }
+        },
+        "postPanSave": {
+          "ms": 932.4422999999952,
+          "ok": true,
+          "value": true
+        },
+        "completeAfterReveal": {
+          "references": 500,
+          "connectors": 50
+        },
+        "requestedReferences": 500,
+        "librarySize": 0,
+        "measurementScope": "workspaceReady retains the baseline definition: canonical loading, import, projection and native shell/controller readiness. Initial visible content is measured separately before initial resource capture/edit/save. Mixed content kinds are explicitly revealed later; this replaces the old eager firstMixedContentReady phase and is not a directly comparable latency. Projection measures are elapsed wall time, not CPU. Read counts count requests, not returned rows. Heap excludes worker. Pan starts from restored initial camera."
+      },
+      "errors": [],
+      "output": "(node:21272) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\n(Use `node --trace-warnings ...` to show where the warning was created)\n",
+      "elapsedMs": 35414.5077
+    },
+    {
+      "label": "native-post-review-smoke",
+      "sourceRevision": "d9d320b1170cfca05d54b7e03ee5fc141aaeaee8",
+      "harnessRevision": "d9d320b1170cfca05d54b7e03ee5fc141aaeaee8",
+      "dirty": false,
+      "artifactDigest": "879cd42e9f58e9a165dccbf87a7d11ac755742ded6f7f7497a29856407484bd7",
+      "count": 500,
+      "mode": "mixed",
+      "sample": 0,
+      "ok": true,
+      "timedOut": false,
+      "workerStillRunning": false,
+      "supervisorException": false,
+      "ownedPid": 19220,
+      "metrics": {
+        "fixtureSetup": {
+          "ms": 1487.7424,
+          "ok": true
+        },
+        "freshDocumentStartup": {
+          "ms": 426.27250000000004,
+          "ok": true
+        },
+        "browser": "151.0.7922.34",
+        "viewport": {
+          "width": 1584,
+          "height": 1024
+        },
+        "workspaceReady": {
+          "ms": 19042.8433,
+          "ok": true
+        },
+        "initialVisibleContentReady": {
+          "ms": 93.9442999999992,
+          "ok": true
+        },
+        "render": {
+          "stats": {
+            "longTasks": 61,
+            "longTaskMs": 13255,
+            "reads": {
+              "entities:get": 1526,
+              "boards:get": 3,
+              "settings:getAll": 1,
+              "settings:get": 2,
+              "relationships:get": 50,
+              "searchState:get": 2
+            },
+            "firstReferenceAt": 11221,
+            "firstPaneAt": 8811.599999964237
+          },
+          "startedAt": 953.5,
+          "modelReferences": 500,
+          "distinctNativeDocs": 1,
+          "completeIdentityAndGeometry": true,
+          "nativeSurfaceConnectors": 50,
+          "nativeGroups": 2,
+          "contentLoading": 0,
+          "hydratedResources": 11,
+          "peakContentLoading": 4,
+          "projectionMeasures": [
+            {
+              "phase": "native-workspace:projection-total",
+              "ms": 16945
+            },
+            {
+              "phase": "native-workspace:projection-models",
+              "ms": 3263.099999964237
+            },
+            {
+              "phase": "native-workspace:projection-indexes",
+              "ms": 1775.3999999761581
+            },
+            {
+              "phase": "native-workspace:projection-render",
+              "ms": 11853.300000011921
+            }
+          ],
+          "renderedReferences": 1000,
+          "richEditors": 4,
+          "images": 0,
+          "rawLayerConnectorEntries": 100,
+          "modelConnectors": 50,
+          "connectorIds": [
+            "PSNz7T5L9E",
+            "Cwejf_QguY",
+            "OQBObJQoxa",
+            "77Ie_syNgL",
+            "C91b3dfkO3",
+            "stMr46nI5i",
+            "CnUzcAXzYE",
+            "3XKnR0_TpC",
+            "B5D-wuOaPO",
+            "n81pHnExWA",
+            "ZJLGNxxBgI",
+            "hTMFbHfTAt",
+            "ZdlRWYbLRZ",
+            "luA_g7ufBn",
+            "noYyi08jyF",
+            "JCz33aIHE9",
+            "IAX8DkS-zo",
+            "K9vm7F7Glv",
+            "3dnIpYnsx2",
+            "it9bDY99iG",
+            "OMtNbfRD9k",
+            "8Dxt_HgmE6",
+            "_1R6GYgzdX",
+            "qkJVb6kBJH",
+            "Rc2mAWoHYF",
+            "GOHdiCfAa_",
+            "9XxXYfETo2",
+            "aqqyqk1ZXp",
+            "wHtq4_ozgq",
+            "02Y6YBrSgX",
+            "NfYjYMGjeK",
+            "hsr0_n2XAe",
+            "Wp1PMyNjdA",
+            "MeodTV3QwN",
+            "2jAv3H0qJ5",
+            "fOpoqvKs-x",
+            "HfNv355HN_",
+            "nPryHqOxUu",
+            "a8nSWMCXih",
+            "hHukJyw51I",
+            "oNLxm89oHQ",
+            "5Cn0BZCw-j",
+            "XQ16dV6JER",
+            "ODOuIxEZhw",
+            "PJptCqiaEq",
+            "c9mGUySqFn",
+            "tmsIPxi2wb",
+            "O9Ke3S3Yf-",
+            "lyAWDBlpL9",
+            "obQLc_ufxa",
+            "PSNz7T5L9E",
+            "Cwejf_QguY",
+            "OQBObJQoxa",
+            "77Ie_syNgL",
+            "C91b3dfkO3",
+            "stMr46nI5i",
+            "CnUzcAXzYE",
+            "3XKnR0_TpC",
+            "B5D-wuOaPO",
+            "n81pHnExWA",
+            "ZJLGNxxBgI",
+            "hTMFbHfTAt",
+            "ZdlRWYbLRZ",
+            "luA_g7ufBn",
+            "noYyi08jyF",
+            "JCz33aIHE9",
+            "IAX8DkS-zo",
+            "K9vm7F7Glv",
+            "3dnIpYnsx2",
+            "it9bDY99iG",
+            "OMtNbfRD9k",
+            "8Dxt_HgmE6",
+            "_1R6GYgzdX",
+            "qkJVb6kBJH",
+            "Rc2mAWoHYF",
+            "GOHdiCfAa_",
+            "9XxXYfETo2",
+            "aqqyqk1ZXp",
+            "wHtq4_ozgq",
+            "02Y6YBrSgX",
+            "NfYjYMGjeK",
+            "hsr0_n2XAe",
+            "Wp1PMyNjdA",
+            "MeodTV3QwN",
+            "2jAv3H0qJ5",
+            "fOpoqvKs-x",
+            "HfNv355HN_",
+            "nPryHqOxUu",
+            "a8nSWMCXih",
+            "hHukJyw51I",
+            "oNLxm89oHQ",
+            "5Cn0BZCw-j",
+            "XQ16dV6JER",
+            "ODOuIxEZhw",
+            "PJptCqiaEq",
+            "c9mGUySqFn",
+            "tmsIPxi2wb",
+            "O9Ke3S3Yf-",
+            "lyAWDBlpL9",
+            "obQLc_ufxa"
+          ],
+          "mainHeapBytes": 76881950,
+          "excludesWorkerHeap": true
+        },
+        "firstUsableEdit": {
+          "ms": 684.1074000000008,
+          "ok": true
+        },
+        "save": {
+          "ms": 1281.8488999999972,
+          "ok": true
+        },
+        "canonicalEditVerified": {
+          "ms": 969.7222999999976,
+          "ok": true,
+          "value": true
+        },
+        "revealMixedContentKinds": {
+          "ms": 1938.1047999999973,
+          "ok": true,
+          "value": true
+        },
+        "nativeCameraPan": {
+          "ms": 140.98199999999997,
+          "ok": true,
+          "value": {
+            "x": 500,
+            "y": 300
+          }
+        },
+        "offscreenResourceRelease": {
+          "ms": 779.167599999997,
+          "ok": true,
+          "value": {
+            "loading": 0,
+            "hydrated": 11,
+            "peak": 4
+          }
+        },
+        "postPanSave": {
+          "ms": 1960.3880000000026,
+          "ok": true,
+          "value": true
+        },
+        "completeAfterReveal": {
+          "references": 500,
+          "connectors": 50
+        },
+        "requestedReferences": 500,
+        "librarySize": 0,
+        "measurementScope": "workspaceReady retains the baseline definition: canonical loading, import, projection and native shell/controller readiness. Initial visible content is measured separately before initial resource capture/edit/save. Mixed content kinds are explicitly revealed later; this replaces the old eager firstMixedContentReady phase and is not a directly comparable latency. Projection measures are elapsed wall time, not CPU. Read counts count requests, not returned rows. Heap excludes worker. Pan starts from restored initial camera."
+      },
+      "errors": [],
+      "output": "(node:19220) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\n(Use `node --trace-warnings ...` to show where the warning was created)\n",
+      "elapsedMs": 34920.4945
+    }
+  ],
+  "cancellations": [
+    {
+      "mode": "document",
+      "referenceCount": 1000,
+      "confirmationMs": 8058.599999964237,
+      "scope": "Automation click through observed cancelled status, no editor panes and two animation frames; includes automation overhead."
+    },
+    {
+      "mode": "canvas",
+      "referenceCount": 1000,
+      "confirmationMs": 9069.399999976158,
+      "scope": "Automation click through observed cancelled status, no editor panes and two animation frames; includes automation overhead."
+    },
+    {
+      "mode": "mixed",
+      "referenceCount": 1000,
+      "confirmationMs": 8119,
+      "scope": "Automation click through observed cancelled status, no editor panes and two animation frames; includes automation overhead."
+    }
+  ],
+  "output": "\r\nRunning 6 tests using 1 worker\r\n\r\n(node:23228) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\r\n(Use `node --trace-warnings ...` to show where the warning was created)\r\nNATIVE_RESULT {\"label\":\"native-post-review-smoke\",\"sourceRevision\":\"d9d320b1170cfca05d54b7e03ee5fc141aaeaee8\",\"harnessRevision\":\"d9d320b1170cfca05d54b7e03ee5fc141aaeaee8\",\"dirty\":false,\"artifactDigest\":\"879cd42e9f58e9a165dccbf87a7d11ac755742ded6f7f7497a29856407484bd7\",\"count\":50,\"mode\":\"document\",\"sample\":0,\"ok\":true,\"timedOut\":false,\"workerStillRunning\":false,\"supervisorException\":false,\"ownedPid\":20144,\"metrics\":{\"fixtureSetup\":{\"ms\":255.86169999999993,\"ok\":true},\"freshDocumentStartup\":{\"ms\":417.21540000000005,\"ok\":true},\"browser\":\"151.0.7922.34\",\"viewport\":{\"width\":1584,\"height\":1024},\"workspaceReady\":{\"ms\":1758.5953,\"ok\":true},\"initialVisibleContentReady\":{\"ms\":24.659599999999955,\"ok\":true},\"render\":{\"stats\":{\"longTasks\":2,\"longTaskMs\":651,\"reads\":{\"entities:get\":158,\"boards:get\":3,\"settings:getAll\":1,\"settings:get\":2,\"relationships:get\":5,\"searchState:get\":2},\"firstReferenceAt\":2291.900000035763,\"firstPaneAt\":2178.900000035763},\"startedAt\":803.6999999880791,\"modelReferences\":50,\"distinctNativeDocs\":1,\"completeIdentityAndGeometry\":true,\"nativeSurfaceConnectors\":5,\"nativeGroups\":2,\"contentLoading\":0,\"hydratedResources\":3,\"peakContentLoading\":3,\"projectionMeasures\":[{\"phase\":\"native-workspace:projection-total\",\"ms\":346.5},{\"phase\":\"native-workspace:projection-models\",\"ms\":135.29999995231628},{\"phase\":\"native-workspace:projection-indexes\",\"ms\":29},{\"phase\":\"native-workspace:projection-render\",\"ms\":147.0999999642372}],\"renderedReferences\":50,\"richEditors\":1,\"images\":0,\"rawLayerConnectorEntries\":null,\"modelConnectors\":null,\"connectorIds\":[],\"mainHeapBytes\":40311810,\"excludesWorkerHeap\":true},\"firstUsableEdit\":{\"ms\":48.32600000000002,\"ok\":true},\"save\":{\"ms\":545.9549999999999,\"ok\":true},\"canonicalEditVerified\":{\"ms\":20.708200000000033,\"ok\":true,\"value\":true},\"revealMixedContentKinds\":{\"ms\":304.14770000000044,\"ok\":true,\"value\":true},\"offscreenResourceRelease\":{\"ms\":111.03269999999975,\"ok\":true,\"value\":{\"loading\":0,\"hydrated\":4,\"peak\":3}},\"postPanSave\":{\"ms\":830.6358,\"ok\":true,\"value\":true},\"completeAfterReveal\":{\"references\":50,\"connectors\":5},\"requestedReferences\":50,\"librarySize\":0,\"measurementScope\":\"workspaceReady retains the baseline definition: canonical loading, import, projection and native shell/controller readiness. Initial visible content is measured separately before initial resource capture/edit/save. Mixed content kinds are explicitly revealed later; this replaces the old eager firstMixedContentReady phase and is not a directly comparable latency. Projection measures are elapsed wall time, not CPU. Read counts count requests, not returned rows. Heap excludes worker. Pan starts from restored initial camera.\"},\"errors\":[],\"output\":\"(node:20144) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\\n(Use `node --trace-warnings ...` to show where the warning was created)\\n\",\"elapsedMs\":10125.9589}\r\n  ok 1 tests\\performance\\native-board.spec.js:29:5 › native document 50 sample 1 (10.3s)\r\nNATIVE_RESULT {\"label\":\"native-post-review-smoke\",\"sourceRevision\":\"d9d320b1170cfca05d54b7e03ee5fc141aaeaee8\",\"harnessRevision\":\"d9d320b1170cfca05d54b7e03ee5fc141aaeaee8\",\"dirty\":false,\"artifactDigest\":\"879cd42e9f58e9a165dccbf87a7d11ac755742ded6f7f7497a29856407484bd7\",\"count\":50,\"mode\":\"canvas\",\"sample\":0,\"ok\":true,\"timedOut\":false,\"workerStillRunning\":false,\"supervisorException\":false,\"ownedPid\":19780,\"metrics\":{\"fixtureSetup\":{\"ms\":242.29039999999986,\"ok\":true},\"freshDocumentStartup\":{\"ms\":409.08849999999984,\"ok\":true},\"browser\":\"151.0.7922.34\",\"viewport\":{\"width\":1584,\"height\":1024},\"workspaceReady\":{\"ms\":2364.593,\"ok\":true},\"initialVisibleContentReady\":{\"ms\":40.76389999999992,\"ok\":true},\"render\":{\"stats\":{\"longTasks\":3,\"longTaskMs\":737,\"reads\":{\"boards:get\":4,\"entities:get\":170,\"settings:getAll\":1,\"settings:get\":2,\"relationships:get\":5,\"searchState:get\":2},\"firstReferenceAt\":2430.100000023842,\"firstPaneAt\":2251.800000011921},\"startedAt\":789.9000000357628,\"modelReferences\":50,\"distinctNativeDocs\":1,\"completeIdentityAndGeometry\":true,\"nativeSurfaceConnectors\":5,\"nativeGroups\":2,\"contentLoading\":0,\"hydratedResources\":9,\"peakContentLoading\":4,\"projectionMeasures\":[{\"phase\":\"native-workspace:projection-total\",\"ms\":785.9000000357628},{\"phase\":\"native-workspace:projection-models\",\"ms\":156.5999999642372},{\"phase\":\"native-workspace:projection-indexes\",\"ms\":19.19999998807907},{\"phase\":\"native-workspace:projection-render\",\"ms\":570.6999999880791}],\"renderedReferences\":50,\"richEditors\":3,\"images\":0,\"rawLayerConnectorEntries\":10,\"modelConnectors\":5,\"connectorIds\":[\"unob0nnSui\",\"cPWKYEaBJo\",\"imIx3w2O-8\",\"C1tw7yVz8I\",\"CL8T2pVP8k\",\"unob0nnSui\",\"cPWKYEaBJo\",\"imIx3w2O-8\",\"C1tw7yVz8I\",\"CL8T2pVP8k\"],\"mainHeapBytes\":52634431,\"excludesWorkerHeap\":true},\"firstUsableEdit\":{\"ms\":38.35730000000058,\"ok\":true},\"save\":{\"ms\":220.70569999999952,\"ok\":true},\"canonicalEditVerified\":{\"ms\":42.60639999999967,\"ok\":true,\"value\":true},\"revealMixedContentKinds\":{\"ms\":194.51429999999982,\"ok\":true,\"value\":true},\"nativeCameraPan\":{\"ms\":63.72479999999996,\"ok\":true,\"value\":{\"x\":500,\"y\":300}},\"offscreenResourceRelease\":{\"ms\":284.35059999999976,\"ok\":true,\"value\":{\"loading\":0,\"hydrated\":10,\"peak\":4}},\"postPanSave\":{\"ms\":324.3760000000002,\"ok\":true,\"value\":true},\"completeAfterReveal\":{\"references\":50,\"connectors\":5},\"requestedReferences\":50,\"librarySize\":0,\"measurementScope\":\"workspaceReady retains the baseline definition: canonical loading, import, projection and native shell/controller readiness. Initial visible content is measured separately before initial resource capture/edit/save. Mixed content kinds are explicitly revealed later; this replaces the old eager firstMixedContentReady phase and is not a directly comparable latency. Projection measures are elapsed wall time, not CPU. Read counts count requests, not returned rows. Heap excludes worker. Pan starts from restored initial camera.\"},\"errors\":[],\"output\":\"(node:19780) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\\n(Use `node --trace-warnings ...` to show where the warning was created)\\n\",\"elapsedMs\":8841.866100000001}\r\n  ok 2 tests\\performance\\native-board.spec.js:29:5 › native canvas 50 sample 1 (9.0s)\r\nNATIVE_RESULT {\"label\":\"native-post-review-smoke\",\"sourceRevision\":\"d9d320b1170cfca05d54b7e03ee5fc141aaeaee8\",\"harnessRevision\":\"d9d320b1170cfca05d54b7e03ee5fc141aaeaee8\",\"dirty\":false,\"artifactDigest\":\"879cd42e9f58e9a165dccbf87a7d11ac755742ded6f7f7497a29856407484bd7\",\"count\":50,\"mode\":\"mixed\",\"sample\":0,\"ok\":true,\"timedOut\":false,\"workerStillRunning\":false,\"supervisorException\":false,\"ownedPid\":3112,\"metrics\":{\"fixtureSetup\":{\"ms\":298.3484000000003,\"ok\":true},\"freshDocumentStartup\":{\"ms\":461.50629999999956,\"ok\":true},\"browser\":\"151.0.7922.34\",\"viewport\":{\"width\":1584,\"height\":1024},\"workspaceReady\":{\"ms\":2343.5093000000006,\"ok\":true},\"initialVisibleContentReady\":{\"ms\":32.0653999999995,\"ok\":true},\"render\":{\"stats\":{\"longTasks\":3,\"longTaskMs\":848,\"reads\":{\"boards:get\":4,\"entities:get\":176,\"settings:getAll\":1,\"settings:get\":2,\"relationships:get\":5,\"searchState:get\":2},\"firstReferenceAt\":2320.699999988079,\"firstPaneAt\":2229.800000011921},\"startedAt\":817.8000000119209,\"modelReferences\":50,\"distinctNativeDocs\":1,\"completeIdentityAndGeometry\":true,\"nativeSurfaceConnectors\":5,\"nativeGroups\":2,\"contentLoading\":0,\"hydratedResources\":11,\"peakContentLoading\":4,\"projectionMeasures\":[{\"phase\":\"native-workspace:projection-total\",\"ms\":820.0999999642372},{\"phase\":\"native-workspace:projection-models\",\"ms\":141.60000002384186},{\"phase\":\"native-workspace:projection-indexes\",\"ms\":15.400000035762787},{\"phase\":\"native-workspace:projection-render\",\"ms\":626.2999999523163}],\"renderedReferences\":100,\"richEditors\":4,\"images\":0,\"rawLayerConnectorEntries\":10,\"modelConnectors\":5,\"connectorIds\":[\"Dz0xsRY1rV\",\"xYtZxfDNuB\",\"SpoBw9z81y\",\"03KTRN9SfF\",\"TH8F2lphbi\",\"Dz0xsRY1rV\",\"xYtZxfDNuB\",\"SpoBw9z81y\",\"03KTRN9SfF\",\"TH8F2lphbi\"],\"mainHeapBytes\":45065940,\"excludesWorkerHeap\":true},\"firstUsableEdit\":{\"ms\":58.625,\"ok\":true},\"save\":{\"ms\":274.72279999999955,\"ok\":true},\"canonicalEditVerified\":{\"ms\":58.26440000000002,\"ok\":true,\"value\":true},\"revealMixedContentKinds\":{\"ms\":527.9035999999996,\"ok\":true,\"value\":true},\"nativeCameraPan\":{\"ms\":65.45690000000013,\"ok\":true,\"value\":{\"x\":500,\"y\":300}},\"offscreenResourceRelease\":{\"ms\":173.88839999999982,\"ok\":true,\"value\":{\"loading\":0,\"hydrated\":11,\"peak\":4}},\"postPanSave\":{\"ms\":365.1341000000011,\"ok\":true,\"value\":true},\"completeAfterReveal\":{\"references\":50,\"connectors\":5},\"requestedReferences\":50,\"librarySize\":0,\"measurementScope\":\"workspaceReady retains the baseline definition: canonical loading, import, projection and native shell/controller readiness. Initial visible content is measured separately before initial resource capture/edit/save. Mixed content kinds are explicitly revealed later; this replaces the old eager firstMixedContentReady phase and is not a directly comparable latency. Projection measures are elapsed wall time, not CPU. Read counts count requests, not returned rows. Heap excludes worker. Pan starts from restored initial camera.\"},\"errors\":[],\"output\":\"(node:3112) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\\n(Use `node --trace-warnings ...` to show where the warning was created)\\n\",\"elapsedMs\":9172.8878}\r\n  ok 3 tests\\performance\\native-board.spec.js:29:5 › native mixed 50 sample 1 (9.3s)\r\nNATIVE_RESULT {\"label\":\"native-post-review-smoke\",\"sourceRevision\":\"d9d320b1170cfca05d54b7e03ee5fc141aaeaee8\",\"harnessRevision\":\"d9d320b1170cfca05d54b7e03ee5fc141aaeaee8\",\"dirty\":false,\"artifactDigest\":\"879cd42e9f58e9a165dccbf87a7d11ac755742ded6f7f7497a29856407484bd7\",\"count\":500,\"mode\":\"document\",\"sample\":0,\"ok\":true,\"timedOut\":false,\"workerStillRunning\":false,\"supervisorException\":false,\"ownedPid\":16432,\"metrics\":{\"fixtureSetup\":{\"ms\":1176.9408000000003,\"ok\":true},\"freshDocumentStartup\":{\"ms\":475.2413000000006,\"ok\":true},\"browser\":\"151.0.7922.34\",\"viewport\":{\"width\":1584,\"height\":1024},\"workspaceReady\":{\"ms\":11085.324100000002,\"ok\":true},\"initialVisibleContentReady\":{\"ms\":108.36409999999887,\"ok\":true},\"render\":{\"stats\":{\"longTasks\":68,\"longTaskMs\":9498,\"reads\":{\"boards:get\":4,\"entities:get\":1508,\"settings:getAll\":1,\"settings:get\":2,\"relationships:get\":50,\"searchState:get\":2},\"firstReferenceAt\":11597.099999964237,\"firstPaneAt\":9434.800000011921},\"startedAt\":1000.3999999761581,\"modelReferences\":500,\"distinctNativeDocs\":1,\"completeIdentityAndGeometry\":true,\"nativeSurfaceConnectors\":50,\"nativeGroups\":2,\"contentLoading\":0,\"hydratedResources\":3,\"peakContentLoading\":3,\"projectionMeasures\":[{\"phase\":\"native-workspace:projection-total\",\"ms\":9269.300000011921},{\"phase\":\"native-workspace:projection-models\",\"ms\":3847.599999964237},{\"phase\":\"native-workspace:projection-indexes\",\"ms\":1871.5},{\"phase\":\"native-workspace:projection-render\",\"ms\":3511.699999988079}],\"renderedReferences\":500,\"richEditors\":1,\"images\":0,\"rawLayerConnectorEntries\":null,\"modelConnectors\":null,\"connectorIds\":[],\"mainHeapBytes\":85686676,\"excludesWorkerHeap\":true},\"firstUsableEdit\":{\"ms\":380.2423999999992,\"ok\":true},\"save\":{\"ms\":838.1975999999995,\"ok\":true},\"canonicalEditVerified\":{\"ms\":379.5820999999996,\"ok\":true,\"value\":true},\"revealMixedContentKinds\":{\"ms\":1424.7494000000006,\"ok\":true,\"value\":true},\"offscreenResourceRelease\":{\"ms\":212.88809999999648,\"ok\":true,\"value\":{\"loading\":0,\"hydrated\":4,\"peak\":3}},\"postPanSave\":{\"ms\":474.3898999999983,\"ok\":true,\"value\":true},\"completeAfterReveal\":{\"references\":500,\"connectors\":50},\"requestedReferences\":500,\"librarySize\":0,\"measurementScope\":\"workspaceReady retains the baseline definition: canonical loading, import, projection and native shell/controller readiness. Initial visible content is measured separately before initial resource capture/edit/save. Mixed content kinds are explicitly revealed later; this replaces the old eager firstMixedContentReady phase and is not a directly comparable latency. Projection measures are elapsed wall time, not CPU. Read counts count requests, not returned rows. Heap excludes worker. Pan starts from restored initial camera.\"},\"errors\":[],\"output\":\"(node:16432) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\\n(Use `node --trace-warnings ...` to show where the warning was created)\\n\",\"elapsedMs\":21555.8212}\r\n  ok 4 tests\\performance\\native-board.spec.js:29:5 › native document 500 sample 1 (21.7s)\r\nNATIVE_RESULT {\"label\":\"native-post-review-smoke\",\"sourceRevision\":\"d9d320b1170cfca05d54b7e03ee5fc141aaeaee8\",\"harnessRevision\":\"d9d320b1170cfca05d54b7e03ee5fc141aaeaee8\",\"dirty\":false,\"artifactDigest\":\"879cd42e9f58e9a165dccbf87a7d11ac755742ded6f7f7497a29856407484bd7\",\"count\":500,\"mode\":\"canvas\",\"sample\":0,\"ok\":true,\"timedOut\":false,\"workerStillRunning\":false,\"supervisorException\":false,\"ownedPid\":21272,\"metrics\":{\"fixtureSetup\":{\"ms\":1453.7482000000005,\"ok\":true},\"freshDocumentStartup\":{\"ms\":475.90819999999985,\"ok\":true},\"browser\":\"151.0.7922.34\",\"viewport\":{\"width\":1584,\"height\":1024},\"workspaceReady\":{\"ms\":15308.158300000001,\"ok\":true},\"initialVisibleContentReady\":{\"ms\":151.97450000000026,\"ok\":true},\"render\":{\"stats\":{\"longTasks\":77,\"longTaskMs\":10909,\"reads\":{\"boards:get\":4,\"entities:get\":1520,\"settings:getAll\":1,\"settings:get\":2,\"relationships:get\":50,\"searchState:get\":2},\"firstReferenceAt\":12165,\"firstPaneAt\":10452.5},\"startedAt\":1085.5,\"modelReferences\":500,\"distinctNativeDocs\":1,\"completeIdentityAndGeometry\":true,\"nativeSurfaceConnectors\":50,\"nativeGroups\":2,\"contentLoading\":0,\"hydratedResources\":9,\"peakContentLoading\":4,\"projectionMeasures\":[{\"phase\":\"native-workspace:projection-total\",\"ms\":13587.899999976158},{\"phase\":\"native-workspace:projection-models\",\"ms\":4057.5},{\"phase\":\"native-workspace:projection-indexes\",\"ms\":2361},{\"phase\":\"native-workspace:projection-render\",\"ms\":7123.699999988079}],\"renderedReferences\":500,\"richEditors\":3,\"images\":0,\"rawLayerConnectorEntries\":100,\"modelConnectors\":50,\"connectorIds\":[\"fsxN8RKUsy\",\"x9J7NMIlcf\",\"kQTQbBEVZ1\",\"Pu0qx81ule\",\"vJDGNdlXV9\",\"__tkSTRbNP\",\"8Ch9GaLTGL\",\"_JeG5-g_4h\",\"VWz36OoRhO\",\"4jLaKZyiZV\",\"_HcTrYDhnC\",\"z9QCASUUqh\",\"YSjK87GA5h\",\"0nCuDyZJL1\",\"zb8NzQRilK\",\"sRnX1wFV_x\",\"EsfK67oepz\",\"yrZYd0v61S\",\"pyUMG7Rzsv\",\"e9zqgUYcfo\",\"zWyigcEpIe\",\"nvNKmi5zFS\",\"XWh0UdNVmT\",\"_PAl4B5Vg8\",\"Brd2SM_P3A\",\"qyFYjUMKBb\",\"x5ld5pRsAK\",\"A5aV8cjiW6\",\"leE-kMS36M\",\"xaDXUE_VtL\",\"XMWigoA1nV\",\"9LNdHmpJKT\",\"e7qKprEnwK\",\"17ST9DqJF0\",\"Lng4UG8TSu\",\"_dDPTsDj19\",\"WgbmdQv2My\",\"2Kyr-Xy7Fw\",\"eSYjsBdHrd\",\"3EStqjNZgZ\",\"LZ3C2o6SOG\",\"xPsxrWutN4\",\"CdRSrgt2iT\",\"7NpTlCGHi2\",\"nxHVQ-OZKf\",\"iyiAXxCrts\",\"7gj2afOBCy\",\"jU5YYQos0Q\",\"DcD4JkPUDw\",\"l6MjDBQxU8\",\"fsxN8RKUsy\",\"x9J7NMIlcf\",\"kQTQbBEVZ1\",\"Pu0qx81ule\",\"vJDGNdlXV9\",\"__tkSTRbNP\",\"8Ch9GaLTGL\",\"_JeG5-g_4h\",\"VWz36OoRhO\",\"4jLaKZyiZV\",\"_HcTrYDhnC\",\"z9QCASUUqh\",\"YSjK87GA5h\",\"0nCuDyZJL1\",\"zb8NzQRilK\",\"sRnX1wFV_x\",\"EsfK67oepz\",\"yrZYd0v61S\",\"pyUMG7Rzsv\",\"e9zqgUYcfo\",\"zWyigcEpIe\",\"nvNKmi5zFS\",\"XWh0UdNVmT\",\"_PAl4B5Vg8\",\"Brd2SM_P3A\",\"qyFYjUMKBb\",\"x5ld5pRsAK\",\"A5aV8cjiW6\",\"leE-kMS36M\",\"xaDXUE_VtL\",\"XMWigoA1nV\",\"9LNdHmpJKT\",\"e7qKprEnwK\",\"17ST9DqJF0\",\"Lng4UG8TSu\",\"_dDPTsDj19\",\"WgbmdQv2My\",\"2Kyr-Xy7Fw\",\"eSYjsBdHrd\",\"3EStqjNZgZ\",\"LZ3C2o6SOG\",\"xPsxrWutN4\",\"CdRSrgt2iT\",\"7NpTlCGHi2\",\"nxHVQ-OZKf\",\"iyiAXxCrts\",\"7gj2afOBCy\",\"jU5YYQos0Q\",\"DcD4JkPUDw\",\"l6MjDBQxU8\"],\"mainHeapBytes\":93196796,\"excludesWorkerHeap\":true},\"firstUsableEdit\":{\"ms\":379.9733000000015,\"ok\":true},\"save\":{\"ms\":1167.486100000002,\"ok\":true},\"canonicalEditVerified\":{\"ms\":405.43299999999726,\"ok\":true,\"value\":true},\"revealMixedContentKinds\":{\"ms\":3870.053899999999,\"ok\":true,\"value\":true},\"nativeCameraPan\":{\"ms\":309.02939999999944,\"ok\":true,\"value\":{\"x\":500,\"y\":300}},\"offscreenResourceRelease\":{\"ms\":2681.2890000000043,\"ok\":true,\"value\":{\"loading\":0,\"hydrated\":10,\"peak\":4}},\"postPanSave\":{\"ms\":932.4422999999952,\"ok\":true,\"value\":true},\"completeAfterReveal\":{\"references\":500,\"connectors\":50},\"requestedReferences\":500,\"librarySize\":0,\"measurementScope\":\"workspaceReady retains the baseline definition: canonical loading, import, projection and native shell/controller readiness. Initial visible content is measured separately before initial resource capture/edit/save. Mixed content kinds are explicitly revealed later; this replaces the old eager firstMixedContentReady phase and is not a directly comparable latency. Projection measures are elapsed wall time, not CPU. Read counts count requests, not returned rows. Heap excludes worker. Pan starts from restored initial camera.\"},\"errors\":[],\"output\":\"(node:21272) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\\n(Use `node --trace-warnings ...` to show where the warning was created)\\n\",\"elapsedMs\":35414.5077}\r\n  ok 5 tests\\performance\\native-board.spec.js:29:5 › native canvas 500 sample 1 (35.6s)\r\nNATIVE_RESULT {\"label\":\"native-post-review-smoke\",\"sourceRevision\":\"d9d320b1170cfca05d54b7e03ee5fc141aaeaee8\",\"harnessRevision\":\"d9d320b1170cfca05d54b7e03ee5fc141aaeaee8\",\"dirty\":false,\"artifactDigest\":\"879cd42e9f58e9a165dccbf87a7d11ac755742ded6f7f7497a29856407484bd7\",\"count\":500,\"mode\":\"mixed\",\"sample\":0,\"ok\":true,\"timedOut\":false,\"workerStillRunning\":false,\"supervisorException\":false,\"ownedPid\":19220,\"metrics\":{\"fixtureSetup\":{\"ms\":1487.7424,\"ok\":true},\"freshDocumentStartup\":{\"ms\":426.27250000000004,\"ok\":true},\"browser\":\"151.0.7922.34\",\"viewport\":{\"width\":1584,\"height\":1024},\"workspaceReady\":{\"ms\":19042.8433,\"ok\":true},\"initialVisibleContentReady\":{\"ms\":93.9442999999992,\"ok\":true},\"render\":{\"stats\":{\"longTasks\":61,\"longTaskMs\":13255,\"reads\":{\"entities:get\":1526,\"boards:get\":3,\"settings:getAll\":1,\"settings:get\":2,\"relationships:get\":50,\"searchState:get\":2},\"firstReferenceAt\":11221,\"firstPaneAt\":8811.599999964237},\"startedAt\":953.5,\"modelReferences\":500,\"distinctNativeDocs\":1,\"completeIdentityAndGeometry\":true,\"nativeSurfaceConnectors\":50,\"nativeGroups\":2,\"contentLoading\":0,\"hydratedResources\":11,\"peakContentLoading\":4,\"projectionMeasures\":[{\"phase\":\"native-workspace:projection-total\",\"ms\":16945},{\"phase\":\"native-workspace:projection-models\",\"ms\":3263.099999964237},{\"phase\":\"native-workspace:projection-indexes\",\"ms\":1775.3999999761581},{\"phase\":\"native-workspace:projection-render\",\"ms\":11853.300000011921}],\"renderedReferences\":1000,\"richEditors\":4,\"images\":0,\"rawLayerConnectorEntries\":100,\"modelConnectors\":50,\"connectorIds\":[\"PSNz7T5L9E\",\"Cwejf_QguY\",\"OQBObJQoxa\",\"77Ie_syNgL\",\"C91b3dfkO3\",\"stMr46nI5i\",\"CnUzcAXzYE\",\"3XKnR0_TpC\",\"B5D-wuOaPO\",\"n81pHnExWA\",\"ZJLGNxxBgI\",\"hTMFbHfTAt\",\"ZdlRWYbLRZ\",\"luA_g7ufBn\",\"noYyi08jyF\",\"JCz33aIHE9\",\"IAX8DkS-zo\",\"K9vm7F7Glv\",\"3dnIpYnsx2\",\"it9bDY99iG\",\"OMtNbfRD9k\",\"8Dxt_HgmE6\",\"_1R6GYgzdX\",\"qkJVb6kBJH\",\"Rc2mAWoHYF\",\"GOHdiCfAa_\",\"9XxXYfETo2\",\"aqqyqk1ZXp\",\"wHtq4_ozgq\",\"02Y6YBrSgX\",\"NfYjYMGjeK\",\"hsr0_n2XAe\",\"Wp1PMyNjdA\",\"MeodTV3QwN\",\"2jAv3H0qJ5\",\"fOpoqvKs-x\",\"HfNv355HN_\",\"nPryHqOxUu\",\"a8nSWMCXih\",\"hHukJyw51I\",\"oNLxm89oHQ\",\"5Cn0BZCw-j\",\"XQ16dV6JER\",\"ODOuIxEZhw\",\"PJptCqiaEq\",\"c9mGUySqFn\",\"tmsIPxi2wb\",\"O9Ke3S3Yf-\",\"lyAWDBlpL9\",\"obQLc_ufxa\",\"PSNz7T5L9E\",\"Cwejf_QguY\",\"OQBObJQoxa\",\"77Ie_syNgL\",\"C91b3dfkO3\",\"stMr46nI5i\",\"CnUzcAXzYE\",\"3XKnR0_TpC\",\"B5D-wuOaPO\",\"n81pHnExWA\",\"ZJLGNxxBgI\",\"hTMFbHfTAt\",\"ZdlRWYbLRZ\",\"luA_g7ufBn\",\"noYyi08jyF\",\"JCz33aIHE9\",\"IAX8DkS-zo\",\"K9vm7F7Glv\",\"3dnIpYnsx2\",\"it9bDY99iG\",\"OMtNbfRD9k\",\"8Dxt_HgmE6\",\"_1R6GYgzdX\",\"qkJVb6kBJH\",\"Rc2mAWoHYF\",\"GOHdiCfAa_\",\"9XxXYfETo2\",\"aqqyqk1ZXp\",\"wHtq4_ozgq\",\"02Y6YBrSgX\",\"NfYjYMGjeK\",\"hsr0_n2XAe\",\"Wp1PMyNjdA\",\"MeodTV3QwN\",\"2jAv3H0qJ5\",\"fOpoqvKs-x\",\"HfNv355HN_\",\"nPryHqOxUu\",\"a8nSWMCXih\",\"hHukJyw51I\",\"oNLxm89oHQ\",\"5Cn0BZCw-j\",\"XQ16dV6JER\",\"ODOuIxEZhw\",\"PJptCqiaEq\",\"c9mGUySqFn\",\"tmsIPxi2wb\",\"O9Ke3S3Yf-\",\"lyAWDBlpL9\",\"obQLc_ufxa\"],\"mainHeapBytes\":76881950,\"excludesWorkerHeap\":true},\"firstUsableEdit\":{\"ms\":684.1074000000008,\"ok\":true},\"save\":{\"ms\":1281.8488999999972,\"ok\":true},\"canonicalEditVerified\":{\"ms\":969.7222999999976,\"ok\":true,\"value\":true},\"revealMixedContentKinds\":{\"ms\":1938.1047999999973,\"ok\":true,\"value\":true},\"nativeCameraPan\":{\"ms\":140.98199999999997,\"ok\":true,\"value\":{\"x\":500,\"y\":300}},\"offscreenResourceRelease\":{\"ms\":779.167599999997,\"ok\":true,\"value\":{\"loading\":0,\"hydrated\":11,\"peak\":4}},\"postPanSave\":{\"ms\":1960.3880000000026,\"ok\":true,\"value\":true},\"completeAfterReveal\":{\"references\":500,\"connectors\":50},\"requestedReferences\":500,\"librarySize\":0,\"measurementScope\":\"workspaceReady retains the baseline definition: canonical loading, import, projection and native shell/controller readiness. Initial visible content is measured separately before initial resource capture/edit/save. Mixed content kinds are explicitly revealed later; this replaces the old eager firstMixedContentReady phase and is not a directly comparable latency. Projection measures are elapsed wall time, not CPU. Read counts count requests, not returned rows. Heap excludes worker. Pan starts from restored initial camera.\"},\"errors\":[],\"output\":\"(node:19220) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\\n(Use `node --trace-warnings ...` to show where the warning was created)\\n\",\"elapsedMs\":34920.4945}\r\n  ok 6 tests\\performance\\native-board.spec.js:29:5 › native mixed 500 sample 1 (35.0s)\r\n\r\n  6 passed (2.1m)\r\n"
+}

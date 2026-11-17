@@ -38,6 +38,10 @@ This is the complete ordered record of this stage's implementation rulings and t
 
 17. Final: Ruling: successful native correctness tests explicitly leave the owned editor through its guarded desktop action before closing Chromium — traces repeatedly finish appassertions thenstall browsercleanup, so establish normal owned-editor disposal in the test lifecycle — cost if wrong: these seven cases no longer exercise abrupt clean-editor context closure; separate crash/restart cases and supervised teardown still cover their declared paths, and originalfailedrunsremainrecorded.
 
+18. Final: Ruling: post-fix statistical comparison and renewed1000-reference/large-library certification are not established — one sample per50/500mode verifies the final artifact functionally, while five-sample medians remain attributed to39af325 — cost if wrong: later fixes may alter capacity or variability; remeasure before making stronger performance claims.
+
+19. Final: Ruling: author fixes are not independently re-reviewed — the one-pass workflow verifies reproduced failures with source281,55unique browser coverage and final6-case diagnostic rather than commissioning another fresh code review — cost if wrong: tests may miss additional edge behavior; publish this review boundary and retain all failed evidence.
+
 ## Deferred minors
 
 None. Two initially Minor documentation observations were regraded Important for evidence accuracy and corrected: the intermediate count and the scope of after-reveal assertions. Raw cases and failed runs are retained. Author fixes were not independently re-reviewed.
