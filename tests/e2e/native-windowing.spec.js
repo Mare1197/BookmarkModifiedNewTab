@@ -284,3 +284,22 @@ test('native collapse decoration cannot replace a pending expanded resize with i
         return [p.x, p.y, p.width, p.height];
     }).toEqual([17, 23, 350, 310]);
 });
+
+test('layout controls defer until first open and retain an unfinished geometry form across disclosure changes', async ({context, extensionId}) => {
+    const {page, ws} = await openFixture(context, extensionId, 'canvas'), editor = ws.locator('edgeless-editor');
+    await editor.evaluate(node => {window.disclosureEditor = node; window.disclosureDoc = node.doc;});
+    await expect(ws.locator('.brainLayoutControls')).toHaveCount(0);
+    await expect(ws.getByLabel('Selected cards', {exact: true}).locator('option')).toHaveCount(0);
+    const disclosure = ws.getByText('Pages and layout controls', {exact: true});
+    await disclosure.click();
+    await expect(ws.getByLabel('Selected cards', {exact: true}).locator('option')).toHaveCount(50);
+    await ws.getByLabel('Selected cards', {exact: true}).selectOption('native:placement:0');
+    await ws.getByLabel('width', {exact: true}).fill('450');
+    await disclosure.click(); await disclosure.click();
+    await expect(ws.getByLabel('width', {exact: true})).toHaveValue('450');
+    expect(await editor.evaluate(node => node === window.disclosureEditor && node.doc === window.disclosureDoc)).toBe(true);
+    await ws.getByRole('button', {name: 'Apply geometry', exact: true}).click();
+    await expect.poll(async () => (await nativeRecords(page, 'placements')).find(p => p.id === 'native:placement:0').width).toBe(450);
+    await page.getByRole('button', {name: 'Return to desktop', exact: true}).click();
+    await expect(ws).not.toBeVisible();
+});

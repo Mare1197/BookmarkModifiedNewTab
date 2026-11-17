@@ -1,4 +1,4 @@
-import {useEffect, useRef, useState} from 'react';
+import {useEffect, useMemo, useRef, useState} from 'react';
 import {workspaceClient as db} from './workspaceClient';
 import {createBrainObject} from './brainRepository';
 import {addPageFile} from './pageAssets';
@@ -10,6 +10,7 @@ import {hasUnsavedWork, type PageEditorSession} from './pageEditorSession';
 import {WorkspaceConnectorControls} from './WorkspaceConnectorControls';
 import {WorkspacePages} from './WorkspacePages';
 import {WorkspaceGeometryControls} from './WorkspaceGeometryControls';
+import {createPageLookups} from './pageLookups';
 import './affineWorkspace.css';
 
 interface Props {
@@ -31,6 +32,8 @@ export function AffineWorkspace(props: Props) {
     const [noteTitle, setNoteTitle] = useState(''), [objectId, setObjectId] = useState(''), [selected, setSelected] = useState<string[]>([]);
     const [groupName, setGroupName] = useState('Group'), [targetId, setTargetId] = useState(''), [parentId, setParentId] = useState('');
     const [busy, setBusy] = useState(false), [undoToken, setUndoToken] = useState<string>();
+    const [layoutLoaded, setLayoutLoaded] = useState(false);
+    const lookups = useMemo(() => createPageLookups({entities: page?.entities || [], placements: page?.placements || []}), [page?.entities, page?.placements]);
     const upload = useRef<HTMLInputElement>(null);
     useEffect(() => {editor.current?.setSelectedReferences?.(selected);}, [selected, ready]);
     useEffect(() => {
@@ -106,7 +109,7 @@ export function AffineWorkspace(props: Props) {
         const url = URL.createObjectURL(new Blob([editor.current?.exportDrafts() || '{}'], {type: 'application/json'}));
         const a = document.createElement('a'); a.href = url; a.download = 'workspace-unsaved-draft.json'; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
     };
-    const chosen = page?.placements.find(p => p.id === selected[0]);
+    const chosen = lookups.placementsById.get(selected[0]!);
     return <section className="affineWorkspace" aria-label="AFFiNE workspace" onDragOver={e => {
         if (e.dataTransfer.types.includes('text/brain-object')) e.preventDefault();
     }} onDrop={e => {
@@ -164,8 +167,8 @@ export function AffineWorkspace(props: Props) {
                     const file = e.target.files?.[0]; if (file) void run(async () => {await addPageFile(props.boardId, file); await reload();}); e.target.value = '';
                 }} />
             </div>
-            <details><summary>Pages and layout controls</summary>
-                <fieldset className="brainLayoutControls" disabled={busy || !ready}>
+            <details onToggle={e => {if (e.currentTarget.open) setLayoutLoaded(true);}}><summary>Pages and layout controls</summary>
+                {layoutLoaded && <fieldset className="brainLayoutControls" disabled={busy || !ready}>
                 <div className="affineControls"><button onClick={() => void run(async () => {
                     const title = window.prompt('Child page title'); if (!title || !page) return;
                     const child = await createWorkspacePage(title, page.owner.id); callbacks.current.onOpenPage(child.board.id);
@@ -177,7 +180,7 @@ export function AffineWorkspace(props: Props) {
                     {page?.owner.type === 'project' && <button onClick={() => void run(async () => {await refreshProjectReferences(props.boardId); await reload();})}>Add missing project members</button>}
                 </div>
                 <div className="affineControls"><label>Selected cards<select aria-label="Selected cards" multiple value={selected} onChange={e => setSelected([...e.target.selectedOptions].map(o => o.value))}>
-                    {page?.placements.map(p => <option key={p.id} value={p.id}>{page.entities.find(e => e.id === p.entityId)?.title || 'Missing object'}</option>)}</select></label>
+                    {page?.placements.map(p => <option key={p.id} value={p.id}>{lookups.titleForPlacement(p.id)}</option>)}</select></label>
                     <label>Group label<input value={groupName} onChange={e => setGroupName(e.target.value)} /></label>
                     <button disabled={!selected.length} onClick={() => void command({type: 'group', group: {id: crypto.randomUUID(), label: groupName, collapsed: false}, placementIds: selected})}>Group cards</button>
                     {page?.presentation.groups.map(g => <span key={g.id}>{g.label}<button onClick={() => void command({type: 'ungroup', groupId: g.id})}>Ungroup {g.label}</button>
@@ -191,13 +194,12 @@ export function AffineWorkspace(props: Props) {
                     onApply={geometry => void command({type: 'move-resize', placements: [geometry]})}
                     onReorder={() => void command({type: 'reorder', placementIds: [chosen.id, ...page!.placements.filter(p => p.id !== chosen.id).sort((a, b) => placementPresentation(a).order - placementPresentation(b).order).map(p => p.id)]})} />}
                 <div className="affineControls"><label>Connect to<select value={targetId} onChange={e => setTargetId(e.target.value)}><option value="">Choose a card</option>
-                    {page?.placements.filter(p => p.id !== chosen?.id).map(p => <option key={p.id} value={p.id}>{page.entities.find(e => e.id === p.entityId)?.title}</option>)}</select></label>
+                    {page?.placements.filter(p => p.id !== chosen?.id).map(p => <option key={p.id} value={p.id}>{lookups.titleForPlacement(p.id, '')}</option>)}</select></label>
                     <button disabled={!chosen || !targetId} onClick={() => chosen && void command({type: 'connect', fromPlacementId: chosen.id, toPlacementId: targetId, relationType: 'related'})}>Connect cards</button>
                 </div>
                 {page?.presentation.connectors.map(c => <WorkspaceConnectorControls key={c.id} connector={c} busy={busy} onCommand={command}
-                    label={(page.entities.find(e => e.id === page.placements.find(p => p.id === c.fromPlacementId)?.entityId)?.title || 'Missing object') + ' → ' +
-                        (page.entities.find(e => e.id === page.placements.find(p => p.id === c.toPlacementId)?.entityId)?.title || 'Missing object')} />)}
-                </fieldset>
+                    label={lookups.titleForPlacement(c.fromPlacementId) + ' → ' + lookups.titleForPlacement(c.toPlacementId)} />)}
+                </fieldset>}
             </details>
         </header>
         <div ref={host} className={'affineNativeHost ' + mode} inert={!ready} aria-busy={preparing} />
