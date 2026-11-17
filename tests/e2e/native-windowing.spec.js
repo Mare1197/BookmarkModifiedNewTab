@@ -176,3 +176,111 @@ test('initial note order is complete before native rendering starts', async ({co
     expect(order.map(row => row.placement)).toEqual(Array.from({length: 50}, (_, i) => 'native:placement:' + i));
     expect(new Set(order.map(row => row.index)).size).toBe(50);
 });
+
+async function nativeRecords(page, table) {
+    return page.evaluate(name => new Promise((resolve, reject) => {
+        const open = indexedDB.open('browserOsWorkspace'); open.onerror = () => reject(open.error);
+        open.onsuccess = () => {const db = open.result, tx = db.transaction(name), get = tx.objectStore(name).getAll();
+            get.onsuccess = () => resolve(get.result); tx.oncomplete = () => db.close();};
+    }), table);
+}
+for (const mode of ['canvas', 'mixed']) test(`native ${mode} deletion preserves pan hydration and refreshes reference controls`, async ({context, extensionId}) => {
+    const {page, ws} = await openFixture(context, extensionId, mode), editor = ws.locator('edgeless-editor');
+    await editor.evaluate(node => {window.reviewEditor = node; window.reviewDoc = node.doc;});
+    await ws.getByText('Pages and layout controls', {exact: true}).click();
+    await ws.getByLabel('Selected cards', {exact: true}).selectOption('native:placement:0');
+    await ws.getByLabel(/^Connect to/).selectOption('native:placement:49');
+    await editor.evaluate(node => {
+        const block = node.doc.getBlocks().find(b => b.flavour === 'affine:embed-workspace-object' && b.placementId === 'native:placement:49');
+        node.doc.deleteBlock(node.doc.getParent(block));
+    });
+    await ws.getByRole('button', {name: 'Save now', exact: true}).click();
+    await expect.poll(async () => (await nativeRecords(page, 'placements')).some(p => p.id === 'native:placement:49')).toBe(false);
+    expect((await nativeRecords(page, 'entities')).some(e => e.id === 'native:object:00049')).toBe(true);
+    await ws.getByText('Pages and layout controls', {exact: true}).click();
+    await ws.locator('affine-edgeless-root').evaluate(root => root.service.viewport.setViewport(1, [1770, 710]));
+    await expect(editor.locator('[data-placement-id="native:placement:24"] .brainRichBlock')).toBeVisible();
+    expect(await editor.evaluate(node => node === window.reviewEditor && node.doc === window.reviewDoc)).toBe(true);
+    await ws.getByText('Pages and layout controls', {exact: true}).click();
+    await expect(ws.getByLabel('Selected cards', {exact: true}).locator('option[value="native:placement:49"]')).toHaveCount(0);
+    await expect(ws.getByLabel(/^Connect to/)).toHaveValue('');
+});
+
+test('acknowledged native geometry updates untouched controls while preserving a form draft', async ({context, extensionId}) => {
+    const {page, ws} = await openFixture(context, extensionId, 'canvas'), editor = ws.locator('edgeless-editor');
+    await editor.evaluate(node => {window.reviewEditor = node; window.reviewDoc = node.doc;});
+    await ws.getByText('Pages and layout controls', {exact: true}).click();
+    await ws.getByLabel('Selected cards', {exact: true}).selectOption('native:placement:0');
+    await ws.getByLabel('width', {exact: true}).fill('450');
+    await editor.evaluate(node => {
+        const block = node.doc.getBlocks().find(b => b.flavour === 'affine:embed-workspace-object' && b.placementId === 'native:placement:0');
+        node.doc.updateBlock(node.doc.getParent(block), {xywh: '[123,99,340,220]'});
+    });
+    await ws.getByRole('button', {name: 'Save now', exact: true}).click();
+    await expect(ws.getByLabel('x', {exact: true})).toHaveValue('123');
+    await expect(ws.getByLabel('y', {exact: true})).toHaveValue('99');
+    await expect(ws.getByLabel('width', {exact: true})).toHaveValue('450');
+    expect(await editor.evaluate(node => node === window.reviewEditor && node.doc === window.reviewDoc)).toBe(true);
+    await ws.getByRole('button', {name: 'Apply geometry', exact: true}).click();
+    await expect.poll(async () => {
+        const p = (await nativeRecords(page, 'placements')).find(p => p.id === 'native:placement:0');
+        return [p.x, p.y, p.width, p.height];
+    }).toEqual([123, 99, 450, 220]);
+});
+
+for (const mode of ['canvas', 'mixed']) test(`native ${mode} collapse and expansion synchronize resources without losing expanded dimensions`, async ({context, extensionId}) => {
+    const {page, ws} = await openFixture(context, extensionId, mode), editor = ws.locator('edgeless-editor');
+    const cards = ws.locator('[data-placement-id="native:placement:0"]');
+    await expect(editor.locator('[data-placement-id="native:placement:0"] .brainRichBlock')).toBeVisible();
+    await editor.evaluate(node => {window.reviewEditor = node; window.reviewDoc = node.doc;});
+    const button = editor.locator('workspace-reference-note:has([data-placement-id="native:placement:0"]) .edgeless-note-collapse-button');
+    await button.dispatchEvent('click');
+    await expect(cards.locator('.brainRichBlock')).toHaveCount(0);
+    await expect(editor.locator('[data-placement-id="native:placement:0"]').getByRole('button', {name: 'Inspect object', exact: true})).toBeVisible();
+    await ws.getByRole('button', {name: 'Save now', exact: true}).click();
+    let saved = (await nativeRecords(page, 'placements')).find(p => p.id === 'native:placement:0');
+    expect(saved.metadata.page.collapsed).toBe(true); expect(saved.height).toBe(220);
+    await button.dispatchEvent('click');
+    await expect(editor.locator('[data-placement-id="native:placement:0"] .brainRichBlock')).toBeVisible();
+    await expect.poll(() => cards.evaluateAll(nodes => nodes.every(node => !node.querySelector('.brainReferenceBody').hidden))).toBe(true);
+    await ws.getByRole('button', {name: 'Save now', exact: true}).click();
+    saved = (await nativeRecords(page, 'placements')).find(p => p.id === 'native:placement:0');
+    expect(saved.metadata.page.collapsed).toBe(false); expect([saved.x, saved.y, saved.width, saved.height]).toEqual([0, 0, 340, 220]);
+    expect(await editor.evaluate(node => node === window.reviewEditor && node.doc === window.reviewDoc)).toBe(true);
+    // Reopen an initially collapsed canonical card, then expand via the installed native control.
+    await editor.evaluate(node => {window.beforeCollapsedRemount = node;});
+    await ws.getByText('Pages and layout controls', {exact: true}).click();
+    await ws.getByLabel('Selected cards', {exact: true}).selectOption('native:placement:0');
+    await ws.getByRole('button', {name: 'Toggle collapsed', exact: true}).click();
+    await expect.poll(() => editor.evaluate(node => node !== window.beforeCollapsedRemount)).toBe(true);
+    await expect(ws.getByRole('status').first()).toHaveText('saved');
+    expect(await editor.evaluate(node => {
+        const block = node.doc.getBlocks().find(b => b.flavour === 'affine:embed-workspace-object' && b.placementId === 'native:placement:0');
+        return node.doc.getParent(block).edgeless.collapse;
+    })).toBe(true);
+    await ws.getByText('Pages and layout controls', {exact: true}).click();
+    await editor.locator('affine-edgeless-root').evaluate(root => root.service.selection.clear());
+    await button.dispatchEvent('click');
+    await expect(editor.locator('[data-placement-id="native:placement:0"] .brainRichBlock')).toBeVisible();
+    await ws.getByRole('button', {name: 'Save now', exact: true}).click();
+    expect((await nativeRecords(page, 'placements')).find(p => p.id === 'native:placement:0').height).toBe(220);
+});
+
+test('native collapse decoration cannot replace a pending expanded resize with its collapsed height', async ({context, extensionId}) => {
+    const {page, ws} = await openFixture(context, extensionId, 'canvas'), editor = ws.locator('edgeless-editor');
+    await editor.evaluate(node => {
+        const block = node.doc.getBlocks().find(b => b.flavour === 'affine:embed-workspace-object' && b.placementId === 'native:placement:0');
+        node.doc.updateBlock(node.doc.getParent(block), {xywh: '[17,23,350,310]'});
+    });
+    const button = editor.locator('workspace-reference-note:has([data-placement-id="native:placement:0"]) .edgeless-note-collapse-button');
+    await button.dispatchEvent('click');
+    await ws.getByRole('button', {name: 'Save now', exact: true}).click();
+    expect((await nativeRecords(page, 'placements')).find(p => p.id === 'native:placement:0').metadata.page.collapsed).toBe(true);
+    expect((await nativeRecords(page, 'placements')).find(p => p.id === 'native:placement:0').height).toBe(310);
+    await button.dispatchEvent('click');
+    await ws.getByRole('button', {name: 'Save now', exact: true}).click();
+    await expect.poll(async () => {
+        const p = (await nativeRecords(page, 'placements')).find(p => p.id === 'native:placement:0');
+        return [p.x, p.y, p.width, p.height];
+    }).toEqual([17, 23, 350, 310]);
+});

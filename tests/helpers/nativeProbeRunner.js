@@ -11,7 +11,7 @@ async function runOwnedNativeProbe(options, dependencies = {}) {
     const child = fork(dependencies.workerPath || path.join(__dirname, 'nativeProbeWorker.js'), [], {
         windowsHide: true, stdio: ['ignore', 'pipe', 'pipe', 'ipc'], env: {...process.env, ...dependencies.workerEnv}
     });
-    let result, timedOut = false, output = '', killError;
+    let result, timedOut = false, output = '', supervisorException = false;
     const exited = new Promise(resolve => child.once('exit', (code, signal) => resolve({code, signal})));
     const errors = [];
     child.on('error', error => errors.push(error.message));
@@ -21,40 +21,52 @@ async function runOwnedNativeProbe(options, dependencies = {}) {
         if (message?.type === 'result') result = message.result;
         if (message?.type === 'progress') result = {ok: false, metrics: message.metrics, errors: []};
     });
-    const timeout = new Promise(resolve => {
-        const timer = setTimeout(() => resolve(null), options.timeoutMs);
-        exited.then(() => clearTimeout(timer));
-    });
-    try {
-        dependencies.onStart?.({pid: child.pid, profilePath});
-        child.send({...options, profilePath});
-        let exit = await Promise.race([exited, timeout]);
-        if (!exit) {
-            timedOut = true;
-            // PID comes only from our live fork. The parent remains alive through
-            // browser teardown so Windows tree termination includes owned Chromium.
-            if (process.platform === 'win32') await new Promise(resolve => {
+    let timer;
+    const timeout = new Promise(resolve => {timer = setTimeout(() => resolve(null), options.timeoutMs);});
+    let exit;
+    const terminate = async () => {
+        try {
+            if (dependencies.terminateOwned) await dependencies.terminateOwned(child);
+            // PID comes only from our fork. Never accept a caller-supplied PID.
+            else if (process.platform === 'win32') await new Promise((resolve, reject) => {
                 execFile('taskkill.exe', ['/PID', String(child.pid), '/T', '/F'], {windowsHide: true, timeout: 5000}, error => {
-                    if (error && child.exitCode === null && child.signalCode === null) killError = error.message;
-                    resolve();
+                    if (error && child.exitCode === null && child.signalCode === null) reject(error);
+                    else resolve();
                 });
             });
             else child.kill('SIGKILL');
-            exit = await Promise.race([exited, new Promise(resolve => {const timer = setTimeout(() => resolve(null), 2000); timer.unref();})]);
+        } catch (error) {errors.push('Owned worker termination: ' + error.message);}
+        return Promise.race([exited, new Promise(resolve => {const wait = setTimeout(() => resolve(null), 2000); wait.unref();})]);
+    };
+    try {
+        dependencies.onStart?.({pid: child.pid, profilePath});
+        child.send({...options, profilePath});
+        exit = await Promise.race([exited, timeout]);
+        if (!exit) {
+            timedOut = true;
+            exit = await terminate();
         }
-        if (!exit || killError) errors.push(killError || 'Owned worker did not exit');
-        if (!exit) throw new Error(`Owned worker still active; profile retained at ${profilePath}`);
         if (timedOut) errors.push('Probe deadline exceeded, including teardown');
         if (!result) errors.push('Probe exited without a result');
         if (exit && exit.code !== 0 && !timedOut) errors.push(`Probe exited ${exit.code ?? exit.signal}`);
-        return {ok: Boolean(result?.ok && exit?.code === 0 && !timedOut && !errors.length), timedOut,
-            metrics: result?.metrics || {}, errors: [...(result?.errors || []), ...errors], output,
-            elapsedMs: performance.now() - started};
-    } finally {
+    } catch (error) {
+        supervisorException = true; errors.push('Supervisor error: ' + error.message);
+        if (child.exitCode === null && child.signalCode === null) exit = await terminate();
+    } finally {clearTimeout(timer);}
+    const workerStillRunning = child.exitCode === null && child.signalCode === null;
+    let retainedProfilePath = profilePath;
+    if (workerStillRunning) errors.push(`Owned worker still active; profile retained at ${profilePath}`);
+    else try {
         // This exact directory was created above; never remove a caller path.
         const resolved = path.resolve(profilePath), parent = path.resolve(os.tmpdir());
         if (path.dirname(resolved) !== parent || !path.basename(resolved).startsWith('newtab-native-probe-')) throw new Error('Unsafe profile cleanup');
-        if (child.exitCode !== null || child.signalCode !== null) await fs.rm(resolved, {recursive: true, force: true, maxRetries: 3, retryDelay: 200});
-    }
+        if (dependencies.removeProfile) await dependencies.removeProfile(resolved);
+        else await fs.rm(resolved, {recursive: true, force: true, maxRetries: 3, retryDelay: 200});
+        retainedProfilePath = undefined;
+    } catch (error) {supervisorException = true; errors.push('Owned profile cleanup: ' + error.message);}
+    return {ok: Boolean(result?.ok && exit?.code === 0 && !timedOut && !errors.length), timedOut,
+        workerStillRunning, supervisorException, retainedProfilePath, ownedPid: child.pid,
+        metrics: result?.metrics || {}, errors: [...(result?.errors || []), ...errors], output,
+        elapsedMs: performance.now() - started};
 }
 module.exports = {runOwnedNativeProbe};

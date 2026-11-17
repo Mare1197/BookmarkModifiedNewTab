@@ -51,8 +51,6 @@ export class WorkspaceReferenceBlock extends BlockComponent<ReferenceModel> {
         const {entityId, placementId} = this.model, canvas = Boolean(this.closest('edgeless-editor'));
         this.card.dataset.brainReference = entityId; this.card.dataset.placementId = placementId;
         this.card.className = 'brainReferenceCard'; this.card.style.background = ctx.colors.get(placementId) || '#ffffff';
-        const note = this.doc.getParent(this.model) as {xywh?: string} | null;
-        this.card.style.minHeight = (ctx.collapsed.has(placementId) ? 100 : note?.xywh ? (JSON.parse(note.xywh) as number[])[3]! : 100) + 'px';
         const select = () => {ctx.resources.setSelected([placementId]); ctx.onSelect(entityId, placementId);};
         const handle = document.createElement('div'); handle.className = 'brainReferenceHandle'; handle.textContent = '⋮⋮ Select / drag card';
         handle.onpointerdown = select;
@@ -60,14 +58,12 @@ export class WorkspaceReferenceBlock extends BlockComponent<ReferenceModel> {
         this.content.onpointerdown = event => event.stopPropagation(); this.content.onkeydown = event => event.stopPropagation();
         this.content.onclick = select;
         this.content.replaceChildren(this.heading, this.body);
-        if (ctx.collapsed.has(placementId)) {
-            const actions = document.createElement('div');
-            for (const [label, action] of [['Inspect object', 'inspector'], ['Show in Graph', 'graph'], ['Ask AI', 'ai']] as const) {
-                const button = document.createElement('button'); button.type = 'button'; button.textContent = label;
-                button.onclick = () => {void Promise.resolve().then(() => ctx.onAction(entityId, action)).catch(ctx.onError);}; actions.append(button);
-            }
-            this.content.append(actions);
+        const actions = document.createElement('div');
+        for (const [label, action] of [['Inspect object', 'inspector'], ['Show in Graph', 'graph'], ['Ask AI', 'ai']] as const) {
+            const button = document.createElement('button'); button.type = 'button'; button.textContent = label;
+            button.onclick = () => {void Promise.resolve().then(() => ctx.onAction(entityId, action)).catch(ctx.onError);}; actions.append(button);
         }
+        this.content.append(actions); this.body.className = 'brainReferenceBody';
         this.card.replaceChildren(handle, this.content);
         const updateShell = () => {this.heading.textContent = ctx.data.readShell(entityId).title;};
         updateShell(); this.cleanups.push(ctx.data.subscribe(ids => {if (ids.includes(entityId)) updateShell();}));
@@ -75,19 +71,22 @@ export class WorkspaceReferenceBlock extends BlockComponent<ReferenceModel> {
             this.body.replaceChildren(...(resource ? [resource.element] : []));
             this.card.dataset.hydrated = String(Boolean(resource));
         }, placementId, ctx.collapsed.has(placementId));
-        this.body.hidden = ctx.collapsed.has(placementId);
+        const updatePresentation = () => {
+            const collapsed = ctx.collapsed.has(placementId), note = this.doc.getParent(this.model) as {xywh?: string} | null;
+            this.body.hidden = collapsed; actions.hidden = !collapsed;
+            this.card.style.minHeight = (collapsed ? 100 : note?.xywh ? (JSON.parse(note.xywh) as number[])[3]! : 100) + 'px';
+            if (canvas) connection.setVisible(Boolean(ctx.canvasVisibility.get(placementId)));
+        };
+        updatePresentation(); this.cleanups.push(ctx.subscribeVisibility(placementId, updatePresentation));
         const focus = () => {connection.setFocused(true); select();};
         const blur = () => queueMicrotask(() => {connection.setFocused(this.content.contains(document.activeElement));});
         this.content.addEventListener('focusin', focus); this.content.addEventListener('focusout', blur);
         this.cleanups.push(() => {this.content.removeEventListener('focusin', focus); this.content.removeEventListener('focusout', blur);});
         this.cleanups.push(() => connection.disconnect());
-        if (canvas) {
-            const update = () => connection.setVisible(!ctx.collapsed.has(placementId) && Boolean(ctx.canvasVisibility.get(placementId)));
-            update(); this.cleanups.push(ctx.subscribeVisibility(placementId, update));
-        } else {
+        if (!canvas) {
             const pane = this.closest<HTMLElement>('.brainNativePane');
             if (pane) this.cleanups.push(observeDocumentReference(this.card, pane,
-                visible => connection.setVisible(visible && !ctx.collapsed.has(placementId))));
+                visible => connection.setVisible(visible)));
         }
     }
     override disconnectedCallback() {

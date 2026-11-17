@@ -38,6 +38,6 @@ export function planNativeProjection(snapshot: PageSnapshot) {
     const connectors = snapshot.presentation.connectors.filter(connector =>
         placementsById.has(connector.fromPlacementId) && placementsById.has(connector.toPlacementId));
     const connectorsById = new Map(connectors.map(connector => [connector.id, connector]));
-    return {placements, entitiesById, placementsById, groupsById, collapsedByPlacement, groupChildren, connectors, connectorsById};
+    return {placements, entitiesById, placementsById, groupsById, collapsedGroups, collapsedByPlacement, groupChildren, connectors, connectorsById};
 }
 export type NativeProjectionPlan = ReturnType<typeof planNativeProjection>;

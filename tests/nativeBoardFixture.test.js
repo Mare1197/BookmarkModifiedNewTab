@@ -87,3 +87,46 @@ test('failed probe marker survives a new test worker process', t => {
         modulePath, directory], {windowsHide: true, encoding: 'utf8'});
     assert.equal(child.status, 0, child.stderr);
 });
+
+test('termination failure retains partial metrics and the exact owned profile in a structured failure', async t => {
+    const {runOwnedNativeProbe} = require('./helpers/nativeProbeRunner'); let owned;
+    t.after(() => {
+        if (!owned) return;
+        try {process.kill(owned.pid);} catch {}
+        assert.equal(path.dirname(path.resolve(owned.profilePath)), path.resolve(os.tmpdir()));
+        assert.ok(path.basename(owned.profilePath).startsWith('newtab-native-probe-'));
+        fs.rmSync(owned.profilePath, {recursive: true, force: true});
+    });
+    const result = await runOwnedNativeProbe({timeoutMs: 1500, referenceCount: 50, mode: 'canvas'}, {
+        workerPath: path.join(__dirname, 'helpers/nativeProbeTestChild.js'), workerEnv: {NATIVE_PROBE_TEST_MODE: 'hang-after-result'},
+        onStart: value => {owned = value;}, terminateOwned: async child => {assert.equal(child.pid, owned.pid); throw new Error('Injected termination denial');}
+    });
+    assert.equal(result.ok, false); assert.equal(result.workerStillRunning, true);
+    assert.equal(result.metrics.references, 50); assert.equal(result.retainedProfilePath, owned.profilePath);
+    assert.match(result.errors.join('\n'), /Injected termination denial/); assert.ok(fs.existsSync(owned.profilePath));
+});
+
+test('profile cleanup failure preserves completed measurements as a failed structured result', async t => {
+    const {runOwnedNativeProbe} = require('./helpers/nativeProbeRunner'); let owned;
+    t.after(() => {if (owned) fs.rmSync(owned.profilePath, {recursive: true, force: true});});
+    const result = await runOwnedNativeProbe({timeoutMs: 10000, referenceCount: 50, mode: 'document'}, {
+        workerPath: path.join(__dirname, 'helpers/nativeProbeTestChild.js'), workerEnv: {NATIVE_PROBE_TEST_MODE: 'success'},
+        onStart: value => {owned = value;}, removeProfile: async directory => {assert.equal(directory, owned.profilePath); throw new Error('Injected locked profile');}
+    });
+    assert.equal(result.ok, false); assert.equal(result.workerStillRunning, false);
+    assert.equal(result.metrics.references, 50); assert.equal(result.retainedProfilePath, owned.profilePath);
+    assert.match(result.errors.join('\n'), /Injected locked profile/);
+});
+
+test('unexpected supervisor errors and active workers persist a matrix-wide safety stop before reporting', async t => {
+    const {runRecordedProbe, hasProbeFailure} = require('./helpers/nativeProbeFailures');
+    const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'native-marker-test-'));
+    t.after(() => fs.rmSync(directory, {recursive: true, force: true}));
+    const failed = await runRecordedProbe(directory, 'canvas/50', async () => {throw new Error('Unexpected fork failure');});
+    assert.equal(failed.ok, false); assert.match(failed.errors.join('\n'), /Unexpected fork failure/);
+    assert.equal(hasProbeFailure(directory, 'mixed/1000'), true);
+    fs.rmSync(directory, {recursive: true, force: true});
+    const partial = {ok: false, workerStillRunning: true, metrics: {references: 50}, errors: ['active worker']};
+    assert.equal(await runRecordedProbe(directory, 'canvas/50', async () => partial), partial);
+    assert.equal(hasProbeFailure(directory, 'library/50000'), true);
+});

@@ -9,6 +9,7 @@ import type {WorkspaceEntity} from '../../workspace/types';
 import {hasUnsavedWork, type PageEditorSession} from './pageEditorSession';
 import {WorkspaceConnectorControls} from './WorkspaceConnectorControls';
 import {WorkspacePages} from './WorkspacePages';
+import {WorkspaceGeometryControls} from './WorkspaceGeometryControls';
 import './affineWorkspace.css';
 
 interface Props {
@@ -50,6 +51,12 @@ export function AffineWorkspace(props: Props) {
             if (cancelled || controller.signal.aborted) return;
             mounted = await mountWorkspaceEditor(node, {snapshot: page, mode,
                 onUndo: token => {if (!cancelled) setUndoToken(token);},
+                onSnapshot: next => {
+                    if (cancelled) return;
+                    const ids = new Set(next.placements.map(p => p.id)); setPage(next);
+                    setSelected(current => current.every(id => ids.has(id)) ? current : current.filter(id => ids.has(id)));
+                    setTargetId(current => ids.has(current) ? current : '');
+                },
                 onSelect: (id, placementId) => {if (placementId) setSelected([placementId]); callbacks.current.onSelect(id, placementId);},
                 onOpenPage: id => callbacks.current.onOpenPage(id), onAction: (id, action) => callbacks.current.onAction(id, action),
                 onStatus: message => {if (!cancelled) setStatus(message);}}, {
@@ -65,7 +72,7 @@ export function AffineWorkspace(props: Props) {
             editor.current = mounted; callbacks.current.onSession(mounted); setPreparing(false); setReady(true); setStatus('saved');
         }).catch(e => {if (!cancelled) {setPreparing(false); setStatus(e instanceof DOMException && e.name === 'AbortError' ? 'Preparation cancelled. You can retry.' : String(e));}});
         return () => {cancelled = true; controller.abort(); mounted?.dispose(); editor.current = undefined; callbacks.current.onSession(undefined);};
-        // Snapshot changes are applied only after flush via the explicit mount generation.
+        // Acknowledged snapshots update controls; only explicit structural actions remount.
     }, [page?.board.id, mode, mountKey, props.boardId]);
     useEffect(() => {
         const guard = (e: BeforeUnloadEvent) => {
@@ -180,12 +187,9 @@ export function AffineWorkspace(props: Props) {
                     <button disabled={!chosen} onClick={() => chosen && void command({type: 'collapse', placementId: chosen.id, collapsed: !placementPresentation(chosen).collapsed})}>Toggle collapsed</button>
                     <button disabled={!selected.length} onClick={() => void command({type: 'remove-reference', placementIds: selected})}>Remove references</button>
                 </div>
-                {chosen && <form className="affineControls" key={chosen.id + mountKey} onSubmit={e => {
-                    e.preventDefault(); const form = new FormData(e.currentTarget);
-                    void command({type: 'move-resize', placements: [{id: chosen.id, x: Number(form.get('x')), y: Number(form.get('y')), width: Number(form.get('width')), height: Number(form.get('height'))}]});
-                }}>{(['x', 'y', 'width', 'height'] as const).map(name => <label key={name}>{name}<input type="number" name={name} defaultValue={chosen[name]} /></label>)}<button>Apply geometry</button>
-                    <button type="button" onClick={() => void command({type: 'reorder', placementIds: [chosen.id, ...page!.placements.filter(p => p.id !== chosen.id).sort((a, b) => placementPresentation(a).order - placementPresentation(b).order).map(p => p.id)]})}>Move section first</button>
-                </form>}
+                {chosen && <WorkspaceGeometryControls key={chosen.id + mountKey} placement={chosen}
+                    onApply={geometry => void command({type: 'move-resize', placements: [geometry]})}
+                    onReorder={() => void command({type: 'reorder', placementIds: [chosen.id, ...page!.placements.filter(p => p.id !== chosen.id).sort((a, b) => placementPresentation(a).order - placementPresentation(b).order).map(p => p.id)]})} />}
                 <div className="affineControls"><label>Connect to<select value={targetId} onChange={e => setTargetId(e.target.value)}><option value="">Choose a card</option>
                     {page?.placements.filter(p => p.id !== chosen?.id).map(p => <option key={p.id} value={p.id}>{page.entities.find(e => e.id === p.entityId)?.title}</option>)}</select></label>
                     <button disabled={!chosen || !targetId} onClick={() => chosen && void command({type: 'connect', fromPlacementId: chosen.id, toPlacementId: targetId, relationType: 'related'})}>Connect cards</button>

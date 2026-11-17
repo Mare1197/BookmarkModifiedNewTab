@@ -2,6 +2,21 @@ const os = require('node:os');
 const path = require('node:path');
 const {expect, test} = require('./fixtures');
 
+test.afterEach(async ({context}, info) => {
+    if (info.status !== 'passed') return;
+    // Dispose owned native editors through the real flush guard before Chromium
+    // teardown. Failed tests keep their original page/trace state.
+    for (const page of context.pages()) {
+        if (page.isClosed()) continue;
+        const workspace = page.getByRole('region', {name: 'AFFiNE workspace', exact: true});
+        if (!await workspace.isVisible()) continue;
+        const status = await workspace.getByRole('status').first().textContent();
+        if (/conflict|error|failed|unavailable/i.test(status || '')) continue;
+        await page.getByRole('button', {name: 'Return to desktop', exact: true}).click();
+        await expect(workspace).not.toBeVisible();
+    }
+});
+
 async function openWorkspace(context, extensionId) {
     const page = await context.newPage();
     await page.setViewportSize({width: 1584, height: 1024});

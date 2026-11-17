@@ -82,3 +82,23 @@ test('selecting a collapsed clean shell does not allocate hidden rich text or as
     const connection = owner.connect('canvas:p', 'entity', () => {}, 'p', true);
     owner.setSelected(['p']); connection.setVisible(false); await tick(); assert.equal(loaded, 0); owner.dispose();
 });
+
+test('live collapse gates every occurrence and expansion restores remembered visibility while retaining dirty resources', async t => {
+    const {load} = await workspaceFixture(t), listeners = new Set(), disposed = [];
+    let dirty = false, loaded = 0;
+    const owner = load('referenceResources.ts').createReferenceResources({
+        hydration: load('referenceHydration.ts').createReferenceHydration({maxConcurrent: 4}),
+        session: {isDirty: () => dirty, subscribe: fn => {listeners.add(fn); return () => listeners.delete(fn);}},
+        load: async () => {const id = ++loaded; return {id, dispose() {disposed.push(id);}};}
+    });
+    const a = owner.connect('canvas:p', 'entity', () => {}, 'p', true);
+    const b = owner.connect('document:p', 'entity', () => {}, 'p', true);
+    a.setVisible(true); b.setVisible(true); owner.setSelected(['p']); await tick(); assert.equal(loaded, 0);
+    owner.setCollapsed('p', false); await tick(); assert.equal(loaded, 2);
+    a.setFocused(true); owner.setCollapsed('p', true); await tick(); assert.deepEqual(disposed, [1, 2]);
+    owner.setCollapsed('p', false); await tick(); assert.equal(loaded, 4);
+    dirty = true; listeners.forEach(fn => fn('entity')); owner.setCollapsed('p', true); await tick();
+    assert.deepEqual(disposed, [1, 2]);
+    dirty = false; listeners.forEach(fn => fn('entity')); await tick(); assert.deepEqual(disposed, [1, 2, 3, 4]);
+    a.disconnect(); b.disconnect(); owner.dispose();
+});

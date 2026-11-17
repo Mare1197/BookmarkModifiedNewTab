@@ -15,6 +15,7 @@ export interface WorkspaceEditorInput {
     onAction: (entityId: string, action: 'source' | 'inspector' | 'graph' | 'ai') => void;
     onStatus: (status: string) => void;
     onUndo?: (token: string) => void;
+    onSnapshot?: (snapshot: PageSnapshot) => void;
 }
 export async function mountWorkspaceEditor(host: HTMLElement, input: WorkspaceEditorInput, options: NativeMountOptions = {}): Promise<PageEditorSession> {
     let snapshot = input.snapshot, status: SaveStatus = 'saved', disposed = false;
@@ -46,6 +47,7 @@ export async function mountWorkspaceEditor(host: HTMLElement, input: WorkspaceEd
             });
             if (!result) throw new Error('Layout draft journal is unavailable.');
             snapshot = result.value;
+            projection.acknowledgeSnapshot(snapshot); input.onSnapshot?.(snapshot);
         }});
     function schedule() {clearTimeout(timer); timer = setTimeout(() => {void flush().catch(report);}, 400);}
     let projection: Awaited<ReturnType<typeof mountPageProjection>>;

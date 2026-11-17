@@ -12,6 +12,7 @@ import {PageReferenceSchema, WorkspaceReferenceBlock, WorkspaceReferenceNote, re
 import type {PageSnapshot} from './pageRepository';
 import {planNativeProjection} from './nativeProjectionPlan';
 import {nativeProjectionIndexes} from './nativeProjectionIndexes';
+import {createNativeReferenceGeometry} from './nativeReferenceGeometry';
 import {validateGeometry} from './pageValidation';
 import {mountConnectorRouting} from './blocksuiteConnectorRouting';
 import {attachNativeClientOffsets} from './nativeClientOffsets';
@@ -40,6 +41,9 @@ async function buildPageProjection(container: HTMLElement, snapshot: PageSnapsho
     onCommand: (command: PageCommand) => void, scope: NativeMountScope, options: NativeMountOptions) {
     scope.check();
     const plan = planNativeProjection(snapshot);
+    const geometryState = createNativeReferenceGeometry(snapshot.placements, plan.collapsedByPlacement);
+    const groupByPlacement = new Map(plan.placements.map(row => [row.p.id, row.presentation.groupId]));
+    let acknowledgedPlacements = plan.placementsById;
     const data = createReferenceDataSource(workspaceClient, snapshot, input.onError); scope.own(() => data.dispose());
     container.dataset.nativeContentLoading = '0'; container.dataset.nativeContentHydrated = '0'; container.dataset.nativeContentPeak = '0';
     const hydration = createReferenceHydration({maxConcurrent: 4, onError: input.onError, onState: ({loading, hydrated}) => {
@@ -92,7 +96,8 @@ async function buildPageProjection(container: HTMLElement, snapshot: PageSnapsho
             notes.set(p.id, note); placementIds.set(note, p.id);
         }, () => {
             const model = doc.getBlockById(notes.get(p.id)!) as NoteBlockModel;
-            doc.updateBlock(model, {edgeless: {...model.edgeless, collapse: collapsed, collapsedHeight: 100}});
+            doc.updateBlock(model, {edgeless: {...model.edgeless, collapse: collapsed, collapsedHeight: 100},
+                ...(collapsed ? {xywh: JSON.stringify([p.x, p.y, p.width, 100])} : {})});
         }, () => {doc.addBlock('affine:embed-workspace-object', {entityId: p.entityId, placementId: p.id}, notes.get(p.id)!);});
     }
     for (const group of snapshot.presentation.groups) operations.push(() => {
@@ -158,10 +163,11 @@ async function buildPageProjection(container: HTMLElement, snapshot: PageSnapsho
             disposables.push({dispose: attachNativeClientOffsets(pane, container.parentElement || container, viewport)});
             const v = snapshot.presentation.viewport; viewport.setViewport(v.zoom, [v.x, v.y]);
             const gfx = editor.std.get(GfxController);
-            canvasVisibility = observeCanvasReferences(viewport, () => placements.map(({p}) => {
-                const note = doc.getBlockById(notes.get(p.id)!) as NoteBlockModel;
+            canvasVisibility = observeCanvasReferences(viewport, () => placements.flatMap(({p}) => {
+                const note = doc.getBlockById(notes.get(p.id)!) as NoteBlockModel | undefined;
+                if (!note) return [];
                 const [x, y, width, height] = JSON.parse(note.xywh) as number[];
-                return {id: p.id, x: x!, y: y!, width: width!, height: height!};
+                return [{id: p.id, x: x!, y: y!, width: width!, height: height!}];
             }), (id, visible) => {context.canvasVisibility.set(id, visible); visibility.get(id)?.forEach(listener => listener());});
             disposables.push({dispose: canvasVisibility});
             const select = () => {
@@ -192,7 +198,10 @@ async function buildPageProjection(container: HTMLElement, snapshot: PageSnapsho
             const note = doc.getBlockById(id) as NoteBlockModel | undefined;
             if (!note) return [];
             const [x, y, width, height] = JSON.parse(note.xywh) as number[];
-            const change = {id: placementIds.get(id)!, x: x!, y: y!, width: width!, height: height!};
+            const placementId = placementIds.get(id)!;
+            const geometry = geometryState.observe(placementId, {x: x!, y: y!, width: width!, height: height!}, Boolean(note.edgeless.collapse)).geometry;
+            const change = {id: placementId, ...geometry}, saved = acknowledgedPlacements.get(placementId);
+            if (saved && saved.x === change.x && saved.y === change.y && saved.width === change.width && saved.height === change.height) return [];
             try {validateGeometry(change); return [change];} catch (error) {context.onError(error); return [];}
         });
         dirtyNotes.clear();
@@ -201,14 +210,28 @@ async function buildPageProjection(container: HTMLElement, snapshot: PageSnapsho
     disposables.push(doc.slots.blockUpdated.on(event => {
         if (hydrating || disposed) return;
         if (event.type === 'update' && placementIds.has(event.id)) {
+            if (event.props.key === 'xywh' || event.props.key === 'edgeless') {
+                const note = doc.getBlockById(event.id) as NoteBlockModel, id = placementIds.get(event.id)!;
+                const groupId = groupByPlacement.get(id);
+                const collapsed = Boolean(note.edgeless.collapse || groupId && plan.collapsedGroups.get(groupId));
+                const [x, y, width, height] = JSON.parse(note.xywh) as number[];
+                const geometry = geometryState.observe(id, {x: x!, y: y!, width: width!, height: height!}, collapsed);
+                if (geometry.restoreHeight !== undefined || collapsed !== Boolean(note.edgeless.collapse)) {
+                    hydrating = true;
+                    try {doc.updateBlock(note, {xywh: JSON.stringify([x, y, width, geometry.restoreHeight ?? height]),
+                        edgeless: {...note.edgeless, collapse: collapsed}});} finally {hydrating = false;}
+                }
+                const wasCollapsed = context.collapsed.has(id);
+                if (collapsed) context.collapsed.add(id); else context.collapsed.delete(id);
+                if (wasCollapsed !== collapsed) {
+                    resources.setCollapsed(id, collapsed); onCommand({type: 'collapse', placementId: id, collapsed});
+                }
+                visibility.get(id)?.forEach(listener => listener());
+            }
             if (event.props.key === 'xywh' && mode !== 'document') {
                 dirtyNotes.add(event.id); clearTimeout(timer); timer = setTimeout(flushGeometry, 250);
                 queueMicrotask(() => routing?.refresh());
                 if (!visibilityFrame) visibilityFrame = requestAnimationFrame(() => {visibilityFrame = 0; if (!disposed) canvasVisibility?.refresh();});
-            }
-            if (event.props.key === 'edgeless') {
-                const note = doc.getBlockById(event.id) as NoteBlockModel;
-                onCommand({type: 'collapse', placementId: placementIds.get(event.id)!, collapsed: Boolean(note.edgeless.collapse)});
             }
             return;
         }
@@ -222,6 +245,7 @@ async function buildPageProjection(container: HTMLElement, snapshot: PageSnapsho
         }
         if (event.type === 'delete' && placementIds.has(event.id)) {
             onCommand({type: 'remove-reference', placementIds: [placementIds.get(event.id)!]});
+            canvasVisibility?.refresh();
         }
     }));
     disposables.push(surface.elementAdded.on(({id}) => {
@@ -245,5 +269,6 @@ async function buildPageProjection(container: HTMLElement, snapshot: PageSnapsho
         document.removeEventListener('pointerup', up, true); document.removeEventListener('pointercancel', up, true);
     };
     hydrating = false;
-    return {flushGeometry, setSelectedReferences: (ids: readonly string[]) => resources.setSelected(ids)};
+    return {flushGeometry, setSelectedReferences: (ids: readonly string[]) => resources.setSelected(ids),
+        acknowledgeSnapshot(next: PageSnapshot) {acknowledgedPlacements = new Map(next.placements.map(p => [p.id, p]));}};
 }
