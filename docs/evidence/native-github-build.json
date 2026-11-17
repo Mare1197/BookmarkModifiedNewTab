@@ -1,0 +1,153 @@
+{
+  "scope": "Clean Ubuntu/Node22 GitHub workflow on published source44049f7. Later delivery edits are documentation/evidence only; no native stress capacity is certified by this correctness workflow.",
+  "run": {
+    "conclusion": "success",
+    "headSha": "44049f79d155b052c57b5f33b716dd81816d8287",
+    "jobs": [
+      {
+        "completedAt": "2026-11-17T09:24:49Z",
+        "conclusion": "success",
+        "databaseId": 133940668657,
+        "name": "verify",
+        "startedAt": "2026-11-17T09:20:09Z",
+        "status": "completed",
+        "steps": [
+          {
+            "completedAt": "2026-11-17T09:20:10Z",
+            "conclusion": "success",
+            "name": "Set up job",
+            "number": 1,
+            "startedAt": "2026-11-17T09:20:10Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-17T09:20:12Z",
+            "conclusion": "success",
+            "name": "Checkout",
+            "number": 2,
+            "startedAt": "2026-11-17T09:20:10Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-17T09:20:16Z",
+            "conclusion": "success",
+            "name": "Setup Node",
+            "number": 3,
+            "startedAt": "2026-11-17T09:20:12Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-17T09:20:49Z",
+            "conclusion": "success",
+            "name": "Install dependencies",
+            "number": 4,
+            "startedAt": "2026-11-17T09:20:16Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-17T09:21:29Z",
+            "conclusion": "success",
+            "name": "Lint and unit tests",
+            "number": 5,
+            "startedAt": "2026-11-17T09:20:49Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-17T09:21:32Z",
+            "conclusion": "success",
+            "name": "Build loadable extension",
+            "number": 6,
+            "startedAt": "2026-11-17T09:21:29Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-17T09:21:50Z",
+            "conclusion": "success",
+            "name": "Install Playwright Chromium",
+            "number": 7,
+            "startedAt": "2026-11-17T09:21:32Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-17T09:24:42Z",
+            "conclusion": "success",
+            "name": "Run unpacked extension smoke tests",
+            "number": 8,
+            "startedAt": "2026-11-17T09:21:50Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-17T09:24:42Z",
+            "conclusion": "success",
+            "name": "Package extension artifact",
+            "number": 9,
+            "startedAt": "2026-11-17T09:24:42Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-17T09:24:44Z",
+            "conclusion": "success",
+            "name": "Upload extension artifact",
+            "number": 10,
+            "startedAt": "2026-11-17T09:24:42Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-17T09:24:47Z",
+            "conclusion": "success",
+            "name": "Post Setup Node",
+            "number": 19,
+            "startedAt": "2026-11-17T09:24:44Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-17T09:24:47Z",
+            "conclusion": "success",
+            "name": "Post Checkout",
+            "number": 20,
+            "startedAt": "2026-11-17T09:24:47Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-17T09:24:47Z",
+            "conclusion": "success",
+            "name": "Complete job",
+            "number": 21,
+            "startedAt": "2026-11-17T09:24:47Z",
+            "status": "completed"
+          }
+        ],
+        "url": "https://github.com/Mare1197/BookmarkModifiedNewTab/actions/runs/44054619008/job/133940668657"
+      }
+    ],
+    "status": "completed",
+    "url": "https://github.com/Mare1197/BookmarkModifiedNewTab/actions/runs/44054619008"
+  },
+  "sourceTests": {
+    "total": 281,
+    "passed": 281,
+    "failed": 0,
+    "skipped": 0
+  },
+  "browserTests": {
+    "passed": 55,
+    "duration": "2.8m",
+    "flakyReported": false
+  },
+  "artifact": {
+    "id": 14314609545,
+    "name": "browser-os-new-tab",
+    "sizeInBytes": 27546282,
+    "expiredWhenChecked": false,
+    "url": "https://github.com/Mare1197/BookmarkModifiedNewTab/actions/runs/44054619008/artifacts/14314609545"
+  },
+  "summaries": [
+    "verify\tLint and unit tests\t2026-11-17T09:21:29.5251172Z # tests 281",
+    "verify\tLint and unit tests\t2026-11-17T09:21:29.5251501Z # pass 281",
+    "verify\tLint and unit tests\t2026-11-17T09:21:29.5251657Z # fail 0",
+    "verify\tLint and unit tests\t2026-11-17T09:21:29.5251983Z # skipped 0",
+    "verify\tBuild loadable extension\t2026-11-17T09:21:32.6192025Z Σ Total size: 41.44 MB                                                ",
+    "verify\tRun unpacked extension smoke tests\t2026-11-17T09:24:42.0547151Z   55 passed (2.8m)",
+    "verify\tRun unpacked extension smoke tests\t2026-11-17T09:24:42.0576760Z ##[notice]  55 passed (2.8m)"
+  ]
+}

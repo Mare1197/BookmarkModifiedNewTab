@@ -125,6 +125,12 @@ unrelated library relationships. See [routing and performance verification](docs
 
 ## Verification checkpoint
 
+The current [clean GitHub build](https://github.com/Mare1197/BookmarkModifiedNewTab/actions/runs/44054619008)
+passes dependency installation, lint/formatting, both type checks, **281 source tests**,
+the 41.44 MB production build and **55/55 browser tests** with no flaky cases reported.
+The [packaged extension](https://github.com/Mare1197/BookmarkModifiedNewTab/actions/runs/44054619008/artifacts/14314609545)
+is attached to that run. Native performance limits remain separate from these correctness checks.
+
 The November 17 [native workspace upgrade](docs/NATIVE_BOARD_UPGRADE.md) adds cooperative
 preparation and bounded content hydration over the complete model. Five-sample 500-card
 readiness medians improved from 65.2 to 10.8 seconds for Document and 98.2 to 12.9 seconds

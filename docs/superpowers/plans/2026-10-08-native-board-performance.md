@@ -1,5 +1,7 @@
 # Native Board Performance Implementation Plan
 
+Execution closed November 17, 2026 on the isolated performance branch. The [delivery report](../../NATIVE_BOARD_UPGRADE.md) records implementation, review fixes, measurements, retained failures and clean GitHub verification (281 source tests and 55 browser cases). Usable 1,000-reference startup and responsive cancellation remain unmet. This file preserves the approved planning checklist; consult the report and current-build instructions for delivered status.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking. Preserve native execution; start only after user plan review and the preceding search stage is verified/saved.
 
 **Goal:** Make large native workspaces more responsive without losing objects, connectors, drafts or recovery guarantees.
@@ -110,4 +112,4 @@ New leaves: `nativeProjectionPlan.ts` (ID maps/ancestry/order), `cooperativeProj
 
 Coverage: supervised baseline Task 1; maps/ancestry Task 2; cooperative preparation/cancel/cleanup Task 3; native visibility/resource pins Task 4; scoped shells/full operations Task 5; regression/review/measurement/report Task 6. Every review-focus condition has a named test owner. Installed BlockSuite controllers and canonical session/queue behavior are preserved.
 
-Await user review of this plan; native execution remains selected. The search stage must be verified and saved first. These checkboxes are planned work, not delivered features.
+The user approved this plan after the search stage was verified and saved. All six execution tasks are closed; the original checklist above remains a historical plan, while the delivery report distinguishes completed work from unmet performance targets.

@@ -4,6 +4,8 @@ Updated 17 November 2026. Reference branch: `feature/large-library-performance` 
 
 Give this document to a builder when asking for the same functional application. It defines behavior and app logic without prescribing a technology stack or visual design. The [full product handoff](AI_BUILDER_PRODUCT_HANDOFF.md) and [connected knowledge requirements](CONNECTED_KNOWLEDGE_ADDENDUM.md) retain the broader requested roadmap. Features under “Remaining requested features” below are future work, not requirements already satisfied by this reference build.
 
+The [clean verification run](https://github.com/Mare1197/BookmarkModifiedNewTab/actions/runs/44054619008) passes 281 source tests, the production build and all 55 browser cases. These checks verify the delivered workflows; the native-performance limits and remaining roadmap still apply.
+
 ## Builder instructions
 
 Continue the existing New Tab OS when source is supplied. Inspect its working desktop, browser integration, shared object store, editor, persistence and tests before changing anything. Preserve existing user data and supported behavior. Implement usable persistent workflows rather than sample-data demonstrations.

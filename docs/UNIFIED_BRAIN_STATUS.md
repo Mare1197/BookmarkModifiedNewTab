@@ -1,5 +1,10 @@
 # Unified Brain: implementation status
 
+The November 17 [clean GitHub build](https://github.com/Mare1197/BookmarkModifiedNewTab/actions/runs/44054619008)
+passes clean installation, lint/format/both types, **281 source tests**, the 41.44 MB build
+and **55/55 browser cases** with no flaky cases reported. The extension artifact is attached.
+This correctness result does not certify the large-native-page performance targets below.
+
 November 17 native checkpoint: complete projection planning, cooperative preparation
 with progress/Cancel/Retry, pre-render ordering and visible/pinned body hydration are
 implemented without a second content database. The [native upgrade report](NATIVE_BOARD_UPGRADE.md)

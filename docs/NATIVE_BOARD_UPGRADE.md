@@ -58,6 +58,12 @@ The final frozen artifact above passed a separate **6/6 one-sample follow-up** a
 
 The same fresh reviewer completed the evidence/capacity/handoff audit with **no outstanding Important findings**, accepting this documented bounded delivery. Its judgment verifies retained evidence, arithmetic, scope and handoff accuracy. It does not independently re-review author fixes or certify the unmet capacity targets.
 
+### Clean GitHub build
+
+[GitHub run 44054619008](https://github.com/Mare1197/BookmarkModifiedNewTab/actions/runs/44054619008) passed on published commit `44049f79d155b052c57b5f33b716dd81816d8287`: clean dependency installation, lint/formatting, both type checks, **281/281 source tests**, the 41.44 MB production build and **55/55 browser cases in one clean Linux run** (2.8 minutes, no flaky cases reported). [CI evidence](evidence/native-github-build.json) records the source/run/step metadata and exact summaries. This is distinct from the retained Windows shutdown failures and combined local coverage above; it does not certify Linux native stress cleanup or performance.
+
+The [packaged extension artifact](https://github.com/Mare1197/BookmarkModifiedNewTab/actions/runs/44054619008/artifacts/14314609545) was uploaded successfully. Subsequent delivery edits update documentation/evidence only; application and test code remain the verified source.
+
 ## Remaining limits
 
 Complete native model construction and layer work dominate large pages. One already-visible huge rich note/conversation is not internally virtualized. Page card/endpoint options still represent the complete page; global object pickers are searchable/paged, but isolated mounted-option cost has not been profiled, so no option-list performance certification is claimed. Worker-only construction, replacement rendering and persistent native content storage remain excluded. Windows descendant cleanup is tested; non-Windows process-tree stress cleanup is not certified. Portable source/unit checks are not evidence of portable native stress supervision.
