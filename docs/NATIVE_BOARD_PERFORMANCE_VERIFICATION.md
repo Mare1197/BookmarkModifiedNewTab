@@ -1,5 +1,7 @@
 # Native board performance
 
+The [November 17 upgrade report](NATIVE_BOARD_UPGRADE.md) contains the current repeated measurements, review fixes and remaining limits. The sections below preserve the historical baseline and implementation checkpoints; their pending statements describe those dated checkpoints.
+
 ## Baseline recorded November 15, 2026
 
 This is the predecessor baseline for the approved native-board optimization. Production optimization is still pending. Application source `838cb4844e43cc7a4a91fd806ed344aa3510e386` was frozen before measurement. The harness checkpoints are `4de2de7` (initial matrix) and `dd5eac1` (persistent failure markers). The [raw archive](evidence/native-board-baseline.json) includes source/harness revisions, artifact digest, dirty-tree flag, all emitted results, failed phases, DOM/resource diagnostics and errors.

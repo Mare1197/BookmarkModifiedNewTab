@@ -41,6 +41,9 @@ complete AFFiNE parity or completion of the entire product specification.
 - Native connector endpoint retargeting, orthogonal route bends, cancellation and persistent layout undo.
 - Scoped database reads, 50-object collection pages, separate Timeline paging, viewport-bounded
   Explorer/folder rendering, searchable destination pickers and deferred optional views with retry.
+- Complete native workspace preparation with progress, Cancel and fresh-snapshot Retry;
+  visible/pinned content hydration with at most four initial loads, retained dirty editors,
+  and canonical reference IDs, geometry, groups and connectors throughout.
 
 The extension does not calculate accumulated total-open time and does not require an AI provider.
 
@@ -122,7 +125,23 @@ unrelated library relationships. See [routing and performance verification](docs
 
 ## Verification checkpoint
 
-The subsequent local search index provides Pause/Resume, Retry/Rebuild, exact
+The November 17 [native workspace upgrade](docs/NATIVE_BOARD_UPGRADE.md) adds cooperative
+preparation and bounded content hydration over the complete model. Five-sample 500-card
+readiness medians improved from 65.2 to 10.8 seconds for Document and 98.2 to 12.9 seconds
+for Canvas; Mixed now completes at 16.8 seconds. The fixed 50-card workspace passed all
+15 library cases at 1k/10k/50k objects. **Responsive 1,000-card startup and cancellation
+remain unmet**: Document took about 103 seconds, Canvas/Mixed encountered failures,
+and cancellation confirmation took about eight seconds. The report distinguishes
+measured pre-review source, verified author fixes, failed/skipped cases and memory costs.
+The author fixes pass 281 source tests and the 41.44 MB production build. All 55 browser
+cases have passing coverage across serial runs; a complete local attempt had one native
+shutdown failure, retained and distinguished from the seven-case cleanup confirmation.
+
+Give another builder the [current functional instructions](docs/AI_BUILDER_CURRENT_BUILD.md),
+which cover implemented behavior and retain the remaining requested roadmap without
+prescribing a stack or appearance. The isolated branch remains `feature/large-library-performance`.
+
+The earlier October 26 local search index provides Pause/Resume, Retry/Rebuild, exact
 fallback, background processing and cache-free exports. Its [verification report](docs/LOCAL_SEARCH_INDEX_VERIFICATION.md)
 preserves the earlier 50k rebuild failures and the subsequent **30/30 passing
 search cases**, including five samples per board shape at 1k/10k/50k objects.
@@ -130,8 +149,8 @@ The compact-postings update passes **239 source tests**, the production build an
 **37/37 serial browser tests**. At 50k, median selective ready search is about
 2.53 seconds versus 5.53–6.70 seconds for scanning; the sub-second target is not
 met. Rebuilds take about four minutes, edit catch-up can take 26 seconds, and
-frame gaps/storage costs remain documented limitations. Native large-board
-optimization remains pending; search results do not certify native-editor capacity.
+frame gaps/storage costs remain documented limitations. Search results do not certify
+native-editor capacity; the later native report above supplies its separate evidence.
 
 The isolated `feature/large-library-performance` upgrade is documented in
 [large-library performance](docs/LARGE_LIBRARY_PERFORMANCE.md), including scoped reads,

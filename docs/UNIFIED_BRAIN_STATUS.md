@@ -1,5 +1,19 @@
 # Unified Brain: implementation status
 
+November 17 native checkpoint: complete projection planning, cooperative preparation
+with progress/Cancel/Retry, pre-render ordering and visible/pinned body hydration are
+implemented without a second content database. The [native upgrade report](NATIVE_BOARD_UPGRADE.md)
+retains all measurements: 51 native passes, two failures and seven skipped repetitions;
+15/15 fixed-board library passes. At 500 references, readiness medians are 10.8/12.9/16.8
+seconds for document/canvas/mixed. Responsive 1,000-reference startup and cancellation
+remain unmet, and memory/save costs still grow with unrelated library size. Use the
+[current builder instructions](AI_BUILDER_CURRENT_BUILD.md) for functional behavior and
+the remaining requested roadmap. Older checkpoints below retain their original scope.
+Author fixes pass 281 source tests, lint/format/both types and the 41.44 MB build.
+All 55 browser cases have passing final-harness coverage across serial runs; the
+complete local attempt's 54/55 result and subsequent seven-case cleanup confirmation
+are distinguished in the report. No single-command local 55/55 claim is made.
+
 October 26 search checkpoint: derived substring candidates, atomic invalidation,
 background processing, exact fallback and indexing controls are implemented.
 [Search verification](LOCAL_SEARCH_INDEX_VERIFICATION.md) preserves the failed
@@ -7,7 +21,7 @@ baseline and records the subsequent **30/30 passing search cases**, including
 all ten 50k runs. The compact-postings update passes 239 source tests, the
 production build and 37 browser cases. Selective ready search at 50k has a
 roughly 2.53-second median; the sub-second target, smooth-frame guarantees and
-large native-board optimization remain unmet or unverified. Rebuild, edit
+large native-board optimization were unmet or unverified at that checkpoint. Rebuild, edit
 catch-up, storage and heap costs are reported explicitly.
 
 Updated October 8, 2026. The shared-Brain improvements, persistent BlockSuite workspace, and local recovery upgrade are implemented as the bounded slice below. The full five-reference product specification is **not finished**.
@@ -46,7 +60,7 @@ Open **Boards → Brain**. The existing desktop, browser capture, Explorer, Reac
 
 BlockSuite 0.19.5 packages are integrated through an isolated adapter, not an AFFiNE database. The icons package is pinned to 2.1.75 because newer icons removed an export required by these packages. Production bundling preserves constructor names needed by BlockSuite dependency injection. Locally bundled syntax highlighting needs the narrowly scoped WebAssembly allowance documented in [Chrome's MV3 CSP reference](https://developer.chrome.com/docs/extensions/reference/manifest/content-security-policy); remote scripts and JavaScript `eval` remain disallowed.
 
-The complete uncompressed extension is approximately 41.27 MB and retains a large lazy editor chunk. The older icons package emits a Node-engine warning on Node 24 despite passing the tested build and browser flows. This is an integrated workspace, not a production-complete AFFiNE replacement. The build includes `THIRD_PARTY_NOTICES.txt` with licenses/source archives, including MPL-2.0 BlockSuite.
+The current complete uncompressed extension is approximately 41.44 MB and retains a large lazy editor chunk. The older icons package emits a Node-engine warning on Node 24 despite passing the tested build and browser flows. This is an integrated workspace, not a production-complete AFFiNE replacement. The build includes `THIRD_PARTY_NOTICES.txt` with licenses/source archives, including MPL-2.0 BlockSuite.
 
 AppFlowy, Anytype, Logseq and xTiles remain interaction/data-model references, not additional backends. See [the connected knowledge specification](CONNECTED_KNOWLEDGE_ADDENDUM.md) and [improvements plan](superpowers/plans/2026-09-18-brain-improvements.md).
 
