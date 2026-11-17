@@ -11,6 +11,7 @@ import {literal} from 'lit/static-html.js';
 import {PageReferenceSchema, WorkspaceReferenceBlock, WorkspaceReferenceNote, referenceContexts, type ReferenceInput, type ReferenceContext} from './blocksuiteBrainReference';
 import type {PageSnapshot} from './pageRepository';
 import {planNativeProjection} from './nativeProjectionPlan';
+import {nativeProjectionIndexes} from './nativeProjectionIndexes';
 import {validateGeometry} from './pageValidation';
 import {mountConnectorRouting} from './blocksuiteConnectorRouting';
 import {attachNativeClientOffsets} from './nativeClientOffsets';
@@ -124,8 +125,8 @@ async function buildPageProjection(container: HTMLElement, snapshot: PageSnapsho
     const closeIndexLayer = () => {if (!indexLayerClosed) {indexLayerClosed = true; indexLayer.dispose();}};
     scope.own(closeIndexLayer);
     try {
-        const nextIndex = indexLayer.createIndexGenerator();
-        await runProjectionBatches([...notes.values()].map(id => () => {doc.updateBlock(doc.getBlockById(id)!, {index: nextIndex()});}),
+        const indexes = nativeProjectionIndexes(indexLayer.generateIndex(), notes.size);
+        await runProjectionBatches([...notes.values()].map((id, index) => () => {doc.updateBlock(doc.getBlockById(id)!, {index: indexes[index]!});}),
             {...options, onProgress: done => options.onProgress?.(operations.length + done, total)});
         scope.check();
     } finally {closeIndexLayer();}
