@@ -199,9 +199,11 @@ export function applyPageCommand(boardId: string, expected: PageVersion, command
         checkVersion(before.version, expected);
         validateCommand(command);
         const state = layout(before);
+        const placementsById = new Map(state.placements.map(item => [item.id, item]));
+        const beforeById = new Map(before.placements.map(item => [item.id, item]));
         const p = state.presentation;
         const placement = (id: string) => {
-            const result = state.placements.find(item => item.id === id);
+            const result = placementsById.get(id);
             if (!result) throw new Error('Missing placement in this page.');
             return result;
         };
@@ -280,12 +282,18 @@ export function applyPageCommand(boardId: string, expected: PageVersion, command
         for (const item of state.placements) {
             const page = placementPresentation(item);
             if (page.groupId && !p.groups.some(g => g.id === page.groupId)) throw new Error('Missing placement group.');
-            if (!await db.entities.get(item.entityId)) throw new Error('Referenced object no longer exists.');
         }
-        const removed = before.placements.filter(item => !state.placements.some(next => next.id === item.id));
+        // Keep the same atomic existence check without one IndexedDB round trip
+        // per card holding the write transaction ahead of visible content reads.
+        const entityIds = [...new Set(state.placements.map(item => item.entityId))];
+        for (let offset = 0; offset < entityIds.length; offset += 100) {
+            if ((await db.entities.bulkGet(entityIds.slice(offset, offset + 100))).some(entity => !entity)) throw new Error('Referenced object no longer exists.');
+        }
+        const retainedIds = new Set(state.placements.map(item => item.id));
+        const removed = before.placements.filter(item => !retainedIds.has(item.id));
         await db.placements.bulkDelete(removed.map(item => item.id));
         for (const item of state.placements) {
-            if (stablePageJSON(item) !== stablePageJSON(before.placements.find(old => old.id === item.id))) {
+            if (stablePageJSON(item) !== stablePageJSON(beforeById.get(item.id))) {
                 await db.placements.put({...item, updatedAt: Date.now()});
             }
         }
