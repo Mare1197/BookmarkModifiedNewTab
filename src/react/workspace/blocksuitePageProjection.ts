@@ -12,6 +12,7 @@ import {PageReferenceSchema, WorkspaceReferenceBlock, WorkspaceReferenceNote, re
 import type {PageSnapshot} from './pageRepository';
 import {planNativeProjection} from './nativeProjectionPlan';
 import {nativeProjectionIndexes} from './nativeProjectionIndexes';
+import {createNativePreparationIndex} from './nativePreparationIndex';
 import {createNativeReferenceGeometry} from './nativeReferenceGeometry';
 import {validateGeometry} from './pageValidation';
 import {mountConnectorRouting} from './blocksuiteConnectorRouting';
@@ -67,8 +68,11 @@ async function buildPageProjection(container: HTMLElement, snapshot: PageSnapsho
     const collection = new DocCollection({schema: new Schema().register([...AffineSchemas, PageReferenceSchema])});
     scope.own(() => collection.dispose());
     collection.meta.initialize(); const doc = collection.createDoc();
+    const preparationOwner: {index?: ReturnType<typeof createNativePreparationIndex>} = {};
+    scope.own(() => preparationOwner.index?.dispose());
     scope.own(() => doc.dispose());
     doc.load();
+    const preparationIndex = preparationOwner.index = createNativePreparationIndex(doc);
     let root = '';
     let surface!: NonNullable<ReturnType<typeof getSurfaceBlock>>;
     const notes = new Map<string, string>(), placementIds = new Map<string, string>(), connectors = new Map<string, string>();
@@ -84,44 +88,45 @@ async function buildPageProjection(container: HTMLElement, snapshot: PageSnapsho
         disposed = true; clearTimeout(timer); cancelAnimationFrame(visibilityFrame); routing?.dispose(); disposables.forEach(d => d.dispose()); removePaste();
         editors.forEach(editor => editor.remove()); panes.forEach(pane => pane.remove()); referenceContexts.delete(doc.id);
     });
-    const operations: Array<() => void> = [() => {root = doc.addBlock('affine:page', {});},
-        () => {doc.addBlock('affine:surface', {}, root); surface = getSurfaceBlock(doc)!;}];
+    const operations: Array<() => void> = [() => {root = preparationIndex.addBlock('affine:page', {});},
+        () => {preparationIndex.addBlock('affine:surface', {}, root); surface = getSurfaceBlock(doc)!;}];
     const placements = plan.placements;
     for (const {p, presentation} of placements) {
         const collapsed = plan.collapsedByPlacement.get(p.id)!;
         if (collapsed) context.collapsed.add(p.id);
         context.colors.set(p.id, colors[presentation.color]!);
         operations.push(() => {
-            const note = doc.addBlock('affine:note', {xywh: `[${p.x},${p.y},${p.width},${p.height}]`, background: colors[presentation.color]}, root);
+            const note = preparationIndex.addBlock('affine:note', {xywh: `[${p.x},${p.y},${p.width},${p.height}]`, background: colors[presentation.color]}, root);
             notes.set(p.id, note); placementIds.set(note, p.id);
         }, () => {
             const model = doc.getBlockById(notes.get(p.id)!) as NoteBlockModel;
             doc.updateBlock(model, {edgeless: {...model.edgeless, collapse: collapsed, collapsedHeight: 100},
                 ...(collapsed ? {xywh: JSON.stringify([p.x, p.y, p.width, 100])} : {})});
-        }, () => {doc.addBlock('affine:embed-workspace-object', {entityId: p.entityId, placementId: p.id}, notes.get(p.id)!);});
+        }, () => {preparationIndex.addBlock('affine:embed-workspace-object', {entityId: p.entityId, placementId: p.id}, notes.get(p.id)!);});
     }
     for (const group of snapshot.presentation.groups) operations.push(() => {
         const children = new DocCollection.Y.Map<boolean>();
         for (const id of plan.groupChildren.get(group.id)!) children.set(notes.get(id)!, true);
-        const id = surface.addElement({type: 'group', children, title: new DocCollection.Y.Text(group.label)});
+        const id = preparationIndex.mutate(() => surface.addElement({type: 'group', children, title: new DocCollection.Y.Text(group.label)}));
         groups.set(group.id, id);
     });
     for (const group of snapshot.presentation.groups) if (group.parentId) {
         const parentId = group.parentId;
         operations.push(() => {
             const parent = surface.getElementById(groups.get(parentId)!);
-            if (parent && 'children' in parent) (parent.children as Y.Map<boolean>).set(groups.get(group.id)!, true);
+            if (parent && 'children' in parent) preparationIndex.mutate(() => (parent.children as Y.Map<boolean>).set(groups.get(group.id)!, true));
         });
     }
     const modes = {straight: ConnectorMode.Straight, orthogonal: ConnectorMode.Orthogonal, curve: ConnectorMode.Curve};
     for (const c of plan.connectors) operations.push(() => {
-        const id = surface.addElement({type: 'connector', mode: modes[c.mode], stroke: c.color, strokeStyle: c.dashed ? StrokeStyle.Dash : StrokeStyle.Solid,
+        const id = preparationIndex.mutate(() => surface.addElement({type: 'connector', mode: modes[c.mode], stroke: c.color, strokeStyle: c.dashed ? StrokeStyle.Dash : StrokeStyle.Solid,
             source: {id: notes.get(c.fromPlacementId), position: [c.anchors?.source.x ?? 1, c.anchors?.source.y ?? 0.5]},
-            target: {id: notes.get(c.toPlacementId), position: [c.anchors?.target.x ?? 0, c.anchors?.target.y ?? 0.5]}});
+            target: {id: notes.get(c.toPlacementId), position: [c.anchors?.target.x ?? 0, c.anchors?.target.y ?? 0.5]}}));
         connectors.set(id, c.id);
     });
     const modelStart = performance.now(), total = operations.length + placements.length;
     await runProjectionBatches(operations, {...options, onProgress: done => options.onProgress?.(done, total)});
+    preparationIndex.verify();
     scope.check(); options.onMeasure?.('projection-models', performance.now() - modelStart);
     // Use the same native ordering generator before any renderer observes the
     // document, avoiding a layer/render rebuild for every initial note index.
@@ -268,6 +273,7 @@ async function buildPageProjection(container: HTMLElement, snapshot: PageSnapsho
         container.removeEventListener('paste', blockUnsupported, true); container.removeEventListener('pointerdown', down, true);
         document.removeEventListener('pointerup', up, true); document.removeEventListener('pointercancel', up, true);
     };
+    scope.check(); preparationIndex.verify(); preparationIndex.dispose();
     hydrating = false;
     return {flushGeometry, setSelectedReferences: (ids: readonly string[]) => resources.setSelected(ids),
         acknowledgeSnapshot(next: PageSnapshot) {acknowledgedPlacements = new Map(next.placements.map(p => [p.id, p]));}};

@@ -175,6 +175,8 @@ test('initial note order is complete before native rendering starts', async ({co
         .sort((a, b) => a.index < b.index ? -1 : a.index > b.index ? 1 : 0));
     expect(order.map(row => row.placement)).toEqual(Array.from({length: 50}, (_, i) => 'native:placement:' + i));
     expect(new Set(order.map(row => row.index)).size).toBe(50);
+    expect(await ws.locator('page-editor').evaluate(editor =>
+        ['root', 'getParent', 'getBlocksByFlavour', 'addBlock', 'moveBlocks', 'deleteBlock'].some(key => Object.hasOwn(editor.doc, key)))).toBe(false);
 });
 
 async function nativeRecords(page, table) {
@@ -302,4 +304,60 @@ test('layout controls defer until first open and retain an unfinished geometry f
     await expect.poll(async () => (await nativeRecords(page, 'placements')).find(p => p.id === 'native:placement:0').width).toBe(450);
     await page.getByRole('button', {name: 'Return to desktop', exact: true}).click();
     await expect(ws).not.toBeVisible();
+});
+
+test('a missing final native reference fails preparation and retries without canonical loss', async ({context, extensionId}) => {
+    const {page, ws} = await openFixture(context, extensionId, 'document');
+    await ws.locator('page-editor').evaluate(editor => {
+        window.preparationPrototype = Object.getPrototypeOf(editor.doc);
+        window.preparationAddDescriptor = Object.getOwnPropertyDescriptor(window.preparationPrototype, 'addBlock');
+    });
+    await page.getByRole('button', {name: 'Return to desktop', exact: true}).click();
+    const before = await Promise.all(['workspaceDrafts', 'workspaceRevisions', 'activities'].map(name => nativeRecords(page, name)));
+    await page.evaluate(() => {
+        const original = window.preparationAddDescriptor.value;
+        window.preparationPrototype.addBlock = function (flavour, props, ...args) {
+            if (flavour === 'affine:embed-workspace-object' && props.placementId === 'native:placement:49') return props.id || this.generateBlockId();
+            return original.call(this, flavour, props, ...args);
+        };
+    });
+    try {
+        await page.frameLocator('iframe[title="Browser OS desktop"]').getByRole('button', {name: 'Boards', exact: true}).click();
+        await page.getByRole('button', {name: 'Workspace', exact: true}).click();
+        await expect(ws.getByRole('status').first()).toContainText('Native preparation failed', {timeout: 30000});
+        await expect(ws.locator('page-editor,edgeless-editor')).toHaveCount(0);
+        expect((await nativeRecords(page, 'placements')).filter(p => p.boardId === 'native:board')).toHaveLength(50);
+        expect(await Promise.all(['workspaceDrafts', 'workspaceRevisions', 'activities'].map(name => nativeRecords(page, name)))).toEqual(before);
+    } finally {await page.evaluate(() => Object.defineProperty(window.preparationPrototype, 'addBlock', window.preparationAddDescriptor));}
+    await ws.getByRole('button', {name: 'Retry preparation', exact: true}).click();
+    await expect(ws.getByRole('status').first()).toHaveText('saved', {timeout: 30000});
+    expect(await ws.locator('page-editor').evaluate(editor => editor.doc.getBlocks().filter(b => b.flavour === 'affine:embed-workspace-object').length)).toBe(50);
+    await page.getByRole('button', {name: 'Return to desktop', exact: true}).click(); await expect(ws).not.toBeVisible();
+});
+
+test('an unowned native transaction before mount restores original lookups', async ({context, extensionId}) => {
+    const {page, ws} = await openFixture(context, extensionId, 'canvas');
+    await page.getByRole('button', {name: 'Return to desktop', exact: true}).click();
+    await page.evaluate(() => {
+        window.preparationAppend = Element.prototype.append;
+        Element.prototype.append = function (...nodes) {
+            const editor = nodes.find(node => node?.localName === 'edgeless-editor');
+            if (editor) {
+                Element.prototype.append = window.preparationAppend;
+                const doc = editor.doc;
+                const before = Object.hasOwn(doc, 'getParent');
+                doc.spaceDoc.transact(() => {doc.spaceDoc.getMap('synthetic-preparation-check').set('test', true);});
+                window.preparationFallback = {before, after: Object.hasOwn(doc, 'getParent'), root: Object.hasOwn(doc, 'root')};
+            }
+            return window.preparationAppend.apply(this, nodes);
+        };
+    });
+    try {
+        await page.frameLocator('iframe[title="Browser OS desktop"]').getByRole('button', {name: 'Boards', exact: true}).click();
+        await page.getByRole('button', {name: 'Workspace', exact: true}).click();
+        await expect(ws.getByRole('status').first()).toHaveText('saved', {timeout: 30000});
+        expect(await page.evaluate(() => window.preparationFallback)).toEqual({before: true, after: false, root: false});
+        expect(await ws.locator('edgeless-editor').evaluate(editor => editor.doc.getBlocks().filter(b => b.flavour === 'affine:embed-workspace-object').length)).toBe(50);
+    } finally {await page.evaluate(() => {Element.prototype.append = window.preparationAppend;});}
+    await page.getByRole('button', {name: 'Return to desktop', exact: true}).click(); await expect(ws).not.toBeVisible();
 });
