@@ -40,7 +40,11 @@ async function buildPageProjection(container: HTMLElement, snapshot: PageSnapsho
     scope.check();
     const plan = planNativeProjection(snapshot);
     const data = createReferenceDataSource(workspaceClient, snapshot, input.onError); scope.own(() => data.dispose());
-    const hydration = createReferenceHydration({maxConcurrent: 4, onError: input.onError});
+    container.dataset.nativeContentLoading = '0'; container.dataset.nativeContentHydrated = '0'; container.dataset.nativeContentPeak = '0';
+    const hydration = createReferenceHydration({maxConcurrent: 4, onError: input.onError, onState: ({loading, hydrated}) => {
+        container.dataset.nativeContentLoading = String(loading); container.dataset.nativeContentHydrated = String(hydrated);
+        container.dataset.nativeContentPeak = String(Math.max(Number(container.dataset.nativeContentPeak), loading));
+    }});
     const resources = createReferenceResources({session: input.session, hydration,
         load: (entityId, signal) => loadReferenceContent(entityId, signal, input)});
     scope.own(() => resources.dispose());

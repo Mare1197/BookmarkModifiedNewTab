@@ -9,12 +9,15 @@ const wanted = (entry: Entry) => Boolean(entry.registration && entry.visible) ||
 
 // One owner per mounted page, with stable occurrence IDs. An aborted request
 // occupies its slot until it settles: cancellation must not exceed the IO bound.
-export function createReferenceHydration(options: {maxConcurrent: number; onError?: (error: unknown) => void}) {
+export function createReferenceHydration(options: {maxConcurrent: number; onError?: (error: unknown) => void;
+    onState?: (state: {loading: number; hydrated: number}) => void}) {
     if (!Number.isSafeInteger(options.maxConcurrent) || options.maxConcurrent < 1) throw new Error('Invalid hydration concurrency');
-    const entries = new Map<string, Entry>(); let active = 0, closed = false;
+    const entries = new Map<string, Entry>(); let active = 0, hydrated = 0, closed = false;
     const report = (error: unknown) => {options.onError?.(error);};
+    const notify = () => {if (!closed) {try {options.onState?.({loading: active, hydrated});} catch (error) {report(error);}}};
     const release = (entry: Entry) => {
         const cleanup = entry.cleanup; entry.cleanup = undefined;
+        if (cleanup) {hydrated--; notify();}
         try {cleanup?.();} catch (error) {report(error);}
     };
     function reconcile(id: string, entry: Entry) {
@@ -28,18 +31,18 @@ export function createReferenceHydration(options: {maxConcurrent: number; onErro
         for (const [id, entry] of entries) {
             if (active >= options.maxConcurrent) break;
             if (!wanted(entry) || entry.attempt || entry.cleanup || entry.failed) continue;
-            const controller = new AbortController(); entry.attempt = controller; active++;
+            const controller = new AbortController(); entry.attempt = controller; active++; notify();
             void Promise.resolve().then(() => {
                 if (closed || controller.signal.aborted) throw new DOMException('Content load cancelled', 'AbortError');
                 return entry.load(controller.signal);
             }).then(cleanup => {
                 if (closed || controller.signal.aborted || !wanted(entry)) {
                     try {cleanup();} catch (error) {report(error);}
-                } else entry.cleanup = cleanup;
+                } else {entry.cleanup = cleanup; hydrated++; notify();}
             }).catch(error => {
                 if (!closed && !controller.signal.aborted) {entry.failed = true; report(error);}
             }).finally(() => {
-                active--; entry.attempt = undefined;
+                active--; entry.attempt = undefined; notify();
                 if (!closed) {reconcile(id, entry); pump();}
             });
         }

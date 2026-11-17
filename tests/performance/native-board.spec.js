@@ -11,6 +11,7 @@ const samples = Number(process.env.NATIVE_SAMPLES || 5);
 const extensionPath = path.resolve(process.env.WORKSPACE_EXTENSION_PATH || 'dist');
 const revision = execFileSync('git', ['rev-parse', 'HEAD'], {encoding: 'utf8'}).trim();
 const sourceRevision = process.env.NATIVE_SOURCE_REVISION || revision;
+const runLabel = process.env.NATIVE_RUN_LABEL || 'native-acceptance';
 const dirty = Boolean(execFileSync('git', ['status', '--porcelain'], {encoding: 'utf8'}).trim());
 const artifactHash = () => {
     const hash = createHash('sha256');
@@ -28,8 +29,8 @@ for (const count of sizes) for (const mode of modes) for (let sample = 0; sample
     test(`native ${mode} ${count} sample ${sample + 1}`, async ({}, info) => {
         test.setTimeout(200000);
         test.skip(hasProbeFailure(info.project.outputDir, mode + '/' + count), 'Earlier capacity probe failed; preserve failure and avoid repeated hangs');
-        const result = await runOwnedNativeProbe({extensionPath, referenceCount: count, mode, sample, timeoutMs: 180000, label: 'native-baseline'});
-        console.log('NATIVE_RESULT ' + JSON.stringify({sourceRevision, harnessRevision: revision, dirty, artifactDigest, count, mode, sample, ...result}));
+        const result = await runOwnedNativeProbe({extensionPath, referenceCount: count, mode, sample, timeoutMs: 180000, label: runLabel});
+        console.log('NATIVE_RESULT ' + JSON.stringify({label: runLabel, sourceRevision, harnessRevision: revision, dirty, artifactDigest, count, mode, sample, ...result}));
         await info.attach('native-metrics', {body: JSON.stringify(result, null, 2), contentType: 'application/json'});
         if (!result.ok) recordProbeFailure(info.project.outputDir, mode + '/' + count);
         expect(result.ok, JSON.stringify(result.errors)).toBe(true);
@@ -41,8 +42,8 @@ for (const librarySize of librarySizes) for (let sample = 0; sample < samples; s
         test.setTimeout(320000);
         test.skip(hasProbeFailure(info.project.outputDir, 'library/' + librarySize), 'Earlier library probe failed');
         const result = await runOwnedNativeProbe({extensionPath, referenceCount: 50, mode: 'canvas', sample,
-            librarySize, timeoutMs: 300000, label: 'native-library-baseline'});
-        console.log('NATIVE_RESULT ' + JSON.stringify({sourceRevision, harnessRevision: revision, dirty, artifactDigest,
+            librarySize, timeoutMs: 300000, label: runLabel + '-library'});
+        console.log('NATIVE_RESULT ' + JSON.stringify({label: runLabel + '-library', sourceRevision, harnessRevision: revision, dirty, artifactDigest,
             count: 50, mode: 'canvas', librarySize, sample, ...result}));
         await info.attach('native-metrics', {body: JSON.stringify(result, null, 2), contentType: 'application/json'});
         if (!result.ok) recordProbeFailure(info.project.outputDir, 'library/' + librarySize);

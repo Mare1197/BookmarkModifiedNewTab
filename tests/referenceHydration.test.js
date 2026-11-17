@@ -11,6 +11,17 @@ test('disposal before a scheduled loader starts performs no content reads', asyn
     hydration.setVisible('card', true); hydration.dispose(); await tick(); assert.equal(reads, 0);
 });
 
+test('hydration measurements distinguish pending loads retained resources and release', async t => {
+    const {load} = await workspaceFixture(t), states = [];
+    const hydration = load('referenceHydration.ts').createReferenceHydration({maxConcurrent: 4, onState: state => states.push(state)});
+    let finish;
+    hydration.register('card', () => new Promise(resolve => {finish = resolve;})); hydration.setVisible('card', true);
+    await tick(); assert.ok(states.length > 0); assert.deepEqual(states.at(-1), {loading: 1, hydrated: 0});
+    finish(() => {}); await tick(); assert.deepEqual(states.at(-1), {loading: 0, hydrated: 1});
+    hydration.setVisible('card', false); assert.deepEqual(states.at(-1), {loading: 0, hydrated: 0});
+    hydration.dispose(); const count = states.length; await tick(); assert.equal(states.length, count);
+});
+
 test('hydration never exceeds four inflight loads including cancelled pending work', async t => {
     const {load} = await workspaceFixture(t), {createReferenceHydration} = load('referenceHydration.ts');
     const hydration = createReferenceHydration({maxConcurrent: 4}), pending = []; let inflight = 0, peak = 0, released = 0;

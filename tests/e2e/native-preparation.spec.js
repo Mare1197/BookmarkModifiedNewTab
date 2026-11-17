@@ -35,10 +35,14 @@ for (const mode of ['document', 'canvas', 'mixed']) test(`preparing ${mode} can 
     await expect(ws.getByRole('status').first()).toContainText('Preparing workspace:');
     await expect(ws.getByRole('button', {name: 'Save now', exact: true})).toBeDisabled();
     await expect(ws.locator('.affineNativeHost')).toHaveAttribute('inert', '');
+    const cancellationStart = await page.evaluate(() => performance.now());
     await ws.getByRole('button', {name: 'Cancel preparation', exact: true}).click();
     await expect(ws.getByRole('status').first()).toContainText('Preparation cancelled');
     await expect(ws.locator('page-editor,edgeless-editor')).toHaveCount(0);
     await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+    const confirmationMs = await page.evaluate(start => performance.now() - start, cancellationStart);
+    console.log('NATIVE_CANCEL_RESULT ' + JSON.stringify({mode, referenceCount: 1000, confirmationMs,
+        scope: 'Automation click through observed cancelled status, no editor panes and two animation frames; includes automation overhead.'}));
     expect(await journalCounts(page)).toEqual(before);
     // A separate canonical edit while cancelled leaves a smaller complete page.
     // Retry must read this fresh snapshot rather than reuse the abandoned 1000-card one.

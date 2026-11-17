@@ -27,6 +27,11 @@ for (const mode of ['document', 'canvas', 'mixed']) test(`native ${mode} keeps c
     expect(model).toEqual({references: 50, notes: 50});
     await expect(ws.locator('[data-placement-id="native:placement:49"] .brainRichBlock')).toHaveCount(0);
     expect(await ws.locator('.brainRichBlock').count()).toBeLessThan(mode === 'mixed' ? 40 : 20);
+    const host = ws.locator('.affineNativeHost');
+    await expect.poll(async () => Number(await host.getAttribute('data-native-content-loading'))).toBe(0);
+    const peak = Number(await host.getAttribute('data-native-content-peak'));
+    expect(peak).toBeGreaterThan(0); expect(peak).toBeLessThanOrEqual(4);
+    expect(Number(await host.getAttribute('data-native-content-hydrated'))).toBeLessThan(mode === 'mixed' ? 100 : 50);
 });
 
 test('dirty rich-text resource survives actual native disconnect and reconnect', async ({context, extensionId}) => {
