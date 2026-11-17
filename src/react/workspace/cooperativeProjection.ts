@@ -7,13 +7,15 @@ const aborted = () => new DOMException('Workspace preparation cancelled', 'Abort
 const checkSignal = (signal?: AbortSignal) => {if (signal?.aborted) throw aborted();};
 
 export async function runProjectionBatches(operations: readonly (() => void)[], options: NativeMountOptions = {},
-    yieldControl: () => Promise<void> = () => new Promise(resolve => setTimeout(resolve, 0))) {
+    yieldControl: () => Promise<void> = () => new Promise(resolve => setTimeout(resolve, 0)), now: () => number = () => performance.now()) {
     checkSignal(options.signal);
-    for (let offset = 0; offset < operations.length; offset += 50) {
-        const end = Math.min(operations.length, offset + 50);
-        for (let index = offset; index < end; index++) {checkSignal(options.signal); operations[index]!();}
+    for (let offset = 0; offset < operations.length;) {
+        const started = now(), limit = Math.min(operations.length, offset + 50);
+        let end = offset;
+        do {checkSignal(options.signal); operations[end++]!();} while (end < limit && now() - started < 8);
         checkSignal(options.signal); options.onProgress?.(end, operations.length);
         if (end < operations.length) {await yieldControl(); checkSignal(options.signal);}
+        offset = end;
     }
 }
 

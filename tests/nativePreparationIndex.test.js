@@ -96,6 +96,13 @@ test('captured root getter and existing own descriptors restore exactly', async 
     index.dispose();
     assert.deepEqual(Object.getOwnPropertyDescriptors(doc), before); assert.equal(root.call(doc), ids.model(ids.root));
 });
+test('captured native property writers still delegate after the preparation owner closes', async t => {
+    const {create, doc} = await fixture(t), index = create(doc), ids = populate(index, doc);
+    const update = doc.updateBlock.bind(doc);
+    index.dispose(); update(ids.model(ids.note), {index: 'after-ready'});
+    assert.equal(ids.model(ids.note).index, 'after-ready');
+    assert.throws(() => index.mutate(() => assert.fail('late owned operation')), {name: 'AbortError'});
+});
 test('duplicate controlled IDs fail instead of validating a previously existing model', async t => {
     const {create, doc} = await fixture(t), index = create(doc), ids = populate(index, doc);
     assert.throws(() => index.addBlock('affine:note', {id: ids.note}, ids.root), /duplicate/i);

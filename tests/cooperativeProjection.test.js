@@ -6,7 +6,7 @@ test('projection batches yield after at most fifty operations', async t => {
     const {load} = await workspaceFixture(t), {runProjectionBatches} = load('cooperativeProjection.ts');
     const batchSizes = [], progress = []; let batch = 0, total = 0;
     await runProjectionBatches(Array.from({length: 123}, () => () => {batch++; total++;}),
-        {onProgress: (done, count) => progress.push([done, count])}, async () => {batchSizes.push(batch); batch = 0;});
+        {onProgress: (done, count) => progress.push([done, count])}, async () => {batchSizes.push(batch); batch = 0;}, () => 0);
     batchSizes.push(batch);
     assert.deepEqual(batchSizes, [50, 50, 23]); assert.equal(total, 123);
     assert.deepEqual(progress, [[50, 123], [100, 123], [123, 123]]);
@@ -16,10 +16,43 @@ test('cancelled batches publish no late progress or operations', async t => {
     const {load} = await workspaceFixture(t), {runProjectionBatches} = load('cooperativeProjection.ts');
     const controller = new AbortController(); let calls = 0; const progress = [];
     await assert.rejects(runProjectionBatches(Array.from({length: 100}, () => () => calls++),
-        {signal: controller.signal, onProgress: done => progress.push(done)}, async () => controller.abort()), {name: 'AbortError'});
+        {signal: controller.signal, onProgress: done => progress.push(done)}, async () => controller.abort(), () => 0), {name: 'AbortError'});
     assert.equal(calls, 50); assert.deepEqual(progress, [50]);
     await assert.rejects(runProjectionBatches([() => calls++], {signal: controller.signal}), {name: 'AbortError'});
     assert.equal(calls, 50);
+});
+
+test('projection work yields by elapsed budget while retaining order and final progress', async t => {
+    const {load} = await workspaceFixture(t), {runProjectionBatches} = load('cooperativeProjection.ts');
+    let clock = 0, batch = 0; const slices = [], progress = [], order = [];
+    await runProjectionBatches(Array.from({length: 10}, (_, i) => () => {clock += 3; batch++; order.push(i);}),
+        {onProgress: done => progress.push(done)}, async () => {slices.push(batch); batch = 0;}, () => clock);
+    slices.push(batch);
+    assert.deepEqual(slices, [3, 3, 3, 1]); assert.deepEqual(progress, [3, 6, 9, 10]);
+    assert.deepEqual(order, Array.from({length: 10}, (_, i) => i));
+});
+test('budget-boundary cancellation performs no late work or progress', async t => {
+    const {load} = await workspaceFixture(t), {runProjectionBatches} = load('cooperativeProjection.ts');
+    const controller = new AbortController(); let clock = 0, calls = 0; const progress = [];
+    await assert.rejects(runProjectionBatches(Array.from({length: 10}, () => () => {clock += 3; calls++;}),
+        {signal: controller.signal, onProgress: done => progress.push(done)}, async () => controller.abort(), () => clock), {name: 'AbortError'});
+    assert.equal(calls, 3); assert.deepEqual(progress, [3]);
+    const inside = new AbortController(); const late = [];
+    await assert.rejects(runProjectionBatches([() => {clock += 20; inside.abort();}],
+        {signal: inside.signal, onProgress: done => late.push(done)}, async () => late.push('yield'), () => clock), {name: 'AbortError'});
+    assert.deepEqual(late, []);
+});
+test('empty, indivisible and failing slices retain precise completion semantics', async t => {
+    const {load} = await workspaceFixture(t), {runProjectionBatches} = load('cooperativeProjection.ts');
+    let clock = 0; const progress = [], yields = [];
+    const options = {onProgress: done => progress.push(done)}, yieldControl = async () => yields.push(clock);
+    await runProjectionBatches([], options, yieldControl, () => clock);
+    assert.deepEqual(progress, []); assert.deepEqual(yields, []);
+    await runProjectionBatches([() => {clock += 30;}], options, yieldControl, () => clock);
+    assert.deepEqual(progress, [1]); assert.deepEqual(yields, []);
+    await assert.rejects(runProjectionBatches([() => {clock += 9;}, () => {throw Error('operation failed');}, () => assert.fail('late operation')],
+        options, yieldControl, () => clock), /operation failed/);
+    assert.deepEqual(progress, [1, 1]); assert.deepEqual(yields, [39]);
 });
 
 test('cancelled mount disposes allocations before returning even if preparation never resolves', async t => {

@@ -136,7 +136,22 @@ process.once('message', async options => {
                 else await card.scrollIntoViewIfNeeded();
                 if (index === 1) await expect(card).toContainText('Message 2 for 1');
                 if (index === 2) await expect(card.getByLabel('Task status')).toBeAttached();
-                if (index === 3) await expect(card.locator('img')).toBeAttached();
+                if (index === 3) {
+                    try {await expect(card.locator('img')).toBeAttached();}
+                    catch (error) {
+                        metrics.revealFailure = await page.evaluate(() => {
+                            const root = document.querySelector('affine-edgeless-root'), viewport = root?.service.viewport;
+                            const cards = [...document.querySelectorAll('[data-placement-id="native:placement:3"]')];
+                            const block = root?.doc.getBlocks().find(b => b.flavour === 'affine:embed-workspace-object' && b.placementId === 'native:placement:3');
+                            return {camera: viewport && {center: {...viewport.center}, width: viewport.width, height: viewport.height, zoom: viewport.zoom},
+                                geometry: block && root.doc.getParent(block)?.xywh,
+                                cards: cards.map(node => ({hydrated: node.dataset.hydrated, hidden: node.querySelector('.brainReferenceBody')?.hidden,
+                                    text: node.textContent, html: node.querySelector('.brainReferenceBody')?.innerHTML.slice(0, 1000), rect: node.getBoundingClientRect().toJSON()})),
+                                host: {...document.querySelector('.affineNativeHost')?.dataset}, stats: window.nativeProbeStats};
+                        });
+                        throw error;
+                    }
+                }
             }
             return true;
         });

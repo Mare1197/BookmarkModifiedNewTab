@@ -76,6 +76,7 @@ export function createNativePreparationIndex(doc: Doc) {
                 }, writable: true});
             }
             install('updateBlock', {value: function (this: Doc, model: Parameters<Doc['updateBlock']>[0], props: object | (() => void)) {
+                if (!active) return Reflect.apply(nativeUpdate, this, [model, props]);
                 if (this !== doc || typeof props === 'function' || !props || 'children' in props || 'id' in props || 'flavour' in props) {
                     restore(); return Reflect.apply(nativeUpdate, this, [model, props]);
                 }

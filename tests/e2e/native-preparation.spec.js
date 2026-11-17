@@ -19,6 +19,13 @@ for (const mode of ['document', 'canvas', 'mixed']) test(`preparing ${mode} can 
     await page.addInitScript(() => {
         if (location.protocol !== 'chrome-extension:') return;
         localStorage.madeHelp = '1'; localStorage.showedHelp = '1'; localStorage.version = '1.5.2';
+        document.addEventListener('click', event => {
+            if (event.target.closest('button')?.textContent === 'Cancel preparation') window.nativeCancelEventAt = performance.now();
+        }, true);
+        document.addEventListener('DOMContentLoaded', () => new MutationObserver(() => {
+            if (window.nativeCancelEventAt && !window.nativeCancelFeedbackAt &&
+                document.querySelector('.affineWorkspace [role="status"]')?.textContent.includes('Preparation cancelled')) window.nativeCancelFeedbackAt = performance.now();
+        }).observe(document.body, {childList: true, subtree: true, characterData: true}));
     });
     const url = `chrome-extension://${extensionId}/newtab.html`;
     await page.goto(url);
@@ -41,7 +48,9 @@ for (const mode of ['document', 'canvas', 'mixed']) test(`preparing ${mode} can 
     await expect(ws.locator('page-editor,edgeless-editor')).toHaveCount(0);
     await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
     const confirmationMs = await page.evaluate(start => performance.now() - start, cancellationStart);
-    console.log('NATIVE_CANCEL_RESULT ' + JSON.stringify({mode, referenceCount: 1000, confirmationMs,
+    const eventToFeedbackMs = await page.evaluate(() => window.nativeCancelFeedbackAt - window.nativeCancelEventAt);
+    expect(Number.isFinite(eventToFeedbackMs)).toBe(true);
+    console.log('NATIVE_CANCEL_RESULT ' + JSON.stringify({mode, referenceCount: 1000, confirmationMs, eventToFeedbackMs,
         scope: 'Automation click through observed cancelled status, no editor panes and two animation frames; includes automation overhead.'}));
     expect(await journalCounts(page)).toEqual(before);
     // A separate canonical edit while cancelled leaves a smaller complete page.
@@ -63,4 +72,5 @@ for (const mode of ['document', 'canvas', 'mixed']) test(`preparing ${mode} can 
             ({id: block.placementId, xywh: JSON.parse(editor.doc.getParent(block).xywh)})));
     expect(geometry).toEqual(fixture.data.placements.slice(0, 50).map(p => ({id: p.id, xywh: [p.x, p.y, p.width, p.height]})));
     expect(await journalCounts(page)).toEqual(before);
+    await page.getByRole('button', {name: 'Return to desktop', exact: true}).click(); await expect(ws).not.toBeVisible();
 });

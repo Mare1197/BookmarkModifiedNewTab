@@ -346,6 +346,7 @@ test('an unowned native transaction before mount restores original lookups', asy
                 Element.prototype.append = window.preparationAppend;
                 const doc = editor.doc;
                 const before = Object.hasOwn(doc, 'getParent');
+                window.preparationCapturedUpdate = doc.updateBlock.bind(doc);
                 doc.spaceDoc.transact(() => {doc.spaceDoc.getMap('synthetic-preparation-check').set('test', true);});
                 window.preparationFallback = {before, after: Object.hasOwn(doc, 'getParent'), root: Object.hasOwn(doc, 'root')};
             }
@@ -357,6 +358,10 @@ test('an unowned native transaction before mount restores original lookups', asy
         await page.getByRole('button', {name: 'Workspace', exact: true}).click();
         await expect(ws.getByRole('status').first()).toHaveText('saved', {timeout: 30000});
         expect(await page.evaluate(() => window.preparationFallback)).toEqual({before: true, after: false, root: false});
+        await ws.locator('edgeless-editor').evaluate(editor => {
+            const note = editor.doc.getBlocks().find(b => b.flavour === 'affine:note');
+            window.preparationCapturedUpdate(note, {index: note.index});
+        });
         expect(await ws.locator('edgeless-editor').evaluate(editor => editor.doc.getBlocks().filter(b => b.flavour === 'affine:embed-workspace-object').length)).toBe(50);
     } finally {await page.evaluate(() => {Element.prototype.append = window.preparationAppend;});}
     await page.getByRole('button', {name: 'Return to desktop', exact: true}).click(); await expect(ws).not.toBeVisible();
