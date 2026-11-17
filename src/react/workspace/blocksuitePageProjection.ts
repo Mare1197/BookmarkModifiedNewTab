@@ -5,7 +5,7 @@ import {effects as blockEffects} from '@blocksuite/blocks/effects';
 import {PageEditor, EdgelessEditor} from '@blocksuite/presets';
 import {effects as presetEffects} from '@blocksuite/presets/effects';
 import {BlockViewExtension, BlockViewIdentifier, WidgetViewMapIdentifier} from '@blocksuite/block-std';
-import {GfxController} from '@blocksuite/block-std/gfx';
+import {GfxController, LayerManager} from '@blocksuite/block-std/gfx';
 import {DocCollection, Schema, type Y} from '@blocksuite/store';
 import {literal} from 'lit/static-html.js';
 import {PageReferenceSchema, WorkspaceReferenceBlock, WorkspaceReferenceNote, referenceContexts, type ReferenceInput, type ReferenceContext} from './blocksuiteBrainReference';
@@ -117,6 +117,19 @@ async function buildPageProjection(container: HTMLElement, snapshot: PageSnapsho
     const modelStart = performance.now(), total = operations.length + placements.length;
     await runProjectionBatches(operations, {...options, onProgress: done => options.onProgress?.(done, total)});
     scope.check(); options.onMeasure?.('projection-models', performance.now() - modelStart);
+    // Use the same native ordering generator before any renderer observes the
+    // document, avoiding a layer/render rebuild for every initial note index.
+    const indexStart = performance.now(), indexLayer = new LayerManager(doc, surface, {watch: false});
+    let indexLayerClosed = false;
+    const closeIndexLayer = () => {if (!indexLayerClosed) {indexLayerClosed = true; indexLayer.dispose();}};
+    scope.own(closeIndexLayer);
+    try {
+        const nextIndex = indexLayer.createIndexGenerator();
+        await runProjectionBatches([...notes.values()].map(id => () => {doc.updateBlock(doc.getBlockById(id)!, {index: nextIndex()});}),
+            {...options, onProgress: done => options.onProgress?.(operations.length + done, total)});
+        scope.check();
+    } finally {closeIndexLayer();}
+    options.onMeasure?.('projection-indexes', performance.now() - indexStart);
     referenceContexts.set(doc.id, context);
     const renderStart = performance.now();
     for (const kind of mode === 'mixed' ? ['document', 'canvas'] : [mode]) {
@@ -137,12 +150,6 @@ async function buildPageProjection(container: HTMLElement, snapshot: PageSnapsho
         editors.push(editor);
         await editor.updateComplete;
         scope.check();
-        if (editors.length === 1) {
-            const nextIndex = editor.std.get(GfxController).layer.createIndexGenerator();
-            await runProjectionBatches([...notes.values()].map(id => () => {doc.updateBlock(doc.getBlockById(id)!, {index: nextIndex()});}),
-                {...options, onProgress: done => options.onProgress?.(operations.length + done, total)});
-            scope.check();
-        }
         if (editor instanceof EdgelessEditor) {
             routing = mountConnectorRouting(pane, surface, editor.std.get(GfxController), snapshot, connectors, placementIds, onCommand, context.onError);
             const viewport = editor.std.get(GfxController).viewport;
@@ -175,7 +182,7 @@ async function buildPageProjection(container: HTMLElement, snapshot: PageSnapsho
             }));
         }
     }
-    scope.check(); options.onMeasure?.('projection-render-and-index', performance.now() - renderStart);
+    scope.check(); options.onMeasure?.('projection-render', performance.now() - renderStart);
     function flushGeometry() {
         clearTimeout(timer);
         routing?.flush();

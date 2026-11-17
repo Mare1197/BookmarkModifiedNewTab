@@ -1,10 +1,22 @@
 const {test, expect} = require('./fixtures');
 const {makeNativeBoardFixture, seedNativeBoardFixture} = require('../helpers/nativeBoardFixture');
 
-async function openFixture(context, extensionId, mode) {
+async function openFixture(context, extensionId, mode, measureIndexes = false) {
     const page = await context.newPage();
     await page.setViewportSize({width: 1584, height: 1024});
-    await page.addInitScript(() => {localStorage.madeHelp = '1'; localStorage.showedHelp = '1'; localStorage.version = '1.5.2';});
+    await page.addInitScript(measure => {
+        localStorage.madeHelp = '1'; localStorage.showedHelp = '1'; localStorage.version = '1.5.2';
+        if (!measure) return;
+        window.nativeMountedIndexUpdates = 0; const observed = new WeakSet();
+        new MutationObserver(() => {
+            for (const editor of document.querySelectorAll('page-editor,edgeless-editor')) {
+                const doc = editor.doc; if (!doc || observed.has(doc)) continue; observed.add(doc);
+                doc.slots.blockUpdated.on(event => {
+                    if (event.type === 'update' && event.props.key === 'index' && doc.getBlockById(event.id)?.flavour === 'affine:note') window.nativeMountedIndexUpdates++;
+                });
+            }
+        }).observe(document, {childList: true, subtree: true});
+    }, measureIndexes);
     await page.goto(`chrome-extension://${extensionId}/newtab.html`);
     const boards = () => page.frameLocator('iframe[title="Browser OS desktop"]').getByRole('button', {name: 'Boards', exact: true}).click();
     await boards(); await expect(page.locator('.workspaceTitlebar')).toBeVisible(); await page.reload();
@@ -152,4 +164,15 @@ test('collapsed clean cards retain quick actions without constructing hidden ric
     const card = ws.locator('[data-placement-id="native:placement:0"]');
     await expect(card.getByRole('button', {name: 'Inspect object', exact: true})).toBeVisible();
     await expect(card.locator('.brainRichBlock')).toHaveCount(0);
+});
+
+test('initial note order is complete before native rendering starts', async ({context, extensionId}) => {
+    const {page, ws} = await openFixture(context, extensionId, 'document', true);
+    expect(await page.evaluate(() => window.nativeMountedIndexUpdates)).toBe(0);
+    const order = await ws.locator('page-editor').evaluate(editor => editor.doc.getBlocks()
+        .filter(block => block.flavour === 'affine:embed-workspace-object')
+        .map(block => ({placement: block.placementId, index: editor.doc.getParent(block).index}))
+        .sort((a, b) => a.index < b.index ? -1 : a.index > b.index ? 1 : 0));
+    expect(order.map(row => row.placement)).toEqual(Array.from({length: 50}, (_, i) => 'native:placement:' + i));
+    expect(new Set(order.map(row => row.index)).size).toBe(50);
 });
