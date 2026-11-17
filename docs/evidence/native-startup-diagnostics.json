@@ -1,0 +1,3537 @@
+{
+  "baseline": {
+    "sourceRevision": "b0c97d05ef139d17ba9d36176768bbae73cb1bf2",
+    "scope": "Instrumented CPU diagnostic; not a performance acceptance sample.",
+    "count": 1000,
+    "mode": "document",
+    "cpuProfile": "baseline-1000-document.cpuprofile",
+    "ok": false,
+    "timedOut": true,
+    "workerStillRunning": false,
+    "supervisorException": true,
+    "retainedProfilePath": "C:\\Users\\marko\\AppData\\Local\\Temp\\newtab-native-probe-aAo0Oo",
+    "ownedPid": 14656,
+    "metrics": {
+      "fixtureSetup": {
+        "ms": 11471.543699999998,
+        "ok": true
+      },
+      "freshDocumentStartup": {
+        "ms": 428.5479000000014,
+        "ok": true
+      },
+      "browser": "151.0.7922.34",
+      "viewport": {
+        "width": 1584,
+        "height": 1024
+      },
+      "workspaceReady": {
+        "ms": 120345.4906,
+        "ok": false,
+        "error": "expect(locator).toHaveText(expected) failed\n\nLocator:  getByRole('region', { name: 'AFFiNE workspace' }).getByRole('status').first()\nExpected: \"saved\"\nReceived: \"Preparing workspace: 4055/4105\"\nTimeout:  120000ms\n\nCall log:\n  - Expect \"to.have.text\" with timeout 120000ms\n  - waiting for getByRole('region', { name: 'AFFiNE workspace' }).getByRole('status').first()\n    8 × locator resolved to <p role=\"status\">Loading workspace…</p>\n      - unexpected value \"Loading workspace…\"\n    2 × locator resolved to <p role=\"status\">Loading local editor…</p>\n      - unexpected value \"Loading local editor…\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 100/4105</p>\n    - unexpected value \"Preparing workspace: 100/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 200/4105</p>\n    - unexpected value \"Preparing workspace: 200/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 300/4105</p>\n    - unexpected value \"Preparing workspace: 300/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 350/4105</p>\n    - unexpected value \"Preparing workspace: 350/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 400/4105</p>\n    - unexpected value \"Preparing workspace: 400/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 450/4105</p>\n    - unexpected value \"Preparing workspace: 450/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 500/4105</p>\n    - unexpected value \"Preparing workspace: 500/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 550/4105</p>\n    - unexpected value \"Preparing workspace: 550/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 600/4105</p>\n    - unexpected value \"Preparing workspace: 600/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 650/4105</p>\n    - unexpected value \"Preparing workspace: 650/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 700/4105</p>\n    - unexpected value \"Preparing workspace: 700/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 750/4105</p>\n    - unexpected value \"Preparing workspace: 750/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 800/4105</p>\n    - unexpected value \"Preparing workspace: 800/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 850/4105</p>\n    - unexpected value \"Preparing workspace: 850/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 900/4105</p>\n    - unexpected value \"Preparing workspace: 900/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 950/4105</p>\n    - unexpected value \"Preparing workspace: 950/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 1000/4105</p>\n    - unexpected value \"Preparing workspace: 1000/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 1050/4105</p>\n    - unexpected value \"Preparing workspace: 1050/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 1100/4105</p>\n    - unexpected value \"Preparing workspace: 1100/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 1150/4105</p>\n    - unexpected value \"Preparing workspace: 1150/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 1200/4105</p>\n    - unexpected value \"Preparing workspace: 1200/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 1250/4105</p>\n    - unexpected value \"Preparing workspace: 1250/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 1300/4105</p>\n    - unexpected value \"Preparing workspace: 1300/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 1350/4105</p>\n    - unexpected value \"Preparing workspace: 1350/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 1400/4105</p>\n    - unexpected value \"Preparing workspace: 1400/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 1450/4105</p>\n    - unexpected value \"Preparing workspace: 1450/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 1500/4105</p>\n    - unexpected value \"Preparing workspace: 1500/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 1550/4105</p>\n    - unexpected value \"Preparing workspace: 1550/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 1600/4105</p>\n    - unexpected value \"Preparing workspace: 1600/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 1650/4105</p>\n    - unexpected value \"Preparing workspace: 1650/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 1700/4105</p>\n    - unexpected value \"Preparing workspace: 1700/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 1750/4105</p>\n    - unexpected value \"Preparing workspace: 1750/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 1800/4105</p>\n    - unexpected value \"Preparing workspace: 1800/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 1850/4105</p>\n    - unexpected value \"Preparing workspace: 1850/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 1900/4105</p>\n    - unexpected value \"Preparing workspace: 1900/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 1950/4105</p>\n    - unexpected value \"Preparing workspace: 1950/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 2000/4105</p>\n    - unexpected value \"Preparing workspace: 2000/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 2050/4105</p>\n    - unexpected value \"Preparing workspace: 2050/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 2100/4105</p>\n    - unexpected value \"Preparing workspace: 2100/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 2150/4105</p>\n    - unexpected value \"Preparing workspace: 2150/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 2200/4105</p>\n    - unexpected value \"Preparing workspace: 2200/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 2250/4105</p>\n    - unexpected value \"Preparing workspace: 2250/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 2300/4105</p>\n    - unexpected value \"Preparing workspace: 2300/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 2350/4105</p>\n    - unexpected value \"Preparing workspace: 2350/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 2400/4105</p>\n    - unexpected value \"Preparing workspace: 2400/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 2450/4105</p>\n    - unexpected value \"Preparing workspace: 2450/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 2500/4105</p>\n    - unexpected value \"Preparing workspace: 2500/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 2550/4105</p>\n    - unexpected value \"Preparing workspace: 2550/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 2600/4105</p>\n    - unexpected value \"Preparing workspace: 2600/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 2650/4105</p>\n    - unexpected value \"Preparing workspace: 2650/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 2700/4105</p>\n    - unexpected value \"Preparing workspace: 2700/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 2750/4105</p>\n    - unexpected value \"Preparing workspace: 2750/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 2800/4105</p>\n    - unexpected value \"Preparing workspace: 2800/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 2850/4105</p>\n    - unexpected value \"Preparing workspace: 2850/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 2900/4105</p>\n    - unexpected value \"Preparing workspace: 2900/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 2950/4105</p>\n    - unexpected value \"Preparing workspace: 2950/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 3000/4105</p>\n    - unexpected value \"Preparing workspace: 3000/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 3050/4105</p>\n    - unexpected value \"Preparing workspace: 3050/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 3100/4105</p>\n    - unexpected value \"Preparing workspace: 3100/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 3155/4105</p>\n    - unexpected value \"Preparing workspace: 3155/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 3205/4105</p>\n    - unexpected value \"Preparing workspace: 3205/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 3255/4105</p>\n    - unexpected value \"Preparing workspace: 3255/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 3305/4105</p>\n    - unexpected value \"Preparing workspace: 3305/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 3355/4105</p>\n    - unexpected value \"Preparing workspace: 3355/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 3405/4105</p>\n    - unexpected value \"Preparing workspace: 3405/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 3455/4105</p>\n    - unexpected value \"Preparing workspace: 3455/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 3505/4105</p>\n    - unexpected value \"Preparing workspace: 3505/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 3555/4105</p>\n    - unexpected value \"Preparing workspace: 3555/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 3605/4105</p>\n    - unexpected value \"Preparing workspace: 3605/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 3655/4105</p>\n    - unexpected value \"Preparing workspace: 3655/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 3705/4105</p>\n    - unexpected value \"Preparing workspace: 3705/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 3755/4105</p>\n    - unexpected value \"Preparing workspace: 3755/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 3805/4105</p>\n    - unexpected value \"Preparing workspace: 3805/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 3855/4105</p>\n    - unexpected value \"Preparing workspace: 3855/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 3905/4105</p>\n    - unexpected value \"Preparing workspace: 3905/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 3955/4105</p>\n    - unexpected value \"Preparing workspace: 3955/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 4005/4105</p>\n    - unexpected value \"Preparing workspace: 4005/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 4055/4105</p>\n    - unexpected value \"Preparing workspace: 4055/4105\"\n"
+      }
+    },
+    "errors": [
+      "Error: expect(locator).toHaveText(expected) failed\n\nLocator:  getByRole('region', { name: 'AFFiNE workspace' }).getByRole('status').first()\nExpected: \"saved\"\nReceived: \"Preparing workspace: 4055/4105\"\nTimeout:  120000ms\n\nCall log:\n  - Expect \"to.have.text\" with timeout 120000ms\n  - waiting for getByRole('region', { name: 'AFFiNE workspace' }).getByRole('status').first()\n    8 × locator resolved to <p role=\"status\">Loading workspace…</p>\n      - unexpected value \"Loading workspace…\"\n    2 × locator resolved to <p role=\"status\">Loading local editor…</p>\n      - unexpected value \"Loading local editor…\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 100/4105</p>\n    - unexpected value \"Preparing workspace: 100/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 200/4105</p>\n    - unexpected value \"Preparing workspace: 200/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 300/4105</p>\n    - unexpected value \"Preparing workspace: 300/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 350/4105</p>\n    - unexpected value \"Preparing workspace: 350/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 400/4105</p>\n    - unexpected value \"Preparing workspace: 400/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 450/4105</p>\n    - unexpected value \"Preparing workspace: 450/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 500/4105</p>\n    - unexpected value \"Preparing workspace: 500/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 550/4105</p>\n    - unexpected value \"Preparing workspace: 550/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 600/4105</p>\n    - unexpected value \"Preparing workspace: 600/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 650/4105</p>\n    - unexpected value \"Preparing workspace: 650/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 700/4105</p>\n    - unexpected value \"Preparing workspace: 700/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 750/4105</p>\n    - unexpected value \"Preparing workspace: 750/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 800/4105</p>\n    - unexpected value \"Preparing workspace: 800/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 850/4105</p>\n    - unexpected value \"Preparing workspace: 850/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 900/4105</p>\n    - unexpected value \"Preparing workspace: 900/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 950/4105</p>\n    - unexpected value \"Preparing workspace: 950/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 1000/4105</p>\n    - unexpected value \"Preparing workspace: 1000/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 1050/4105</p>\n    - unexpected value \"Preparing workspace: 1050/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 1100/4105</p>\n    - unexpected value \"Preparing workspace: 1100/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 1150/4105</p>\n    - unexpected value \"Preparing workspace: 1150/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 1200/4105</p>\n    - unexpected value \"Preparing workspace: 1200/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 1250/4105</p>\n    - unexpected value \"Preparing workspace: 1250/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 1300/4105</p>\n    - unexpected value \"Preparing workspace: 1300/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 1350/4105</p>\n    - unexpected value \"Preparing workspace: 1350/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 1400/4105</p>\n    - unexpected value \"Preparing workspace: 1400/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 1450/4105</p>\n    - unexpected value \"Preparing workspace: 1450/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 1500/4105</p>\n    - unexpected value \"Preparing workspace: 1500/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 1550/4105</p>\n    - unexpected value \"Preparing workspace: 1550/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 1600/4105</p>\n    - unexpected value \"Preparing workspace: 1600/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 1650/4105</p>\n    - unexpected value \"Preparing workspace: 1650/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 1700/4105</p>\n    - unexpected value \"Preparing workspace: 1700/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 1750/4105</p>\n    - unexpected value \"Preparing workspace: 1750/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 1800/4105</p>\n    - unexpected value \"Preparing workspace: 1800/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 1850/4105</p>\n    - unexpected value \"Preparing workspace: 1850/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 1900/4105</p>\n    - unexpected value \"Preparing workspace: 1900/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 1950/4105</p>\n    - unexpected value \"Preparing workspace: 1950/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 2000/4105</p>\n    - unexpected value \"Preparing workspace: 2000/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 2050/4105</p>\n    - unexpected value \"Preparing workspace: 2050/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 2100/4105</p>\n    - unexpected value \"Preparing workspace: 2100/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 2150/4105</p>\n    - unexpected value \"Preparing workspace: 2150/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 2200/4105</p>\n    - unexpected value \"Preparing workspace: 2200/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 2250/4105</p>\n    - unexpected value \"Preparing workspace: 2250/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 2300/4105</p>\n    - unexpected value \"Preparing workspace: 2300/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 2350/4105</p>\n    - unexpected value \"Preparing workspace: 2350/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 2400/4105</p>\n    - unexpected value \"Preparing workspace: 2400/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 2450/4105</p>\n    - unexpected value \"Preparing workspace: 2450/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 2500/4105</p>\n    - unexpected value \"Preparing workspace: 2500/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 2550/4105</p>\n    - unexpected value \"Preparing workspace: 2550/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 2600/4105</p>\n    - unexpected value \"Preparing workspace: 2600/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 2650/4105</p>\n    - unexpected value \"Preparing workspace: 2650/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 2700/4105</p>\n    - unexpected value \"Preparing workspace: 2700/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 2750/4105</p>\n    - unexpected value \"Preparing workspace: 2750/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 2800/4105</p>\n    - unexpected value \"Preparing workspace: 2800/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 2850/4105</p>\n    - unexpected value \"Preparing workspace: 2850/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 2900/4105</p>\n    - unexpected value \"Preparing workspace: 2900/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 2950/4105</p>\n    - unexpected value \"Preparing workspace: 2950/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 3000/4105</p>\n    - unexpected value \"Preparing workspace: 3000/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 3050/4105</p>\n    - unexpected value \"Preparing workspace: 3050/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 3100/4105</p>\n    - unexpected value \"Preparing workspace: 3100/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 3155/4105</p>\n    - unexpected value \"Preparing workspace: 3155/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 3205/4105</p>\n    - unexpected value \"Preparing workspace: 3205/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 3255/4105</p>\n    - unexpected value \"Preparing workspace: 3255/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 3305/4105</p>\n    - unexpected value \"Preparing workspace: 3305/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 3355/4105</p>\n    - unexpected value \"Preparing workspace: 3355/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 3405/4105</p>\n    - unexpected value \"Preparing workspace: 3405/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 3455/4105</p>\n    - unexpected value \"Preparing workspace: 3455/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 3505/4105</p>\n    - unexpected value \"Preparing workspace: 3505/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 3555/4105</p>\n    - unexpected value \"Preparing workspace: 3555/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 3605/4105</p>\n    - unexpected value \"Preparing workspace: 3605/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 3655/4105</p>\n    - unexpected value \"Preparing workspace: 3655/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 3705/4105</p>\n    - unexpected value \"Preparing workspace: 3705/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 3755/4105</p>\n    - unexpected value \"Preparing workspace: 3755/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 3805/4105</p>\n    - unexpected value \"Preparing workspace: 3805/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 3855/4105</p>\n    - unexpected value \"Preparing workspace: 3855/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 3905/4105</p>\n    - unexpected value \"Preparing workspace: 3905/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 3955/4105</p>\n    - unexpected value \"Preparing workspace: 3955/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 4005/4105</p>\n    - unexpected value \"Preparing workspace: 4005/4105\"\n    - locator resolved to <p role=\"status\">Preparing workspace: 4055/4105</p>\n    - unexpected value \"Preparing workspace: 4055/4105\"\n\n    at captureRawStack (C:\\Users\\marko\\.codex\\.chatgpt-projects\\g-p-6a817432f6e08191a17958ef96430522\\BookmarkModifiedNewTab\\node_modules\\playwright-core\\lib\\coreBundle.js:9681:17)\n    at callMatcherAsStep (C:\\Users\\marko\\.codex\\.chatgpt-projects\\g-p-6a817432f6e08191a17958ef96430522\\BookmarkModifiedNewTab\\node_modules\\playwright\\lib\\matchers\\expect.js:13310:57)\n    at Object.toHaveText (C:\\Users\\marko\\.codex\\.chatgpt-projects\\g-p-6a817432f6e08191a17958ef96430522\\BookmarkModifiedNewTab\\node_modules\\playwright\\lib\\matchers\\expect.js:13300:23)\n    at C:\\Users\\marko\\.codex\\.chatgpt-projects\\g-p-6a817432f6e08191a17958ef96430522\\BookmarkModifiedNewTab\\.superpowers\\sdd\\2026-11-17-native-startup-followup\\cpu-profile-worker.cjs:87:58\n    at async measure (C:\\Users\\marko\\.codex\\.chatgpt-projects\\g-p-6a817432f6e08191a17958ef96430522\\BookmarkModifiedNewTab\\.superpowers\\sdd\\2026-11-17-native-startup-followup\\cpu-profile-worker.cjs:11:28)\n    at async process.<anonymous> (C:\\Users\\marko\\.codex\\.chatgpt-projects\\g-p-6a817432f6e08191a17958ef96430522\\BookmarkModifiedNewTab\\.superpowers\\sdd\\2026-11-17-native-startup-followup\\cpu-profile-worker.cjs:85:9)",
+      "Probe deadline exceeded, including teardown",
+      "Owned profile cleanup: EBUSY: resource busy or locked, unlink 'C:\\Users\\marko\\AppData\\Local\\Temp\\newtab-native-probe-aAo0Oo\\first_party_sets.db'"
+    ],
+    "output": "",
+    "elapsedMs": 187783.67260000002,
+    "artifactDigest": "879cd42e9f58e9a165dccbf87a7d11ac755742ded6f7f7497a29856407484bd7",
+    "profileArchive": "native-startup-baseline.cpuprofile.gz",
+    "profileSha256": "407c9e153f7252880faf4afe9d4b452fa6088e873e3505ac354433336eb5e662",
+    "cleanup": "Retained exact owned profile removed after CIM verified that no Chromium process used its resolved path. Failure retained."
+  },
+  "cpuSummary": {
+    "durationMs": 140943.679,
+    "samples": 65442,
+    "self": [
+      {
+        "id": 1383,
+        "ms": 24881,
+        "function": "(anonymous)",
+        "url": "AffineWorkspace-CD5r-Kb_.js",
+        "line": 1,
+        "column": 22806,
+        "parent": "AffineWorkspace"
+      },
+      {
+        "id": 1387,
+        "ms": 11541,
+        "function": "(anonymous)",
+        "url": "AffineWorkspace-CD5r-Kb_.js",
+        "line": 1,
+        "column": 23052,
+        "parent": ""
+      },
+      {
+        "id": 1385,
+        "ms": 11002,
+        "function": "(anonymous)",
+        "url": "AffineWorkspace-CD5r-Kb_.js",
+        "line": 1,
+        "column": 22935,
+        "parent": ""
+      },
+      {
+        "id": 2,
+        "ms": 5318,
+        "function": "(program)",
+        "url": "",
+        "line": -1,
+        "column": -1,
+        "parent": "(root)"
+      },
+      {
+        "id": 1386,
+        "ms": 3975,
+        "function": "(anonymous)",
+        "url": "AffineWorkspace-CD5r-Kb_.js",
+        "line": 1,
+        "column": 23024,
+        "parent": ""
+      },
+      {
+        "id": 1384,
+        "ms": 3564,
+        "function": "(anonymous)",
+        "url": "AffineWorkspace-CD5r-Kb_.js",
+        "line": 1,
+        "column": 22907,
+        "parent": ""
+      },
+      {
+        "id": 3,
+        "ms": 2697,
+        "function": "(idle)",
+        "url": "",
+        "line": -1,
+        "column": -1,
+        "parent": "(root)"
+      },
+      {
+        "id": 2311,
+        "ms": 2428,
+        "function": "getBlocksByFlavour",
+        "url": "blocksuiteRichText-Dxbaka_z.js",
+        "line": 7,
+        "column": 140584,
+        "parent": "get surface"
+      },
+      {
+        "id": 2265,
+        "ms": 2265,
+        "function": "typeMapGet",
+        "url": "blocksuiteRichText-Dxbaka_z.js",
+        "line": 1,
+        "column": 63074,
+        "parent": "get"
+      },
+      {
+        "id": 385,
+        "ms": 2261,
+        "function": "(anonymous)",
+        "url": "AffineWorkspace-CD5r-Kb_.js",
+        "line": 1,
+        "column": 22806,
+        "parent": "AffineWorkspace"
+      },
+      {
+        "id": 2802,
+        "ms": 2236,
+        "function": "getBlocksByFlavour",
+        "url": "blocksuiteRichText-Dxbaka_z.js",
+        "line": 7,
+        "column": 140584,
+        "parent": "get surface"
+      },
+      {
+        "id": 2929,
+        "ms": 2129,
+        "function": "getBlocksByFlavour",
+        "url": "blocksuiteRichText-Dxbaka_z.js",
+        "line": 7,
+        "column": 140584,
+        "parent": "get surface"
+      },
+      {
+        "id": 3310,
+        "ms": 2059,
+        "function": "getBlocksByFlavour",
+        "url": "blocksuiteRichText-Dxbaka_z.js",
+        "line": 7,
+        "column": 140584,
+        "parent": "get surface"
+      },
+      {
+        "id": 2891,
+        "ms": 2038,
+        "function": "typeMapGet",
+        "url": "blocksuiteRichText-Dxbaka_z.js",
+        "line": 1,
+        "column": 63074,
+        "parent": "get"
+      },
+      {
+        "id": 3205,
+        "ms": 2038,
+        "function": "getBlocksByFlavour",
+        "url": "blocksuiteRichText-Dxbaka_z.js",
+        "line": 7,
+        "column": 140584,
+        "parent": "get surface"
+      },
+      {
+        "id": 3269,
+        "ms": 1935,
+        "function": "typeMapGet",
+        "url": "blocksuiteRichText-Dxbaka_z.js",
+        "line": 1,
+        "column": 63074,
+        "parent": "get"
+      },
+      {
+        "id": 3167,
+        "ms": 1924,
+        "function": "typeMapGet",
+        "url": "blocksuiteRichText-Dxbaka_z.js",
+        "line": 1,
+        "column": 63074,
+        "parent": "get"
+      },
+      {
+        "id": 2488,
+        "ms": 1855,
+        "function": "typeMapGet",
+        "url": "blocksuiteRichText-Dxbaka_z.js",
+        "line": 1,
+        "column": 63074,
+        "parent": "get"
+      },
+      {
+        "id": 2762,
+        "ms": 1653,
+        "function": "typeMapGet",
+        "url": "blocksuiteRichText-Dxbaka_z.js",
+        "line": 1,
+        "column": 63074,
+        "parent": "get"
+      },
+      {
+        "id": 1231,
+        "ms": 1591,
+        "function": "typeMapGet",
+        "url": "blocksuiteRichText-Dxbaka_z.js",
+        "line": 1,
+        "column": 63074,
+        "parent": "get"
+      },
+      {
+        "id": 3486,
+        "ms": 1266,
+        "function": "typeMapGet",
+        "url": "blocksuiteRichText-Dxbaka_z.js",
+        "line": 1,
+        "column": 63074,
+        "parent": "get"
+      },
+      {
+        "id": 3077,
+        "ms": 1066,
+        "function": "typeMapGet",
+        "url": "blocksuiteRichText-Dxbaka_z.js",
+        "line": 1,
+        "column": 63074,
+        "parent": "get"
+      },
+      {
+        "id": 3856,
+        "ms": 1037,
+        "function": "typeMapGet",
+        "url": "blocksuiteRichText-Dxbaka_z.js",
+        "line": 1,
+        "column": 63074,
+        "parent": "get"
+      },
+      {
+        "id": 1370,
+        "ms": 1015,
+        "function": "typeMapGet",
+        "url": "blocksuiteRichText-Dxbaka_z.js",
+        "line": 1,
+        "column": 63074,
+        "parent": "get"
+      },
+      {
+        "id": 1092,
+        "ms": 1003,
+        "function": "typeMapGet",
+        "url": "blocksuiteRichText-Dxbaka_z.js",
+        "line": 1,
+        "column": 63074,
+        "parent": "get"
+      },
+      {
+        "id": 3494,
+        "ms": 945,
+        "function": "typeMapGet",
+        "url": "blocksuiteRichText-Dxbaka_z.js",
+        "line": 1,
+        "column": 63074,
+        "parent": "get"
+      },
+      {
+        "id": 2505,
+        "ms": 926,
+        "function": "typeMapGet",
+        "url": "blocksuiteRichText-Dxbaka_z.js",
+        "line": 1,
+        "column": 63074,
+        "parent": "get"
+      },
+      {
+        "id": 389,
+        "ms": 883,
+        "function": "(anonymous)",
+        "url": "AffineWorkspace-CD5r-Kb_.js",
+        "line": 1,
+        "column": 23052,
+        "parent": ""
+      },
+      {
+        "id": 387,
+        "ms": 864,
+        "function": "(anonymous)",
+        "url": "AffineWorkspace-CD5r-Kb_.js",
+        "line": 1,
+        "column": 22935,
+        "parent": ""
+      },
+      {
+        "id": 1149,
+        "ms": 555,
+        "function": "_onBlockAdded",
+        "url": "blocksuiteRichText-Dxbaka_z.js",
+        "line": 7,
+        "column": 138039,
+        "parent": ""
+      },
+      {
+        "id": 2901,
+        "ms": 540,
+        "function": "typeMapGet",
+        "url": "blocksuiteRichText-Dxbaka_z.js",
+        "line": 1,
+        "column": 63074,
+        "parent": "get"
+      },
+      {
+        "id": 1254,
+        "ms": 522,
+        "function": "typeMapGet",
+        "url": "blocksuiteRichText-Dxbaka_z.js",
+        "line": 1,
+        "column": 63074,
+        "parent": "get"
+      },
+      {
+        "id": 3276,
+        "ms": 521,
+        "function": "typeMapGet",
+        "url": "blocksuiteRichText-Dxbaka_z.js",
+        "line": 1,
+        "column": 63074,
+        "parent": "get"
+      },
+      {
+        "id": 3267,
+        "ms": 484,
+        "function": "(anonymous)",
+        "url": "blocksuiteRichText-Dxbaka_z.js",
+        "line": 7,
+        "column": 113865,
+        "parent": ""
+      },
+      {
+        "id": 2771,
+        "ms": 483,
+        "function": "typeMapGet",
+        "url": "blocksuiteRichText-Dxbaka_z.js",
+        "line": 1,
+        "column": 63074,
+        "parent": "get"
+      }
+    ],
+    "inclusive": [
+      {
+        "id": 1,
+        "ms": 140943,
+        "function": "(root)",
+        "url": "",
+        "line": -1,
+        "column": -1
+      },
+      {
+        "id": 182,
+        "ms": 61814,
+        "function": "performWorkOnRootViaSchedulerTask",
+        "url": "workspaceRepository-3CLTiotd.js",
+        "line": 7,
+        "column": 158872,
+        "parent": "performWorkUntilDeadline"
+      },
+      {
+        "id": 181,
+        "ms": 61814,
+        "function": "performWorkUntilDeadline",
+        "url": "workspaceRepository-3CLTiotd.js",
+        "line": 0,
+        "column": 2502,
+        "parent": "(root)"
+      },
+      {
+        "id": 183,
+        "ms": 61811,
+        "function": "performWorkOnRoot",
+        "url": "workspaceRepository-3CLTiotd.js",
+        "line": 7,
+        "column": 143425,
+        "parent": "performWorkOnRootViaSchedulerTask"
+      },
+      {
+        "id": 320,
+        "ms": 61373,
+        "function": "workLoopSync",
+        "url": "workspaceRepository-3CLTiotd.js",
+        "line": 7,
+        "column": 148171,
+        "parent": "renderRootSync"
+      },
+      {
+        "id": 319,
+        "ms": 61373,
+        "function": "renderRootSync",
+        "url": "workspaceRepository-3CLTiotd.js",
+        "line": 7,
+        "column": 147555,
+        "parent": "performWorkOnRoot"
+      },
+      {
+        "id": 1373,
+        "ms": 56456,
+        "function": "performUnitOfWork",
+        "url": "workspaceRepository-3CLTiotd.js",
+        "line": 7,
+        "column": 149614,
+        "parent": "workLoopSync"
+      },
+      {
+        "id": 1374,
+        "ms": 56448,
+        "function": "beginWork",
+        "url": "workspaceRepository-3CLTiotd.js",
+        "line": 7,
+        "column": 100316,
+        "parent": "performUnitOfWork"
+      },
+      {
+        "id": 1376,
+        "ms": 56338,
+        "function": "renderWithHooks",
+        "url": "workspaceRepository-3CLTiotd.js",
+        "line": 7,
+        "column": 56418,
+        "parent": "updateFunctionComponent"
+      },
+      {
+        "id": 1375,
+        "ms": 56338,
+        "function": "updateFunctionComponent",
+        "url": "workspaceRepository-3CLTiotd.js",
+        "line": 7,
+        "column": 87338,
+        "parent": "beginWork"
+      },
+      {
+        "id": 1377,
+        "ms": 56286,
+        "function": "AffineWorkspace",
+        "url": "AffineWorkspace-CD5r-Kb_.js",
+        "line": 1,
+        "column": 12061,
+        "parent": "renderWithHooks"
+      },
+      {
+        "id": 1383,
+        "ms": 54968,
+        "function": "(anonymous)",
+        "url": "AffineWorkspace-CD5r-Kb_.js",
+        "line": 1,
+        "column": 22806,
+        "parent": "AffineWorkspace"
+      },
+      {
+        "id": 2249,
+        "ms": 26680,
+        "function": "buildPageProjection",
+        "url": "blocksuiteWorkspaceAdapter-oBSo-7Ha.js",
+        "line": 39958,
+        "column": 1553,
+        "parent": "(root)"
+      },
+      {
+        "id": 3128,
+        "ms": 22732,
+        "function": "_$EP",
+        "url": "blocksuiteRichText-Dxbaka_z.js",
+        "line": 7,
+        "column": 161912,
+        "parent": "(root)"
+      },
+      {
+        "id": 3129,
+        "ms": 22731,
+        "function": "scheduleUpdate",
+        "url": "blocksuiteRichText-Dxbaka_z.js",
+        "line": 7,
+        "column": 162074,
+        "parent": "_$EP"
+      },
+      {
+        "id": 3130,
+        "ms": 22730,
+        "function": "performUpdate",
+        "url": "blocksuiteRichText-Dxbaka_z.js",
+        "line": 0,
+        "column": 22642,
+        "parent": "scheduleUpdate"
+      },
+      {
+        "id": 3132,
+        "ms": 22723,
+        "function": "E$1.c",
+        "url": "blocksuiteRichText-Dxbaka_z.js",
+        "line": 0,
+        "column": 21865,
+        "parent": "j$2"
+      },
+      {
+        "id": 3131,
+        "ms": 22723,
+        "function": "j$2",
+        "url": "blocksuiteRichText-Dxbaka_z.js",
+        "line": 0,
+        "column": 22319,
+        "parent": "performUpdate"
+      },
+      {
+        "id": 3133,
+        "ms": 22691,
+        "function": "(anonymous)",
+        "url": "blocksuiteRichText-Dxbaka_z.js",
+        "line": 0,
+        "column": 22751,
+        "parent": "E$1.c"
+      },
+      {
+        "id": 3134,
+        "ms": 22688,
+        "function": "performUpdate",
+        "url": "blocksuiteRichText-Dxbaka_z.js",
+        "line": 7,
+        "column": 162118,
+        "parent": ""
+      },
+      {
+        "id": 1052,
+        "ms": 19065,
+        "function": "runProjectionBatches",
+        "url": "blocksuiteWorkspaceAdapter-oBSo-7Ha.js",
+        "line": 39956,
+        "column": 15359,
+        "parent": "(root)"
+      },
+      {
+        "id": 3136,
+        "ms": 18977,
+        "function": "BlockStdScope",
+        "url": "blocksuiteWorkspaceAdapter-oBSo-7Ha.js",
+        "line": 77,
+        "column": 10179,
+        "parent": "willUpdate"
+      },
+      {
+        "id": 3135,
+        "ms": 18977,
+        "function": "willUpdate",
+        "url": "blocksuiteWorkspaceAdapter-oBSo-7Ha.js",
+        "line": 37854,
+        "column": 16,
+        "parent": "performUpdate"
+      },
+      {
+        "id": 3153,
+        "ms": 18971,
+        "function": "(anonymous)",
+        "url": "blocksuiteWorkspaceAdapter-oBSo-7Ha.js",
+        "line": 38,
+        "column": 5739,
+        "parent": ""
+      },
+      {
+        "id": 3152,
+        "ms": 18971,
+        "function": "(anonymous)",
+        "url": "blocksuiteWorkspaceAdapter-oBSo-7Ha.js",
+        "line": 38,
+        "column": 3059,
+        "parent": "getOrInsert"
+      },
+      {
+        "id": 3151,
+        "ms": 18971,
+        "function": "getOrInsert",
+        "url": "blocksuiteWorkspaceAdapter-oBSo-7Ha.js",
+        "line": 38,
+        "column": 1971,
+        "parent": "getRaw"
+      },
+      {
+        "id": 3150,
+        "ms": 18971,
+        "function": "getRaw",
+        "url": "blocksuiteWorkspaceAdapter-oBSo-7Ha.js",
+        "line": 38,
+        "column": 2772,
+        "parent": "get"
+      },
+      {
+        "id": 3149,
+        "ms": 18971,
+        "function": "get",
+        "url": "blocksuiteWorkspaceAdapter-oBSo-7Ha.js",
+        "line": 38,
+        "column": 1702,
+        "parent": ""
+      },
+      {
+        "id": 3148,
+        "ms": 18971,
+        "function": "(anonymous)",
+        "url": "blocksuiteWorkspaceAdapter-oBSo-7Ha.js",
+        "line": 38,
+        "column": 6669,
+        "parent": ""
+      },
+      {
+        "id": 3147,
+        "ms": 18971,
+        "function": "(anonymous)",
+        "url": "blocksuiteWorkspaceAdapter-oBSo-7Ha.js",
+        "line": 38,
+        "column": 5739,
+        "parent": ""
+      },
+      {
+        "id": 3146,
+        "ms": 18971,
+        "function": "(anonymous)",
+        "url": "blocksuiteWorkspaceAdapter-oBSo-7Ha.js",
+        "line": 38,
+        "column": 2597,
+        "parent": "getOrInsert"
+      },
+      {
+        "id": 3145,
+        "ms": 18971,
+        "function": "getOrInsert",
+        "url": "blocksuiteWorkspaceAdapter-oBSo-7Ha.js",
+        "line": 38,
+        "column": 1971,
+        "parent": "getAllRaw"
+      },
+      {
+        "id": 3144,
+        "ms": 18971,
+        "function": "getAllRaw",
+        "url": "blocksuiteWorkspaceAdapter-oBSo-7Ha.js",
+        "line": 38,
+        "column": 2304,
+        "parent": "getAllRaw"
+      },
+      {
+        "id": 3143,
+        "ms": 18971,
+        "function": "getAllRaw",
+        "url": "blocksuiteWorkspaceAdapter-oBSo-7Ha.js",
+        "line": 38,
+        "column": 3714,
+        "parent": "getAll"
+      },
+      {
+        "id": 3142,
+        "ms": 18971,
+        "function": "getAll",
+        "url": "blocksuiteWorkspaceAdapter-oBSo-7Ha.js",
+        "line": 38,
+        "column": 1772,
+        "parent": "get _lifeCycleWatchers"
+      }
+    ]
+  },
+  "diagnosticSources": {
+    "capture": "// Throwaway diagnostic: reuses the unchanged supervised synthetic probe.\n// CPU profiling adds overhead; its elapsed time is not an acceptance sample.\nconst fs = require('node:fs');\nconst path = require('node:path');\nconst {execFileSync} = require('node:child_process');\nconst root = path.resolve(__dirname, '../../..');\nconst {runOwnedNativeProbe} = require(path.join(root, 'tests/helpers/nativeProbeRunner'));\nconst count = Number(process.argv[2] || 1000), mode = process.argv[3] || 'document';\nconst profilePath = path.join(__dirname, `baseline-${count}-${mode}.cpuprofile`);\nconst extensionPath = path.join(__dirname, 'baseline-dist');\nif (!fs.existsSync(extensionPath)) fs.cpSync(path.join(root, 'dist'), extensionPath, {recursive: true, force: false, errorOnExist: true});\nlet source = fs.readFileSync(path.join(root, 'tests/helpers/nativeProbeWorker.js'), 'utf8');\nsource = source.replace(\"require('./nativeBoardFixture')\", 'require(' + JSON.stringify(path.join(root, 'tests/helpers/nativeBoardFixture.js')) + ')')\n    .replace(\"require('./largeLibraryFixture')\", 'require(' + JSON.stringify(path.join(root, 'tests/helpers/largeLibraryFixture.js')) + ')');\nsource = source.replace('let ok = false;', `let ok = false, profileSession;\n    const saveProfile = async () => {\n        if (!profileSession) return;\n        const session = profileSession; profileSession = undefined;\n        const {profile} = await session.send('Profiler.stop');\n        require('node:fs').writeFileSync(${JSON.stringify(profilePath)}, JSON.stringify(profile));\n        await session.detach();\n    };`);\nsource = source.replace(\"await measure('workspaceReady', async () => {\", `profileSession = await context.newCDPSession(page);\n        await profileSession.send('Profiler.enable');\n        await profileSession.send('Profiler.setSamplingInterval', {interval: 1000});\n        await profileSession.send('Profiler.start');\n        await measure('workspaceReady', async () => {`);\nsource = source.replace('const editable = ws.locator(', 'await saveProfile();\\n        const editable = ws.locator(');\nsource = source.replace(\"process.send({type: 'result', result: {ok, metrics, errors}});\", `try {await saveProfile();} catch (error) {ok = false; errors.push('CPU profile: ' + error.message);}\n    process.send({type: 'result', result: {ok, metrics, errors}});`);\nconst workerPath = path.join(__dirname, 'cpu-profile-worker.cjs'); fs.writeFileSync(workerPath, source);\nrunOwnedNativeProbe({extensionPath, referenceCount: count, mode, sample: 0, timeoutMs: 180000, label: 'startup-cpu-diagnostic'}, {workerPath})\n    .then(result => {\n        const record = {sourceRevision: execFileSync('git', ['rev-parse', 'HEAD'], {cwd: root, encoding: 'utf8'}).trim(),\n            scope: 'Instrumented CPU diagnostic; not a performance acceptance sample.', count, mode,\n            cpuProfile: path.basename(profilePath), ...result};\n        fs.writeFileSync(path.join(__dirname, `baseline-${count}-${mode}.json`), JSON.stringify(record, null, 2) + '\\n');\n        console.log(JSON.stringify({ok: result.ok, ready: result.metrics.workspaceReady, phases: result.metrics.render?.projectionMeasures,\n            errors: result.errors.map(error => error.slice(0, 250)), profileSaved: fs.existsSync(profilePath)}));\n        if (!result.ok) process.exitCode = 1;\n    }).catch(error => {console.error(error); process.exitCode = 1;});\n",
+    "aggregation": "const fs = require('node:fs');\nconst path = require('node:path');\nconst profile = JSON.parse(fs.readFileSync(path.join(__dirname, 'baseline-1000-document.cpuprofile'), 'utf8'));\nconst nodes = new Map(profile.nodes.map(node => [node.id, node])), parents = new Map(), self = new Map(), inclusive = new Map();\nfor (const node of profile.nodes) for (const child of node.children || []) parents.set(child, node.id);\nfor (let i = 0; i < profile.samples.length; i++) {\n    let id = profile.samples[i]; const ms = profile.timeDeltas[i] / 1000;\n    self.set(id, (self.get(id) || 0) + ms);\n    while (id !== undefined) {inclusive.set(id, (inclusive.get(id) || 0) + ms); id = parents.get(id);}\n}\nfunction top(values, count) {return [...values].sort((a, b) => b[1] - a[1]).slice(0, count).map(([id, ms]) => {\n    const node = nodes.get(id), f = node.callFrame;\n    return {id, ms: Math.round(ms), function: f.functionName || '(anonymous)', url: f.url.split('/').at(-1), line: f.lineNumber, column: f.columnNumber,\n        parent: nodes.get(parents.get(id))?.callFrame.functionName};\n});}\nconst result = {durationMs: (profile.endTime - profile.startTime) / 1000, samples: profile.samples.length, self: top(self, 35), inclusive: top(inclusive, 35)};\nfs.writeFileSync(path.join(__dirname, 'cpu-summary.json'), JSON.stringify(result, null, 2));\nconsole.log(JSON.stringify(result));\n",
+    "scope": "Original single-use baseline scripts. The captured source was b0c97d0; do not rerun the original dynamic HEAD label against a different artifact. Follow-up driver requires explicit immutable source and artifact.",
+    "followupCapture": "// Diagnostic only. Explicit immutable artifact/source, not acceptance timings.\nconst fs = require('node:fs'), path = require('node:path'), {createHash} = require('node:crypto');\nconst {execFileSync} = require('node:child_process');\nconst root = path.resolve(__dirname, '../../..');\nconst [label, artifact, sourceRevision, mode = 'canvas', countText = '1000'] = process.argv.slice(2);\nif (!/^[a-z0-9-]+$/.test(label || '') || !artifact || !/^[0-9a-f]{40}$/.test(sourceRevision || '')) throw Error('Supply label, immutable artifact path, full source SHA, mode and count');\nexecFileSync('git', ['cat-file', '-e', sourceRevision + '^{commit}'], {cwd: root});\nconst extensionPath = path.resolve(artifact), profilePath = path.join(__dirname, label + '.cpuprofile');\nif (fs.existsSync(profilePath)) throw Error('Refusing to overwrite a diagnostic');\nconst hash = createHash('sha256');\nfunction walk(directory) {\n    for (const entry of fs.readdirSync(directory, {withFileTypes:true}).sort((a,b)=>a.name.localeCompare(b.name))) {\n        const file=path.join(directory,entry.name);\n        if(entry.isDirectory()) walk(file); else {hash.update(path.relative(extensionPath,file).replaceAll('\\\\','/'));hash.update(fs.readFileSync(file));}\n    }\n}\nwalk(extensionPath); const artifactDigest=hash.digest('hex');\nlet source=fs.readFileSync(path.join(root,'tests/helpers/nativeProbeWorker.js'),'utf8');\nsource=source.replace(\"require('./nativeBoardFixture')\",'require('+JSON.stringify(path.join(root,'tests/helpers/nativeBoardFixture.js'))+')')\n    .replace(\"require('./largeLibraryFixture')\",'require('+JSON.stringify(path.join(root,'tests/helpers/largeLibraryFixture.js'))+')');\nsource=source.replace('let ok = false;',`let ok = false, profileSession;\n    const saveProfile = async () => {\n        if (!profileSession) return;\n        const session = profileSession; profileSession = undefined;\n        const {profile} = await session.send('Profiler.stop');\n        require('node:fs').writeFileSync(${JSON.stringify(profilePath)}, JSON.stringify(profile));\n        await session.detach();\n    };`);\nsource=source.replace(\"await measure('workspaceReady', async () => {\",`profileSession=await context.newCDPSession(page);\n        await profileSession.send('Profiler.enable');\n        await profileSession.send('Profiler.setSamplingInterval',{interval:1000});\n        await profileSession.send('Profiler.start');\n        await measure('workspaceReady', async () => {`);\nsource=source.replace('const editable = ws.locator(',`await saveProfile();\n        metrics.lookupFallback=await page.evaluate(()=>window.nativeLookupFallback);\n        const editable = ws.locator(`);\nsource=source.replace(\"document.addEventListener('DOMContentLoaded', () => new MutationObserver\",`const append=Element.prototype.append;\n            Element.prototype.append=function(...nodes) {\n                const editor=nodes.find(node=>['edgeless-editor','page-editor'].includes(node?.localName));\n                if(editor?.doc) {\n                    const doc=editor.doc;\n                    doc.spaceDoc.on('beforeTransaction',()=> {\n                        if(!Object.hasOwn(doc,'getParent')&&!window.nativeLookupFallback) window.nativeLookupFallback={stack:new Error('Lookup fallback').stack,status:document.querySelector('.affineWorkspace [role=\"status\"]')?.textContent};\n                    });\n                }\n                return append.apply(this,nodes);\n            };\n            document.addEventListener('DOMContentLoaded', () => new MutationObserver`);\nsource=source.replace(\"process.send({type: 'result', result: {ok, metrics, errors}});\",`try {await saveProfile();} catch(error){ok=false;errors.push('CPU profile: '+error.message);}\n    process.send({type:'result',result:{ok,metrics,errors}});`);\nconst workerPath=path.join(__dirname,label+'-worker.cjs');fs.writeFileSync(workerPath,source);\nconst {runOwnedNativeProbe}=require(path.join(root,'tests/helpers/nativeProbeRunner'));\nrunOwnedNativeProbe({extensionPath,referenceCount:Number(countText),mode,sample:0,timeoutMs:180000,label}, {workerPath}).then(result=>{\n    fs.writeFileSync(path.join(__dirname,label+'.json'),JSON.stringify({scope:'Instrumented diagnostic, excluded from acceptance medians',sourceRevision,artifactDigest,mode,count:Number(countText),cpuProfile:path.basename(profilePath),...result},null,2)+'\\n');\n    console.log(JSON.stringify({ok:result.ok,ready:result.metrics.workspaceReady,lookupFallback:result.metrics.lookupFallback,revealFailure:result.metrics.revealFailure,errors:result.errors.map(e=>e.slice(0,300))}));\n    if(!result.ok)process.exitCode=1;\n}).catch(error=>{console.error(error);process.exitCode=1;});\n",
+    "contentTrace": "// Generated-artifact diagnostic. Production source and frozen artifact untouched.\nconst fs=require('node:fs'),path=require('node:path');\nconst root=path.resolve(__dirname,'../../..'), frozen=path.join(__dirname,'followup-dist'), extensionPath=path.join(__dirname,'content-trace-dist');\nif(!fs.existsSync(extensionPath))fs.cpSync(frozen,extensionPath,{recursive:true,force:false,errorOnExist:true});\nconst chunk=fs.readdirSync(path.join(extensionPath,'chunks')).find(n=>n.startsWith('blocksuiteWorkspaceAdapter-'));\nconst file=path.join(extensionPath,'chunks',chunk);let source=fs.readFileSync(file,'utf8');\nif(source.includes('__refDebug'))throw Error('Refusing to overwrite instrumented diagnostic');\nconst start=source.indexOf('function loadReferenceContent(r,_,y){'),end=source.indexOf('var N3=',start);\nif(start<0||end<0)throw Error('Expected compiled function boundary');\nlet fn=source.slice(start,end);\nconst replace=(before,after)=>{if(!fn.includes(before))throw Error('Missing diagnostic anchor '+before);fn=fn.replace(before,after);};\nreplace('function loadReferenceContent(r,_,y){','function loadReferenceContent(r,_,y){const debug=phase=>{(globalThis.__refDebug||=[]).push({id:r,phase,at:performance.now(),closed:D,pending:M,reading:P,aborted:_.aborted})};');\nreplace('dispose=()=>{D||(','dispose=()=>{debug(\"dispose\");D||(');\nreplace('abort=()=>{dispose(),','abort=()=>{debug(\"abort\");dispose(),');\nreplace('P=!0;try{','P=!0;debug(\"query-start\");try{');\nreplace('let y=await j.entities.get(r),b=','let y=await j.entities.get(r);debug(\"entity-read\");let b=');\nreplace('k=S?await V(S):!1;if(D','k=S?await V(S):!1;debug(\"reads-complete\");if(D');\nreplace('catch(r){throw M&&rejectFirst(r),r}','catch(r){debug(\"query-error:\"+r.name);throw M&&rejectFirst(r),r}');\nreplace('P=!1,D&&B.unsubscribe()','P=!1,debug(\"query-finally\"),D&&B.unsubscribe()');\nreplace('if(!(D||_.aborted))try{','debug(\"next\");if(!(D||_.aborted))try{');\nreplace('M&&(M=!1,resolveFirst(','M&&(debug(\"resolve\"),M=!1,resolveFirst(');\nreplace('error:r=>{M?rejectFirst(r)','error:r=>{debug(\"observer-error:\"+r.name);M?rejectFirst(r)');\nsource=source.slice(0,start)+fn+source.slice(end);fs.writeFileSync(file,source);\nlet worker=fs.readFileSync(path.join(root,'tests/helpers/nativeProbeWorker.js'),'utf8')\n .replace(\"require('./nativeBoardFixture')\",'require('+JSON.stringify(path.join(root,'tests/helpers/nativeBoardFixture.js'))+')')\n .replace(\"require('./largeLibraryFixture')\",'require('+JSON.stringify(path.join(root,'tests/helpers/largeLibraryFixture.js'))+')')\n .replace('return {camera: viewport','return {trace: window.__refDebug, camera: viewport');\nconst workerPath=path.join(__dirname,'content-trace-worker.cjs');fs.writeFileSync(workerPath,worker);\nrequire(path.join(root,'tests/helpers/nativeProbeRunner')).runOwnedNativeProbe({extensionPath,referenceCount:1000,mode:'canvas',sample:0,timeoutMs:180000,label:'content-trace-diagnostic'}, {workerPath}).then(result=>{\n fs.writeFileSync(path.join(__dirname,'content-trace.json'),JSON.stringify({scope:'Instrumented derived-artifact diagnostic; excluded from acceptance',sourceRevision:'977e57f987f5b4be63bdf820c7581b1a02bc3d6d',...result},null,2)+'\\n');\n console.log(JSON.stringify({ok:result.ok,ready:result.metrics.workspaceReady,failure:result.metrics.revealFailure}));if(!result.ok)process.exitCode=1;\n}).catch(error=>{console.error(error);process.exitCode=1;});\n"
+  },
+  "indexPilot": [
+    {
+      "label": "startup-index-pilot",
+      "sourceRevision": "4ca8d2511918aa1cf56f7f42a596be8c5ef12c49",
+      "harnessRevision": "4ca8d2511918aa1cf56f7f42a596be8c5ef12c49",
+      "dirty": true,
+      "artifactDigest": "8b0bc23e0dcba51a1a187fe7e2744dc0fb5ddaef5b3db832b1312dcd1beb81db",
+      "count": 1000,
+      "mode": "document",
+      "sample": 0,
+      "ok": true,
+      "timedOut": false,
+      "workerStillRunning": false,
+      "supervisorException": false,
+      "ownedPid": 23136,
+      "metrics": {
+        "fixtureSetup": {
+          "ms": 3611.7802999999994,
+          "ok": true
+        },
+        "freshDocumentStartup": {
+          "ms": 479.10399999999936,
+          "ok": true
+        },
+        "browser": "151.0.7922.34",
+        "viewport": {
+          "width": 1584,
+          "height": 1024
+        },
+        "workspaceReady": {
+          "ms": 6522.203700000002,
+          "ok": true
+        },
+        "initialVisibleContentReady": {
+          "ms": 195.90330000000176,
+          "ok": true
+        },
+        "render": {
+          "stats": {
+            "longTasks": 9,
+            "longTaskMs": 2809,
+            "reads": {
+              "boards:get": 4,
+              "settings:getAll": 1,
+              "entities:get": 3008,
+              "settings:get": 2,
+              "relationships:get": 100,
+              "searchState:get": 1
+            },
+            "firstReferenceAt": 6832.699999988079,
+            "firstPaneAt": 5780.199999988079
+          },
+          "startedAt": 1264.199999988079,
+          "modelReferences": 1000,
+          "distinctNativeDocs": 1,
+          "completeIdentityAndGeometry": true,
+          "nativeSurfaceConnectors": 100,
+          "nativeGroups": 2,
+          "contentLoading": 0,
+          "hydratedResources": 3,
+          "peakContentLoading": 3,
+          "projectionMeasures": [
+            {
+              "phase": "native-workspace:projection-total",
+              "ms": 4172.400000035763
+            },
+            {
+              "phase": "native-workspace:projection-models",
+              "ms": 2441.899999976158
+            },
+            {
+              "phase": "native-workspace:projection-indexes",
+              "ms": 384.19999998807907
+            },
+            {
+              "phase": "native-workspace:projection-render",
+              "ms": 1288.300000011921
+            }
+          ],
+          "renderedReferences": 1000,
+          "richEditors": 1,
+          "images": 0,
+          "rawLayerConnectorEntries": null,
+          "modelConnectors": null,
+          "connectorIds": [],
+          "mainHeapBytes": 89900680,
+          "excludesWorkerHeap": true
+        },
+        "firstUsableEdit": {
+          "ms": 672.4477999999981,
+          "ok": true
+        },
+        "save": {
+          "ms": 782.9583999999995,
+          "ok": true
+        },
+        "canonicalEditVerified": {
+          "ms": 149.6921000000002,
+          "ok": true,
+          "value": true
+        },
+        "revealMixedContentKinds": {
+          "ms": 2334.3996000000006,
+          "ok": true,
+          "value": true
+        },
+        "offscreenResourceRelease": {
+          "ms": 282.3673999999992,
+          "ok": true,
+          "value": {
+            "loading": 0,
+            "hydrated": 4,
+            "peak": 3
+          }
+        },
+        "postPanSave": {
+          "ms": 545.4262999999992,
+          "ok": true,
+          "value": true
+        },
+        "completeAfterReveal": {
+          "references": 1000,
+          "connectors": 100
+        },
+        "requestedReferences": 1000,
+        "librarySize": 0,
+        "measurementScope": "workspaceReady retains the baseline definition: canonical loading, import, projection and native shell/controller readiness. Initial visible content is measured separately before initial resource capture/edit/save. Mixed content kinds are explicitly revealed later; this replaces the old eager firstMixedContentReady phase and is not a directly comparable latency. Projection measures are elapsed wall time, not CPU. Read counts count requests, not returned rows. Heap excludes worker. Pan starts from restored initial camera."
+      },
+      "errors": [],
+      "output": "(node:23136) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\n(Use `node --trace-warnings ...` to show where the warning was created)\n",
+      "elapsedMs": 25408.293299999998
+    },
+    {
+      "label": "startup-index-pilot",
+      "sourceRevision": "4ca8d2511918aa1cf56f7f42a596be8c5ef12c49",
+      "harnessRevision": "4ca8d2511918aa1cf56f7f42a596be8c5ef12c49",
+      "dirty": true,
+      "artifactDigest": "8b0bc23e0dcba51a1a187fe7e2744dc0fb5ddaef5b3db832b1312dcd1beb81db",
+      "count": 1000,
+      "mode": "canvas",
+      "sample": 0,
+      "ok": false,
+      "timedOut": false,
+      "workerStillRunning": false,
+      "supervisorException": false,
+      "ownedPid": 14752,
+      "metrics": {
+        "fixtureSetup": {
+          "ms": 3851.6581999999994,
+          "ok": true
+        },
+        "freshDocumentStartup": {
+          "ms": 566.7000000000007,
+          "ok": true
+        },
+        "browser": "151.0.7922.34",
+        "viewport": {
+          "width": 1584,
+          "height": 1024
+        },
+        "workspaceReady": {
+          "ms": 12783.578800000001,
+          "ok": true
+        },
+        "initialVisibleContentReady": {
+          "ms": 269.53350000000137,
+          "ok": true
+        },
+        "render": {
+          "stats": {
+            "longTasks": 25,
+            "longTaskMs": 3036,
+            "reads": {
+              "boards:get": 4,
+              "settings:getAll": 1,
+              "entities:get": 3020,
+              "settings:get": 2,
+              "relationships:get": 100,
+              "searchState:get": 1
+            },
+            "firstReferenceAt": 6235.400000035763,
+            "firstPaneAt": 5690.5
+          },
+          "startedAt": 1263.699999988079,
+          "modelReferences": 1000,
+          "distinctNativeDocs": 1,
+          "completeIdentityAndGeometry": true,
+          "nativeSurfaceConnectors": 100,
+          "nativeGroups": 2,
+          "contentLoading": 0,
+          "hydratedResources": 9,
+          "peakContentLoading": 4,
+          "projectionMeasures": [
+            {
+              "phase": "native-workspace:projection-total",
+              "ms": 10957.300000011921
+            },
+            {
+              "phase": "native-workspace:projection-models",
+              "ms": 2551.600000023842
+            },
+            {
+              "phase": "native-workspace:projection-indexes",
+              "ms": 300.10000002384186
+            },
+            {
+              "phase": "native-workspace:projection-render",
+              "ms": 8046.399999976158
+            }
+          ],
+          "renderedReferences": 1000,
+          "richEditors": 3,
+          "images": 0,
+          "rawLayerConnectorEntries": 200,
+          "modelConnectors": 100,
+          "connectorIds": [
+            "etMnNV2Qff",
+            "NnL88dSH65",
+            "nb0vty8BFl",
+            "Y5O2aeX5JT",
+            "ynlEMzUfl6",
+            "Hf8P3UmAC_",
+            "UJiZ3OLAK0",
+            "O2i89h9qLP",
+            "jgO30DmRZK",
+            "XhkLrcR7Xo",
+            "YzEQWyqi9a",
+            "lu7RE0-7yC",
+            "gz4pTP5X3a",
+            "DXqVcaVuyW",
+            "oLsXZDbjMe",
+            "Ixw2W3JAE8",
+            "YWyxFs0SvS",
+            "DI_ZgVnxGN",
+            "Qlp3HJHPVk",
+            "l0NsDO1m31",
+            "UhFM9fsKX_",
+            "MsNzlKATsD",
+            "3chHBvKO4U",
+            "92r6JNW4KF",
+            "JhAnMa4lI2",
+            "7eRHhcPgWp",
+            "uizrA-bsde",
+            "O34IWWPljF",
+            "Aol9KuPxFp",
+            "QJMoYkOpq9",
+            "yj1wKD9zl1",
+            "DN6oOFk4IR",
+            "IriWYhoQbM",
+            "XoDIJ3QJcc",
+            "gjTfDV8iWH",
+            "JJET78PpYN",
+            "LCaBgI7afa",
+            "Uo6sKPmkbR",
+            "mqv2JI29H9",
+            "7rdPtamwg_",
+            "G-p5jMgFXV",
+            "3CL_2y54pp",
+            "CF013Z1jRW",
+            "BLg3qcCwS9",
+            "5lZI6-mXRd",
+            "DoAdZmwO-a",
+            "ywT4s_rD9h",
+            "Q8BRYsOPMK",
+            "ySyoP42xIJ",
+            "UCx3y-_TYG",
+            "phNFevML-N",
+            "JXinpPsCh1",
+            "7gZ0-HMgai",
+            "soDzkeRIck",
+            "h6rvS5GzKz",
+            "ZV9oaTlbTB",
+            "oo_In8Y_0-",
+            "g1WoyXonWc",
+            "khOdBtmBlV",
+            "ln86LO8N4K",
+            "aiYplc5Cri",
+            "Eep1jSQBGy",
+            "ABwPy80zfG",
+            "ec202en1Eu",
+            "LCeksGxGBL",
+            "N79xLImNBF",
+            "1iR6O4Bpj8",
+            "PvqV6RGkDO",
+            "CsrbyNSzhA",
+            "VVYXSLP4wa",
+            "WA3pa6ILU0",
+            "VlzA_EqPrW",
+            "qBbnHDKCM0",
+            "D_l8954qw-",
+            "Ub7gg79WXK",
+            "JLZSD9nYAW",
+            "Naxm-__shz",
+            "RflnHOMUXR",
+            "gxO2at_Mmb",
+            "E8R5G4wl9l",
+            "4bPTRrEaDD",
+            "khqLUfltBw",
+            "yKdiUNv81r",
+            "XuV_UztZ5j",
+            "Hf7Xv9C234",
+            "3qZxp2yDsk",
+            "lH1IKzqumy",
+            "-5s2Qnq-fN",
+            "QACtw7JU5E",
+            "DqJ4c5LkmX",
+            "RGDNwjfjGs",
+            "iPzdujHBAm",
+            "k68fwBUPGq",
+            "5aqM5ylV0h",
+            "ddLh5MbTMx",
+            "XXx3ATUvr5",
+            "klQcBfAjNN",
+            "Rfvyyfk2Er",
+            "NKnbyKvOX_",
+            "GHjAjgbJgd",
+            "etMnNV2Qff",
+            "NnL88dSH65",
+            "nb0vty8BFl",
+            "Y5O2aeX5JT",
+            "ynlEMzUfl6",
+            "Hf8P3UmAC_",
+            "UJiZ3OLAK0",
+            "O2i89h9qLP",
+            "jgO30DmRZK",
+            "XhkLrcR7Xo",
+            "YzEQWyqi9a",
+            "lu7RE0-7yC",
+            "gz4pTP5X3a",
+            "DXqVcaVuyW",
+            "oLsXZDbjMe",
+            "Ixw2W3JAE8",
+            "YWyxFs0SvS",
+            "DI_ZgVnxGN",
+            "Qlp3HJHPVk",
+            "l0NsDO1m31",
+            "UhFM9fsKX_",
+            "MsNzlKATsD",
+            "3chHBvKO4U",
+            "92r6JNW4KF",
+            "JhAnMa4lI2",
+            "7eRHhcPgWp",
+            "uizrA-bsde",
+            "O34IWWPljF",
+            "Aol9KuPxFp",
+            "QJMoYkOpq9",
+            "yj1wKD9zl1",
+            "DN6oOFk4IR",
+            "IriWYhoQbM",
+            "XoDIJ3QJcc",
+            "gjTfDV8iWH",
+            "JJET78PpYN",
+            "LCaBgI7afa",
+            "Uo6sKPmkbR",
+            "mqv2JI29H9",
+            "7rdPtamwg_",
+            "G-p5jMgFXV",
+            "3CL_2y54pp",
+            "CF013Z1jRW",
+            "BLg3qcCwS9",
+            "5lZI6-mXRd",
+            "DoAdZmwO-a",
+            "ywT4s_rD9h",
+            "Q8BRYsOPMK",
+            "ySyoP42xIJ",
+            "UCx3y-_TYG",
+            "phNFevML-N",
+            "JXinpPsCh1",
+            "7gZ0-HMgai",
+            "soDzkeRIck",
+            "h6rvS5GzKz",
+            "ZV9oaTlbTB",
+            "oo_In8Y_0-",
+            "g1WoyXonWc",
+            "khOdBtmBlV",
+            "ln86LO8N4K",
+            "aiYplc5Cri",
+            "Eep1jSQBGy",
+            "ABwPy80zfG",
+            "ec202en1Eu",
+            "LCeksGxGBL",
+            "N79xLImNBF",
+            "1iR6O4Bpj8",
+            "PvqV6RGkDO",
+            "CsrbyNSzhA",
+            "VVYXSLP4wa",
+            "WA3pa6ILU0",
+            "VlzA_EqPrW",
+            "qBbnHDKCM0",
+            "D_l8954qw-",
+            "Ub7gg79WXK",
+            "JLZSD9nYAW",
+            "Naxm-__shz",
+            "RflnHOMUXR",
+            "gxO2at_Mmb",
+            "E8R5G4wl9l",
+            "4bPTRrEaDD",
+            "khqLUfltBw",
+            "yKdiUNv81r",
+            "XuV_UztZ5j",
+            "Hf7Xv9C234",
+            "3qZxp2yDsk",
+            "lH1IKzqumy",
+            "-5s2Qnq-fN",
+            "QACtw7JU5E",
+            "DqJ4c5LkmX",
+            "RGDNwjfjGs",
+            "iPzdujHBAm",
+            "k68fwBUPGq",
+            "5aqM5ylV0h",
+            "ddLh5MbTMx",
+            "XXx3ATUvr5",
+            "klQcBfAjNN",
+            "Rfvyyfk2Er",
+            "NKnbyKvOX_",
+            "GHjAjgbJgd"
+          ],
+          "mainHeapBytes": 103977258,
+          "excludesWorkerHeap": true
+        },
+        "firstUsableEdit": {
+          "ms": 608.3017,
+          "ok": true
+        },
+        "save": {
+          "ms": 852.1421000000009,
+          "ok": true
+        },
+        "canonicalEditVerified": {
+          "ms": 163.69769999999698,
+          "ok": true,
+          "value": true
+        },
+        "revealMixedContentKinds": {
+          "ms": 6205.986000000001,
+          "ok": false,
+          "error": "\u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeAttached\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('region', { name: 'AFFiNE workspace' }).locator('edgeless-editor').locator('[data-placement-id=\"native:placement:3\"]').locator('img')\nExpected: attached\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"to.be.attached\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('region', { name: 'AFFiNE workspace' }).locator('edgeless-editor').locator('[data-placement-id=\"native:placement:3\"]').locator('img')\u001b[22m\n"
+        }
+      },
+      "errors": [
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeAttached\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('region', { name: 'AFFiNE workspace' }).locator('edgeless-editor').locator('[data-placement-id=\"native:placement:3\"]').locator('img')\nExpected: attached\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"to.be.attached\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('region', { name: 'AFFiNE workspace' }).locator('edgeless-editor').locator('[data-placement-id=\"native:placement:3\"]').locator('img')\u001b[22m\n\n    at captureRawStack (C:\\Users\\marko\\.codex\\.chatgpt-projects\\g-p-6a817432f6e08191a17958ef96430522\\BookmarkModifiedNewTab\\node_modules\\playwright-core\\lib\\coreBundle.js:9681:17)\n    at callMatcherAsStep (C:\\Users\\marko\\.codex\\.chatgpt-projects\\g-p-6a817432f6e08191a17958ef96430522\\BookmarkModifiedNewTab\\node_modules\\playwright\\lib\\matchers\\expect.js:13310:57)\n    at Object.toBeAttached (C:\\Users\\marko\\.codex\\.chatgpt-projects\\g-p-6a817432f6e08191a17958ef96430522\\BookmarkModifiedNewTab\\node_modules\\playwright\\lib\\matchers\\expect.js:13300:23)\n    at C:\\Users\\marko\\.codex\\.chatgpt-projects\\g-p-6a817432f6e08191a17958ef96430522\\BookmarkModifiedNewTab\\tests\\helpers\\nativeProbeWorker.js:139:68\n    at async measure (C:\\Users\\marko\\.codex\\.chatgpt-projects\\g-p-6a817432f6e08191a17958ef96430522\\BookmarkModifiedNewTab\\tests\\helpers\\nativeProbeWorker.js:11:28)\n    at async process.<anonymous> (C:\\Users\\marko\\.codex\\.chatgpt-projects\\g-p-6a817432f6e08191a17958ef96430522\\BookmarkModifiedNewTab\\tests\\helpers\\nativeProbeWorker.js:130:9)"
+      ],
+      "output": "(node:14752) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\n(Use `node --trace-warnings ...` to show where the warning was created)\n",
+      "elapsedMs": 33292.178
+    },
+    {
+      "label": "startup-index-pilot",
+      "sourceRevision": "4ca8d2511918aa1cf56f7f42a596be8c5ef12c49",
+      "harnessRevision": "4ca8d2511918aa1cf56f7f42a596be8c5ef12c49",
+      "dirty": true,
+      "artifactDigest": "8b0bc23e0dcba51a1a187fe7e2744dc0fb5ddaef5b3db832b1312dcd1beb81db",
+      "count": 1000,
+      "mode": "mixed",
+      "sample": 0,
+      "ok": true,
+      "timedOut": false,
+      "workerStillRunning": false,
+      "supervisorException": false,
+      "ownedPid": 12300,
+      "metrics": {
+        "fixtureSetup": {
+          "ms": 3177.985599999999,
+          "ok": true
+        },
+        "freshDocumentStartup": {
+          "ms": 536.5443999999989,
+          "ok": true
+        },
+        "browser": "151.0.7922.34",
+        "viewport": {
+          "width": 1584,
+          "height": 1024
+        },
+        "workspaceReady": {
+          "ms": 16139.399700000002,
+          "ok": true
+        },
+        "initialVisibleContentReady": {
+          "ms": 197.90100000000166,
+          "ok": true
+        },
+        "render": {
+          "stats": {
+            "longTasks": 91,
+            "longTaskMs": 8442,
+            "reads": {
+              "boards:get": 3,
+              "settings:getAll": 1,
+              "settings:get": 2,
+              "entities:get": 2026,
+              "relationships:get": 100,
+              "searchState:get": 1
+            },
+            "firstReferenceAt": 6929,
+            "firstPaneAt": 5845
+          },
+          "startedAt": 1935,
+          "modelReferences": 1000,
+          "distinctNativeDocs": 1,
+          "completeIdentityAndGeometry": true,
+          "nativeSurfaceConnectors": 100,
+          "nativeGroups": 2,
+          "contentLoading": 0,
+          "hydratedResources": 11,
+          "peakContentLoading": 4,
+          "projectionMeasures": [
+            {
+              "phase": "native-workspace:projection-total",
+              "ms": 13902.199999988079
+            },
+            {
+              "phase": "native-workspace:projection-models",
+              "ms": 2070.399999976158
+            },
+            {
+              "phase": "native-workspace:projection-indexes",
+              "ms": 251.89999997615814
+            },
+            {
+              "phase": "native-workspace:projection-render",
+              "ms": 11528.5
+            }
+          ],
+          "renderedReferences": 2000,
+          "richEditors": 4,
+          "images": 0,
+          "rawLayerConnectorEntries": 200,
+          "modelConnectors": 100,
+          "connectorIds": [
+            "rBrBgFPMIL",
+            "PJuoZq0uzO",
+            "zhViVw5c-H",
+            "M9UN4sccFv",
+            "u-lSxG68O6",
+            "ed71sNzSv8",
+            "TCI7ozEDCd",
+            "61mWqvOirh",
+            "6VKLyE3Shh",
+            "cxqWOb52U8",
+            "QHzL9Z_s_r",
+            "NXGqjHb4Cr",
+            "OvZrXYjUc0",
+            "JLNgitEWCj",
+            "m_cVckSPHs",
+            "ZhRHBP6dbn",
+            "PBKROR-rO6",
+            "h9nBG7e0nd",
+            "y9lW-_lO7b",
+            "T0MKLUdFJT",
+            "5YfG_XlaV2",
+            "5C7w22KI1p",
+            "xwEo7zR8Pl",
+            "XoANgNLyM2",
+            "tlhZjjr8c5",
+            "kSL86Vv34R",
+            "akTd0ak1jS",
+            "cD1ZXqFrC6",
+            "FZ1-g3sT3m",
+            "1jsUGEh1Ss",
+            "Brf89aOjTY",
+            "FNhtkGzuqR",
+            "tv8Lrw4Vbp",
+            "6V-XRprpZb",
+            "LZxfCiWVHw",
+            "l67v_rGbHL",
+            "BhsO45_bwh",
+            "sG52Wz2KT3",
+            "hkYf13eb2I",
+            "vU58sJo37x",
+            "-AEStgAGsd",
+            "WT-qiOQUoK",
+            "FZbV5etPak",
+            "6xNk0PtWaa",
+            "GU1whbaKA0",
+            "acqvmoibDe",
+            "0txYdjx3XO",
+            "PHdxzw6Yik",
+            "syIBng39x0",
+            "FZ0J3_ktFk",
+            "4hyLBZ4YfD",
+            "upnWK4NWot",
+            "XJ_cxkRwru",
+            "HaOHQkBw-S",
+            "XH85XITG59",
+            "FXKNCVlKzQ",
+            "YXWW77q8kk",
+            "SzoB_FGa_4",
+            "G6dMyoVHmD",
+            "eRu8gBG1W9",
+            "SbyHucEFEj",
+            "k6voNH6RvS",
+            "_0i3ko0nmj",
+            "ChyfIvycva",
+            "U1RYVjZYHu",
+            "ubRMOriOJO",
+            "SDhq2TamwF",
+            "sgBZziT0-S",
+            "Ik3d--JFW0",
+            "hQLCDHrBcH",
+            "e9RJZndwRz",
+            "4uikh31-GW",
+            "zGRVcrZ6o6",
+            "zLH4PZr0vv",
+            "_RzsoEN5q2",
+            "Kx80rEJNZg",
+            "nwC7ahiehA",
+            "ru6SBB8Epa",
+            "8pdjrifYkv",
+            "3ucXULesry",
+            "aoRbd41Gpv",
+            "-EF_4633U7",
+            "tjDBgtESwI",
+            "nCPLXAxCF8",
+            "Dg1UMDHaBF",
+            "3StHe5Q7iZ",
+            "pFxsVV8Biw",
+            "qyMVqcmy_B",
+            "y2N7nBRHD3",
+            "rGty17jqAB",
+            "4_CskwndxR",
+            "7n_YCxyNeT",
+            "9M_kpY_5tr",
+            "_Key8-FVzc",
+            "U8SkaxhanS",
+            "9LD5Kh2lHC",
+            "WQQqyT6alB",
+            "Tcr5pdXFb7",
+            "hs5wG4HWdK",
+            "YJLIMl_opU",
+            "rBrBgFPMIL",
+            "PJuoZq0uzO",
+            "zhViVw5c-H",
+            "M9UN4sccFv",
+            "u-lSxG68O6",
+            "ed71sNzSv8",
+            "TCI7ozEDCd",
+            "61mWqvOirh",
+            "6VKLyE3Shh",
+            "cxqWOb52U8",
+            "QHzL9Z_s_r",
+            "NXGqjHb4Cr",
+            "OvZrXYjUc0",
+            "JLNgitEWCj",
+            "m_cVckSPHs",
+            "ZhRHBP6dbn",
+            "PBKROR-rO6",
+            "h9nBG7e0nd",
+            "y9lW-_lO7b",
+            "T0MKLUdFJT",
+            "5YfG_XlaV2",
+            "5C7w22KI1p",
+            "xwEo7zR8Pl",
+            "XoANgNLyM2",
+            "tlhZjjr8c5",
+            "kSL86Vv34R",
+            "akTd0ak1jS",
+            "cD1ZXqFrC6",
+            "FZ1-g3sT3m",
+            "1jsUGEh1Ss",
+            "Brf89aOjTY",
+            "FNhtkGzuqR",
+            "tv8Lrw4Vbp",
+            "6V-XRprpZb",
+            "LZxfCiWVHw",
+            "l67v_rGbHL",
+            "BhsO45_bwh",
+            "sG52Wz2KT3",
+            "hkYf13eb2I",
+            "vU58sJo37x",
+            "-AEStgAGsd",
+            "WT-qiOQUoK",
+            "FZbV5etPak",
+            "6xNk0PtWaa",
+            "GU1whbaKA0",
+            "acqvmoibDe",
+            "0txYdjx3XO",
+            "PHdxzw6Yik",
+            "syIBng39x0",
+            "FZ0J3_ktFk",
+            "4hyLBZ4YfD",
+            "upnWK4NWot",
+            "XJ_cxkRwru",
+            "HaOHQkBw-S",
+            "XH85XITG59",
+            "FXKNCVlKzQ",
+            "YXWW77q8kk",
+            "SzoB_FGa_4",
+            "G6dMyoVHmD",
+            "eRu8gBG1W9",
+            "SbyHucEFEj",
+            "k6voNH6RvS",
+            "_0i3ko0nmj",
+            "ChyfIvycva",
+            "U1RYVjZYHu",
+            "ubRMOriOJO",
+            "SDhq2TamwF",
+            "sgBZziT0-S",
+            "Ik3d--JFW0",
+            "hQLCDHrBcH",
+            "e9RJZndwRz",
+            "4uikh31-GW",
+            "zGRVcrZ6o6",
+            "zLH4PZr0vv",
+            "_RzsoEN5q2",
+            "Kx80rEJNZg",
+            "nwC7ahiehA",
+            "ru6SBB8Epa",
+            "8pdjrifYkv",
+            "3ucXULesry",
+            "aoRbd41Gpv",
+            "-EF_4633U7",
+            "tjDBgtESwI",
+            "nCPLXAxCF8",
+            "Dg1UMDHaBF",
+            "3StHe5Q7iZ",
+            "pFxsVV8Biw",
+            "qyMVqcmy_B",
+            "y2N7nBRHD3",
+            "rGty17jqAB",
+            "4_CskwndxR",
+            "7n_YCxyNeT",
+            "9M_kpY_5tr",
+            "_Key8-FVzc",
+            "U8SkaxhanS",
+            "9LD5Kh2lHC",
+            "WQQqyT6alB",
+            "Tcr5pdXFb7",
+            "hs5wG4HWdK",
+            "YJLIMl_opU"
+          ],
+          "mainHeapBytes": 119497967,
+          "excludesWorkerHeap": true
+        },
+        "firstUsableEdit": {
+          "ms": 3163.7632000000012,
+          "ok": true
+        },
+        "save": {
+          "ms": 5600.501799999998,
+          "ok": true
+        },
+        "canonicalEditVerified": {
+          "ms": 266.9236000000019,
+          "ok": true,
+          "value": true
+        },
+        "revealMixedContentKinds": {
+          "ms": 5416.666499999999,
+          "ok": true,
+          "value": true
+        },
+        "nativeCameraPan": {
+          "ms": 120.96519999999873,
+          "ok": true,
+          "value": {
+            "x": 500,
+            "y": 300
+          }
+        },
+        "offscreenResourceRelease": {
+          "ms": 888.0392000000065,
+          "ok": true,
+          "value": {
+            "loading": 0,
+            "hydrated": 11,
+            "peak": 4
+          }
+        },
+        "postPanSave": {
+          "ms": 4670.734799999998,
+          "ok": true,
+          "value": true
+        },
+        "completeAfterReveal": {
+          "references": 1000,
+          "connectors": 100
+        },
+        "requestedReferences": 1000,
+        "librarySize": 0,
+        "measurementScope": "workspaceReady retains the baseline definition: canonical loading, import, projection and native shell/controller readiness. Initial visible content is measured separately before initial resource capture/edit/save. Mixed content kinds are explicitly revealed later; this replaces the old eager firstMixedContentReady phase and is not a directly comparable latency. Projection measures are elapsed wall time, not CPU. Read counts count requests, not returned rows. Heap excludes worker. Pan starts from restored initial camera."
+      },
+      "errors": [],
+      "output": "(node:12300) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\n(Use `node --trace-warnings ...` to show where the warning was created)\n",
+      "elapsedMs": 53381.3998
+    }
+  ],
+  "followupCpu": {
+    "scope": "Instrumented diagnostic, excluded from acceptance medians",
+    "sourceRevision": "977e57f987f5b4be63bdf820c7581b1a02bc3d6d",
+    "artifactDigest": "30fbe0df0a1695e63ddf9f83def20ad86bcf6d536cdd90e8eb7b3f8c05710976",
+    "mode": "canvas",
+    "count": 1000,
+    "cpuProfile": "followup-canvas.cpuprofile",
+    "ok": false,
+    "timedOut": false,
+    "workerStillRunning": false,
+    "supervisorException": false,
+    "ownedPid": 5984,
+    "metrics": {
+      "fixtureSetup": {
+        "ms": 2681.3783999999996,
+        "ok": true
+      },
+      "freshDocumentStartup": {
+        "ms": 566.5488000000005,
+        "ok": true
+      },
+      "browser": "151.0.7922.34",
+      "viewport": {
+        "width": 1584,
+        "height": 1024
+      },
+      "workspaceReady": {
+        "ms": 13961.1245,
+        "ok": true
+      },
+      "initialVisibleContentReady": {
+        "ms": 130.0096999999987,
+        "ok": true
+      },
+      "render": {
+        "stats": {
+          "longTasks": 29,
+          "longTaskMs": 3033,
+          "reads": {
+            "entities:get": 3020,
+            "boards:get": 3,
+            "settings:getAll": 1,
+            "settings:get": 2,
+            "relationships:get": 100,
+            "searchState:get": 1
+          },
+          "firstReferenceAt": 7757.300000011921,
+          "firstPaneAt": 7197.200000047684
+        },
+        "startedAt": 1355.1000000238419,
+        "modelReferences": 1000,
+        "distinctNativeDocs": 1,
+        "completeIdentityAndGeometry": true,
+        "nativeSurfaceConnectors": 100,
+        "nativeGroups": 2,
+        "contentLoading": 0,
+        "hydratedResources": 9,
+        "peakContentLoading": 4,
+        "projectionMeasures": [
+          {
+            "phase": "native-workspace:projection-total",
+            "ms": 12285.199999988079
+          },
+          {
+            "phase": "native-workspace:projection-models",
+            "ms": 3717.2999999523163
+          },
+          {
+            "phase": "native-workspace:projection-indexes",
+            "ms": 297.89999997615814
+          },
+          {
+            "phase": "native-workspace:projection-render",
+            "ms": 8204.699999988079
+          }
+        ],
+        "renderedReferences": 1000,
+        "richEditors": 3,
+        "images": 0,
+        "rawLayerConnectorEntries": 200,
+        "modelConnectors": 100,
+        "connectorIds": [
+          "ZFl6dNSgA0",
+          "l2Mh-vZIIZ",
+          "F4Ee_WTOIW",
+          "hYfo65IXf2",
+          "CgpG2N_ONC",
+          "lxlKBNmUbP",
+          "UiYq1D_VFN",
+          "VJ15IEhpXR",
+          "8SsHO4aBZr",
+          "pmZhrxBr1v",
+          "GF0A5IzWf-",
+          "4J7XBlj50S",
+          "LzF4W22asR",
+          "nkS5QSg74b",
+          "atSD6kchB9",
+          "FZqncFk4ML",
+          "GDdwjH12rl",
+          "QbGlmf_fkV",
+          "mBF4xTewwO",
+          "ekjOC4Z-TE",
+          "lWSPXYxCmE",
+          "MWNzJA-Dhl",
+          "xlw8ZjHJ6S",
+          "bz89XLuuA2",
+          "Pu7y7rZqlz",
+          "Tyaizeg2Bp",
+          "w5y-NT2Y4I",
+          "YcLZuHzgeD",
+          "WyLe9I-Ud0",
+          "clMm9V7p9I",
+          "-QLhAgtFvy",
+          "Hm-374hRJi",
+          "eEgtSFwRtr",
+          "B5zErYo72z",
+          "5lsBMmsMND",
+          "wpQU3RamH7",
+          "ZyDYWN7NnA",
+          "YxZMmqOg2f",
+          "v1wqPKjq94",
+          "FxQ275c6rw",
+          "wkDCzwONjc",
+          "e4X_5J1yK6",
+          "YnW_vbqtN3",
+          "FhCPEZnUdB",
+          "Y2O6LOzW3O",
+          "eAAqeqK8cN",
+          "p581OmZDO3",
+          "tgLHn_B-mE",
+          "vGTkmnxQFW",
+          "NslCmn0rcH",
+          "wwhZU4vxUg",
+          "JxjcADBLQq",
+          "cKvcXGVQ-u",
+          "Bv_wZKGJJm",
+          "1EIOrpoCc2",
+          "86TEhzd0ZD",
+          "sjCJPqatf3",
+          "_7Q9zUOl9n",
+          "OYwvWtw1Oa",
+          "a3FqUa55QC",
+          "t7Ck71oeOy",
+          "0iZ7CDKAql",
+          "aRsr9KMiF4",
+          "ykVElhtCSA",
+          "kBEo10fHqJ",
+          "MTOs9zK7j_",
+          "1Qt8kp6BCj",
+          "H4II5S3O4U",
+          "WtqsZldTo2",
+          "CVZvZnQEgJ",
+          "BxZPn-Zk6h",
+          "ASQ0tx8zs6",
+          "pIYEqR--tD",
+          "7DUCxiTWB5",
+          "pU_qe-uUgd",
+          "DuewzLRhQn",
+          "tN9kx0w_gf",
+          "e06Sn5lLBH",
+          "Ab8SUz60o9",
+          "gd_NsqXxkW",
+          "g10aMpfb1r",
+          "fmdnYYy7mJ",
+          "-BhEscNM0U",
+          "ziTVoZLFn3",
+          "BT9By-qblt",
+          "nlIdR3sYmf",
+          "Icii7aUWoH",
+          "hRm_xV9aTF",
+          "PsJlBzk8wz",
+          "ypUf0LuQII",
+          "0c6OF6aZtj",
+          "utu6kqyRZm",
+          "jHI3IHjEB5",
+          "v4mPewc_GW",
+          "pIXOb-UFiw",
+          "9tziak_-LV",
+          "bZl8KF2SX-",
+          "FqVtqCKDN5",
+          "FybJP2wnn6",
+          "S97BYNF5Ru",
+          "ZFl6dNSgA0",
+          "l2Mh-vZIIZ",
+          "F4Ee_WTOIW",
+          "hYfo65IXf2",
+          "CgpG2N_ONC",
+          "lxlKBNmUbP",
+          "UiYq1D_VFN",
+          "VJ15IEhpXR",
+          "8SsHO4aBZr",
+          "pmZhrxBr1v",
+          "GF0A5IzWf-",
+          "4J7XBlj50S",
+          "LzF4W22asR",
+          "nkS5QSg74b",
+          "atSD6kchB9",
+          "FZqncFk4ML",
+          "GDdwjH12rl",
+          "QbGlmf_fkV",
+          "mBF4xTewwO",
+          "ekjOC4Z-TE",
+          "lWSPXYxCmE",
+          "MWNzJA-Dhl",
+          "xlw8ZjHJ6S",
+          "bz89XLuuA2",
+          "Pu7y7rZqlz",
+          "Tyaizeg2Bp",
+          "w5y-NT2Y4I",
+          "YcLZuHzgeD",
+          "WyLe9I-Ud0",
+          "clMm9V7p9I",
+          "-QLhAgtFvy",
+          "Hm-374hRJi",
+          "eEgtSFwRtr",
+          "B5zErYo72z",
+          "5lsBMmsMND",
+          "wpQU3RamH7",
+          "ZyDYWN7NnA",
+          "YxZMmqOg2f",
+          "v1wqPKjq94",
+          "FxQ275c6rw",
+          "wkDCzwONjc",
+          "e4X_5J1yK6",
+          "YnW_vbqtN3",
+          "FhCPEZnUdB",
+          "Y2O6LOzW3O",
+          "eAAqeqK8cN",
+          "p581OmZDO3",
+          "tgLHn_B-mE",
+          "vGTkmnxQFW",
+          "NslCmn0rcH",
+          "wwhZU4vxUg",
+          "JxjcADBLQq",
+          "cKvcXGVQ-u",
+          "Bv_wZKGJJm",
+          "1EIOrpoCc2",
+          "86TEhzd0ZD",
+          "sjCJPqatf3",
+          "_7Q9zUOl9n",
+          "OYwvWtw1Oa",
+          "a3FqUa55QC",
+          "t7Ck71oeOy",
+          "0iZ7CDKAql",
+          "aRsr9KMiF4",
+          "ykVElhtCSA",
+          "kBEo10fHqJ",
+          "MTOs9zK7j_",
+          "1Qt8kp6BCj",
+          "H4II5S3O4U",
+          "WtqsZldTo2",
+          "CVZvZnQEgJ",
+          "BxZPn-Zk6h",
+          "ASQ0tx8zs6",
+          "pIYEqR--tD",
+          "7DUCxiTWB5",
+          "pU_qe-uUgd",
+          "DuewzLRhQn",
+          "tN9kx0w_gf",
+          "e06Sn5lLBH",
+          "Ab8SUz60o9",
+          "gd_NsqXxkW",
+          "g10aMpfb1r",
+          "fmdnYYy7mJ",
+          "-BhEscNM0U",
+          "ziTVoZLFn3",
+          "BT9By-qblt",
+          "nlIdR3sYmf",
+          "Icii7aUWoH",
+          "hRm_xV9aTF",
+          "PsJlBzk8wz",
+          "ypUf0LuQII",
+          "0c6OF6aZtj",
+          "utu6kqyRZm",
+          "jHI3IHjEB5",
+          "v4mPewc_GW",
+          "pIXOb-UFiw",
+          "9tziak_-LV",
+          "bZl8KF2SX-",
+          "FqVtqCKDN5",
+          "FybJP2wnn6",
+          "S97BYNF5Ru"
+        ],
+        "mainHeapBytes": 94814362,
+        "excludesWorkerHeap": true
+      },
+      "firstUsableEdit": {
+        "ms": 606.9859999999971,
+        "ok": true
+      },
+      "save": {
+        "ms": 1060.6081000000013,
+        "ok": true
+      },
+      "canonicalEditVerified": {
+        "ms": 881.5136999999995,
+        "ok": true,
+        "value": true
+      },
+      "revealFailure": {
+        "camera": {
+          "center": {
+            "x": 1370,
+            "y": 110
+          },
+          "width": 900.8125,
+          "height": 650,
+          "zoom": 1
+        },
+        "geometry": "[1200,0,340,220]",
+        "cards": [
+          {
+            "hidden": false,
+            "text": "⋮⋮ Select / drag cardNative object 3Inspect objectShow in GraphAsk AI",
+            "html": "",
+            "rect": {
+              "x": 616,
+              "y": 783.359375,
+              "width": 292,
+              "height": 220,
+              "top": 783.359375,
+              "right": 908,
+              "bottom": 1003.359375,
+              "left": 616
+            }
+          }
+        ],
+        "host": {
+          "nativeContentLoading": "4",
+          "nativeContentHydrated": "8",
+          "nativeContentPeak": "4"
+        },
+        "stats": {
+          "longTasks": 41,
+          "longTaskMs": 5117,
+          "reads": {
+            "entities:get": 7639,
+            "boards:get": 6,
+            "settings:getAll": 1,
+            "settings:get": 4,
+            "relationships:get": 300,
+            "searchState:get": 12,
+            "workspaceDrafts:get": 6,
+            "workspaceDrafts:getAll": 4,
+            "workspaceRevisions:getAll": 1,
+            "entities:getAll": 1
+          },
+          "firstReferenceAt": 7757.300000011921,
+          "firstPaneAt": 7197.200000047684
+        }
+      },
+      "revealMixedContentKinds": {
+        "ms": 5646.196300000003,
+        "ok": false,
+        "error": "expect(locator).toBeAttached() failed\n\nLocator: getByRole('region', { name: 'AFFiNE workspace' }).locator('edgeless-editor').locator('[data-placement-id=\"native:placement:3\"]').locator('img')\nExpected: attached\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"to.be.attached\" with timeout 5000ms\n  - waiting for getByRole('region', { name: 'AFFiNE workspace' }).locator('edgeless-editor').locator('[data-placement-id=\"native:placement:3\"]').locator('img')\n"
+      }
+    },
+    "errors": [
+      "Error: expect(locator).toBeAttached() failed\n\nLocator: getByRole('region', { name: 'AFFiNE workspace' }).locator('edgeless-editor').locator('[data-placement-id=\"native:placement:3\"]').locator('img')\nExpected: attached\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"to.be.attached\" with timeout 5000ms\n  - waiting for getByRole('region', { name: 'AFFiNE workspace' }).locator('edgeless-editor').locator('[data-placement-id=\"native:placement:3\"]').locator('img')\n\n    at captureRawStack (C:\\Users\\marko\\.codex\\.chatgpt-projects\\g-p-6a817432f6e08191a17958ef96430522\\BookmarkModifiedNewTab\\node_modules\\playwright-core\\lib\\coreBundle.js:9681:17)\n    at callMatcherAsStep (C:\\Users\\marko\\.codex\\.chatgpt-projects\\g-p-6a817432f6e08191a17958ef96430522\\BookmarkModifiedNewTab\\node_modules\\playwright\\lib\\matchers\\expect.js:13310:57)\n    at Object.toBeAttached (C:\\Users\\marko\\.codex\\.chatgpt-projects\\g-p-6a817432f6e08191a17958ef96430522\\BookmarkModifiedNewTab\\node_modules\\playwright\\lib\\matchers\\expect.js:13300:23)\n    at C:\\Users\\marko\\.codex\\.chatgpt-projects\\g-p-6a817432f6e08191a17958ef96430522\\BookmarkModifiedNewTab\\.superpowers\\sdd\\2026-11-17-native-startup-followup\\followup-canvas-worker.cjs:164:60\n    at async measure (C:\\Users\\marko\\.codex\\.chatgpt-projects\\g-p-6a817432f6e08191a17958ef96430522\\BookmarkModifiedNewTab\\.superpowers\\sdd\\2026-11-17-native-startup-followup\\followup-canvas-worker.cjs:11:28)\n    at async process.<anonymous> (C:\\Users\\marko\\.codex\\.chatgpt-projects\\g-p-6a817432f6e08191a17958ef96430522\\BookmarkModifiedNewTab\\.superpowers\\sdd\\2026-11-17-native-startup-followup\\followup-canvas-worker.cjs:154:9)"
+    ],
+    "output": "",
+    "elapsedMs": 34271.4794,
+    "profileArchive": "native-startup-followup.cpuprofile.gz",
+    "profileSha256": "da1757ed740d0156966efe88dc1129f27ff5de9e4fe2cf401e1226b9a7e1488b",
+    "summary": {
+      "durationMs": 14320.237,
+      "samples": 7897,
+      "self": [
+        {
+          "ms": 3634,
+          "functionName": "(program)",
+          "scriptId": "0",
+          "url": "",
+          "lineNumber": -1,
+          "columnNumber": -1
+        },
+        {
+          "ms": 2308,
+          "functionName": "(idle)",
+          "scriptId": "0",
+          "url": "",
+          "lineNumber": -1,
+          "columnNumber": -1
+        },
+        {
+          "ms": 1387,
+          "functionName": "getBoundingClientRect",
+          "scriptId": "0",
+          "url": "",
+          "lineNumber": -1,
+          "columnNumber": -1
+        },
+        {
+          "ms": 411,
+          "functionName": "_onBlockAdded",
+          "scriptId": "132",
+          "url": "blocksuiteRichText-Dxbaka_z.js",
+          "lineNumber": 7,
+          "columnNumber": 138039
+        },
+        {
+          "ms": 364,
+          "functionName": "_onBlockAdded",
+          "scriptId": "132",
+          "url": "blocksuiteRichText-Dxbaka_z.js",
+          "lineNumber": 7,
+          "columnNumber": 138039
+        },
+        {
+          "ms": 225,
+          "functionName": "(garbage collector)",
+          "scriptId": "0",
+          "url": "",
+          "lineNumber": -1,
+          "columnNumber": -1
+        },
+        {
+          "ms": 173,
+          "functionName": "query",
+          "scriptId": "110",
+          "url": "",
+          "lineNumber": 5300,
+          "columnNumber": 16
+        },
+        {
+          "ms": 128,
+          "functionName": "wanted",
+          "scriptId": "131",
+          "url": "blocksuiteWorkspaceAdapter-TeE7-rHE.js",
+          "lineNumber": 39956,
+          "columnNumber": 20959
+        },
+        {
+          "ms": 115,
+          "functionName": "connectedCallback",
+          "scriptId": "131",
+          "url": "blocksuiteWorkspaceAdapter-TeE7-rHE.js",
+          "lineNumber": 39956,
+          "columnNumber": 2831
+        },
+        {
+          "ms": 112,
+          "functionName": "setAttribute",
+          "scriptId": "0",
+          "url": "",
+          "lineNumber": -1,
+          "columnNumber": -1
+        },
+        {
+          "ms": 106,
+          "functionName": "",
+          "scriptId": "131",
+          "url": "blocksuiteWorkspaceAdapter-TeE7-rHE.js",
+          "lineNumber": 0,
+          "columnNumber": 0
+        },
+        {
+          "ms": 82,
+          "functionName": "wanted",
+          "scriptId": "131",
+          "url": "blocksuiteWorkspaceAdapter-TeE7-rHE.js",
+          "lineNumber": 39956,
+          "columnNumber": 20959
+        },
+        {
+          "ms": 77,
+          "functionName": "",
+          "scriptId": "131",
+          "url": "blocksuiteWorkspaceAdapter-TeE7-rHE.js",
+          "lineNumber": 38,
+          "columnNumber": 21913
+        },
+        {
+          "ms": 76,
+          "functionName": "",
+          "scriptId": "110",
+          "url": "",
+          "lineNumber": 3337,
+          "columnNumber": 20
+        },
+        {
+          "ms": 75,
+          "functionName": "querySelector",
+          "scriptId": "0",
+          "url": "",
+          "lineNumber": -1,
+          "columnNumber": -1
+        },
+        {
+          "ms": 71,
+          "functionName": "wanted",
+          "scriptId": "131",
+          "url": "blocksuiteWorkspaceAdapter-TeE7-rHE.js",
+          "lineNumber": 39956,
+          "columnNumber": 20959
+        },
+        {
+          "ms": 67,
+          "functionName": "wanted",
+          "scriptId": "131",
+          "url": "blocksuiteWorkspaceAdapter-TeE7-rHE.js",
+          "lineNumber": 39956,
+          "columnNumber": 20959
+        },
+        {
+          "ms": 64,
+          "functionName": "getAttribute",
+          "scriptId": "0",
+          "url": "",
+          "lineNumber": -1,
+          "columnNumber": -1
+        },
+        {
+          "ms": 62,
+          "functionName": "update",
+          "scriptId": "132",
+          "url": "blocksuiteRichText-Dxbaka_z.js",
+          "lineNumber": 8,
+          "columnNumber": 13298
+        },
+        {
+          "ms": 62,
+          "functionName": "elementSafeTagName",
+          "scriptId": "110",
+          "url": "",
+          "lineNumber": 3014,
+          "columnNumber": 27
+        }
+      ],
+      "inclusive": [
+        {
+          "ms": 14320,
+          "functionName": "(root)",
+          "scriptId": "0",
+          "url": "",
+          "lineNumber": -1,
+          "columnNumber": -1
+        },
+        {
+          "ms": 3634,
+          "functionName": "(program)",
+          "scriptId": "0",
+          "url": "",
+          "lineNumber": -1,
+          "columnNumber": -1
+        },
+        {
+          "ms": 2308,
+          "functionName": "(idle)",
+          "scriptId": "0",
+          "url": "",
+          "lineNumber": -1,
+          "columnNumber": -1
+        },
+        {
+          "ms": 2228,
+          "functionName": "runProjectionBatches",
+          "scriptId": "131",
+          "url": "blocksuiteWorkspaceAdapter-TeE7-rHE.js",
+          "lineNumber": 39956,
+          "columnNumber": 18878
+        },
+        {
+          "ms": 1638,
+          "functionName": "scheduleUpdate",
+          "scriptId": "131",
+          "url": "blocksuiteWorkspaceAdapter-TeE7-rHE.js",
+          "lineNumber": 63,
+          "columnNumber": 4010
+        },
+        {
+          "ms": 1634,
+          "functionName": "performUpdate",
+          "scriptId": "132",
+          "url": "blocksuiteRichText-Dxbaka_z.js",
+          "lineNumber": 0,
+          "columnNumber": 22642
+        },
+        {
+          "ms": 1634,
+          "functionName": "scheduleUpdate",
+          "scriptId": "132",
+          "url": "blocksuiteRichText-Dxbaka_z.js",
+          "lineNumber": 7,
+          "columnNumber": 162074
+        },
+        {
+          "ms": 1627,
+          "functionName": "j$2",
+          "scriptId": "132",
+          "url": "blocksuiteRichText-Dxbaka_z.js",
+          "lineNumber": 0,
+          "columnNumber": 22319
+        },
+        {
+          "ms": 1625,
+          "functionName": "E$1.c",
+          "scriptId": "132",
+          "url": "blocksuiteRichText-Dxbaka_z.js",
+          "lineNumber": 0,
+          "columnNumber": 21865
+        },
+        {
+          "ms": 1615,
+          "functionName": "",
+          "scriptId": "132",
+          "url": "blocksuiteRichText-Dxbaka_z.js",
+          "lineNumber": 0,
+          "columnNumber": 22751
+        },
+        {
+          "ms": 1613,
+          "functionName": "performUpdate",
+          "scriptId": "132",
+          "url": "blocksuiteRichText-Dxbaka_z.js",
+          "lineNumber": 7,
+          "columnNumber": 162118
+        },
+        {
+          "ms": 1516,
+          "functionName": "update",
+          "scriptId": "132",
+          "url": "blocksuiteRichText-Dxbaka_z.js",
+          "lineNumber": 8,
+          "columnNumber": 7072
+        },
+        {
+          "ms": 1428,
+          "functionName": "",
+          "scriptId": "131",
+          "url": "blocksuiteWorkspaceAdapter-TeE7-rHE.js",
+          "lineNumber": 27929,
+          "columnNumber": 1984
+        },
+        {
+          "ms": 1387,
+          "functionName": "getBoundingClientRect",
+          "scriptId": "0",
+          "url": "",
+          "lineNumber": -1,
+          "columnNumber": -1
+        },
+        {
+          "ms": 1383,
+          "functionName": "D",
+          "scriptId": "132",
+          "url": "blocksuiteRichText-Dxbaka_z.js",
+          "lineNumber": 8,
+          "columnNumber": 6649
+        },
+        {
+          "ms": 1367,
+          "functionName": "$",
+          "scriptId": "132",
+          "url": "blocksuiteRichText-Dxbaka_z.js",
+          "lineNumber": 8,
+          "columnNumber": 4146
+        },
+        {
+          "ms": 1367,
+          "functionName": "_$AI",
+          "scriptId": "132",
+          "url": "blocksuiteRichText-Dxbaka_z.js",
+          "lineNumber": 8,
+          "columnNumber": 3708
+        },
+        {
+          "ms": 929,
+          "functionName": "",
+          "scriptId": "131",
+          "url": "blocksuiteWorkspaceAdapter-TeE7-rHE.js",
+          "lineNumber": 39958,
+          "columnNumber": 3812
+        },
+        {
+          "ms": 928,
+          "functionName": "addBlock",
+          "scriptId": "131",
+          "url": "blocksuiteWorkspaceAdapter-TeE7-rHE.js",
+          "lineNumber": 39956,
+          "columnNumber": 8854
+        },
+        {
+          "ms": 893,
+          "functionName": "mutate",
+          "scriptId": "131",
+          "url": "blocksuiteWorkspaceAdapter-TeE7-rHE.js",
+          "lineNumber": 39956,
+          "columnNumber": 7103
+        }
+      ]
+    }
+  },
+  "contentTrace": {
+    "scope": "Instrumented derived-artifact diagnostic; excluded from acceptance",
+    "sourceRevision": "977e57f987f5b4be63bdf820c7581b1a02bc3d6d",
+    "ok": false,
+    "timedOut": false,
+    "workerStillRunning": false,
+    "supervisorException": false,
+    "ownedPid": 16764,
+    "metrics": {
+      "fixtureSetup": {
+        "ms": 2963.7402000000006,
+        "ok": true
+      },
+      "freshDocumentStartup": {
+        "ms": 390.7345999999998,
+        "ok": true
+      },
+      "browser": "151.0.7922.34",
+      "viewport": {
+        "width": 1584,
+        "height": 1024
+      },
+      "workspaceReady": {
+        "ms": 13285.214,
+        "ok": true
+      },
+      "initialVisibleContentReady": {
+        "ms": 254.71429999999964,
+        "ok": true
+      },
+      "render": {
+        "stats": {
+          "longTasks": 34,
+          "longTaskMs": 3523,
+          "reads": {
+            "boards:get": 4,
+            "entities:get": 3020,
+            "settings:getAll": 1,
+            "settings:get": 2,
+            "relationships:get": 100,
+            "searchState:get": 1
+          },
+          "firstReferenceAt": 6596.699999988079,
+          "firstPaneAt": 6131.399999976158
+        },
+        "startedAt": 1196.0999999642372,
+        "modelReferences": 1000,
+        "distinctNativeDocs": 1,
+        "completeIdentityAndGeometry": true,
+        "nativeSurfaceConnectors": 100,
+        "nativeGroups": 2,
+        "contentLoading": 0,
+        "hydratedResources": 9,
+        "peakContentLoading": 4,
+        "projectionMeasures": [
+          {
+            "phase": "native-workspace:projection-total",
+            "ms": 11501.5
+          },
+          {
+            "phase": "native-workspace:projection-models",
+            "ms": 3132.100000023842
+          },
+          {
+            "phase": "native-workspace:projection-indexes",
+            "ms": 255.89999997615814
+          },
+          {
+            "phase": "native-workspace:projection-render",
+            "ms": 8059.600000023842
+          }
+        ],
+        "renderedReferences": 1000,
+        "richEditors": 3,
+        "images": 0,
+        "rawLayerConnectorEntries": 200,
+        "modelConnectors": 100,
+        "connectorIds": [
+          "1PosAZ_ILY",
+          "-jlfDUqP1q",
+          "Mu0GteNB4V",
+          "l4P8vE2ogT",
+          "FltblfvhnR",
+          "kgGo2YE7Ki",
+          "0HXgvNPUWY",
+          "zGmJo7fwN8",
+          "3gZspfh2JR",
+          "b6ewGeBmoC",
+          "fb3voj8Ab4",
+          "DHMS2vrbAk",
+          "nPU6rO88MV",
+          "4qzXst8bJe",
+          "9_qsYzpTHE",
+          "hF54qp6Ypt",
+          "IUImYbx3Y4",
+          "ZcxWt8tj11",
+          "Eza5vFvQcu",
+          "IGv1TnpwB0",
+          "6RnEq0eTuL",
+          "nqdU0NsFa_",
+          "0ov6mIFYbk",
+          "nLenAwjbzl",
+          "xfrL7UBaw0",
+          "78ctIuO3dm",
+          "bLtByBFK9V",
+          "NiWo4Z8b1m",
+          "37jhjen8_O",
+          "Z07q6XWHJI",
+          "O78keQisOG",
+          "mGO_EDUrT3",
+          "HqsLvu1i5H",
+          "SpnUw3dzIT",
+          "bEDIjyHVs5",
+          "Mmd3xhyyFe",
+          "Tu_j6vNBiN",
+          "QrOrdyAEzu",
+          "FJ7-sla4T_",
+          "MKL54E0Nae",
+          "ozu7nG1ipH",
+          "jjO9XXHp74",
+          "9vf4APZ4__",
+          "7ER0t5n1vl",
+          "K83eeJpC0e",
+          "SgqkAykbi0",
+          "H2OyOyZHhj",
+          "lsxK3YK1gn",
+          "tzc_vrvdCB",
+          "jsOQZK2kVl",
+          "39b-JsgpJ_",
+          "1NHSqiZ0f9",
+          "WAlfa3AC9L",
+          "vynCZXNsdX",
+          "5TFwKl6X2W",
+          "Q1NcEvHI_T",
+          "FGOgXtJZyF",
+          "3Tcy1C8Ym6",
+          "YNuwVxxEWS",
+          "3Z0RIoxMiu",
+          "jKSM2nmUyH",
+          "IbfhCyIH0l",
+          "EXUor1K8Xb",
+          "RxKM7H2joO",
+          "jfyIdOE-dI",
+          "Hd0Qzfk3ct",
+          "fP_1WxRmC4",
+          "cgEmwJkbg2",
+          "qPAApIx9m4",
+          "Y7jlEY4wtv",
+          "Gsa2FLKhZB",
+          "vDJJZGoyDZ",
+          "RnbeCkKYZ8",
+          "8kQMxA0r7x",
+          "64XhL5LVLB",
+          "E2wSb-2UAN",
+          "Gag5jvE3Rj",
+          "19Qef7Kap7",
+          "W8t9HM7Gdg",
+          "ZxGcMVi7ys",
+          "A7JwsEw2HM",
+          "8x4KR1rHUA",
+          "S7-EXmHbqx",
+          "QJEkqRLadl",
+          "XcW9bKs3dO",
+          "DmGa2LOmqj",
+          "4q_Vl7lnHI",
+          "puzujHZU7C",
+          "XW5AYEC0Vl",
+          "0gOqwt2b-W",
+          "_KsyIHuwxV",
+          "xl9x9hcNtJ",
+          "1gDDYIx9Ld",
+          "xZ5k5GeMAh",
+          "yaMjcVwHBE",
+          "MQqN2MSX0F",
+          "_nPq2HjYfQ",
+          "l8zVPxHTfz",
+          "s9hJUeEvid",
+          "tbtvSAapHY",
+          "1PosAZ_ILY",
+          "-jlfDUqP1q",
+          "Mu0GteNB4V",
+          "l4P8vE2ogT",
+          "FltblfvhnR",
+          "kgGo2YE7Ki",
+          "0HXgvNPUWY",
+          "zGmJo7fwN8",
+          "3gZspfh2JR",
+          "b6ewGeBmoC",
+          "fb3voj8Ab4",
+          "DHMS2vrbAk",
+          "nPU6rO88MV",
+          "4qzXst8bJe",
+          "9_qsYzpTHE",
+          "hF54qp6Ypt",
+          "IUImYbx3Y4",
+          "ZcxWt8tj11",
+          "Eza5vFvQcu",
+          "IGv1TnpwB0",
+          "6RnEq0eTuL",
+          "nqdU0NsFa_",
+          "0ov6mIFYbk",
+          "nLenAwjbzl",
+          "xfrL7UBaw0",
+          "78ctIuO3dm",
+          "bLtByBFK9V",
+          "NiWo4Z8b1m",
+          "37jhjen8_O",
+          "Z07q6XWHJI",
+          "O78keQisOG",
+          "mGO_EDUrT3",
+          "HqsLvu1i5H",
+          "SpnUw3dzIT",
+          "bEDIjyHVs5",
+          "Mmd3xhyyFe",
+          "Tu_j6vNBiN",
+          "QrOrdyAEzu",
+          "FJ7-sla4T_",
+          "MKL54E0Nae",
+          "ozu7nG1ipH",
+          "jjO9XXHp74",
+          "9vf4APZ4__",
+          "7ER0t5n1vl",
+          "K83eeJpC0e",
+          "SgqkAykbi0",
+          "H2OyOyZHhj",
+          "lsxK3YK1gn",
+          "tzc_vrvdCB",
+          "jsOQZK2kVl",
+          "39b-JsgpJ_",
+          "1NHSqiZ0f9",
+          "WAlfa3AC9L",
+          "vynCZXNsdX",
+          "5TFwKl6X2W",
+          "Q1NcEvHI_T",
+          "FGOgXtJZyF",
+          "3Tcy1C8Ym6",
+          "YNuwVxxEWS",
+          "3Z0RIoxMiu",
+          "jKSM2nmUyH",
+          "IbfhCyIH0l",
+          "EXUor1K8Xb",
+          "RxKM7H2joO",
+          "jfyIdOE-dI",
+          "Hd0Qzfk3ct",
+          "fP_1WxRmC4",
+          "cgEmwJkbg2",
+          "qPAApIx9m4",
+          "Y7jlEY4wtv",
+          "Gsa2FLKhZB",
+          "vDJJZGoyDZ",
+          "RnbeCkKYZ8",
+          "8kQMxA0r7x",
+          "64XhL5LVLB",
+          "E2wSb-2UAN",
+          "Gag5jvE3Rj",
+          "19Qef7Kap7",
+          "W8t9HM7Gdg",
+          "ZxGcMVi7ys",
+          "A7JwsEw2HM",
+          "8x4KR1rHUA",
+          "S7-EXmHbqx",
+          "QJEkqRLadl",
+          "XcW9bKs3dO",
+          "DmGa2LOmqj",
+          "4q_Vl7lnHI",
+          "puzujHZU7C",
+          "XW5AYEC0Vl",
+          "0gOqwt2b-W",
+          "_KsyIHuwxV",
+          "xl9x9hcNtJ",
+          "1gDDYIx9Ld",
+          "xZ5k5GeMAh",
+          "yaMjcVwHBE",
+          "MQqN2MSX0F",
+          "_nPq2HjYfQ",
+          "l8zVPxHTfz",
+          "s9hJUeEvid",
+          "tbtvSAapHY"
+        ],
+        "mainHeapBytes": 91745349,
+        "excludesWorkerHeap": true
+      },
+      "firstUsableEdit": {
+        "ms": 714.5825000000004,
+        "ok": true
+      },
+      "save": {
+        "ms": 1030.6676000000007,
+        "ok": true
+      },
+      "canonicalEditVerified": {
+        "ms": 163.78159999999843,
+        "ok": true,
+        "value": true
+      },
+      "revealFailure": {
+        "trace": [
+          {
+            "id": "native:object:00000",
+            "phase": "query-start",
+            "at": 14080.799999952316,
+            "closed": false,
+            "pending": true,
+            "reading": true,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00001",
+            "phase": "query-start",
+            "at": 14081.199999988079,
+            "closed": false,
+            "pending": true,
+            "reading": true,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00002",
+            "phase": "query-start",
+            "at": 14081.699999988079,
+            "closed": false,
+            "pending": true,
+            "reading": true,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00010",
+            "phase": "query-start",
+            "at": 14082,
+            "closed": false,
+            "pending": true,
+            "reading": true,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00000",
+            "phase": "entity-read",
+            "at": 14327.099999964237,
+            "closed": false,
+            "pending": true,
+            "reading": true,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00000",
+            "phase": "reads-complete",
+            "at": 14327.099999964237,
+            "closed": false,
+            "pending": true,
+            "reading": true,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00000",
+            "phase": "query-finally",
+            "at": 14327.199999988079,
+            "closed": false,
+            "pending": true,
+            "reading": false,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00000",
+            "phase": "next",
+            "at": 14327.599999964237,
+            "closed": false,
+            "pending": true,
+            "reading": false,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00000",
+            "phase": "resolve",
+            "at": 14333.199999988079,
+            "closed": false,
+            "pending": true,
+            "reading": false,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00001",
+            "phase": "entity-read",
+            "at": 14410.099999964237,
+            "closed": false,
+            "pending": true,
+            "reading": true,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00002",
+            "phase": "entity-read",
+            "at": 14411.099999964237,
+            "closed": false,
+            "pending": true,
+            "reading": true,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00010",
+            "phase": "entity-read",
+            "at": 14411.799999952316,
+            "closed": false,
+            "pending": true,
+            "reading": true,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00010",
+            "phase": "reads-complete",
+            "at": 14411.899999976158,
+            "closed": false,
+            "pending": true,
+            "reading": true,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00010",
+            "phase": "query-finally",
+            "at": 14411.899999976158,
+            "closed": false,
+            "pending": true,
+            "reading": false,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00010",
+            "phase": "next",
+            "at": 14411.899999976158,
+            "closed": false,
+            "pending": true,
+            "reading": false,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00010",
+            "phase": "resolve",
+            "at": 14412.899999976158,
+            "closed": false,
+            "pending": true,
+            "reading": false,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00011",
+            "phase": "query-start",
+            "at": 14537.599999964237,
+            "closed": false,
+            "pending": true,
+            "reading": true,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00012",
+            "phase": "query-start",
+            "at": 14538.199999988079,
+            "closed": false,
+            "pending": true,
+            "reading": true,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00002",
+            "phase": "reads-complete",
+            "at": 14547.399999976158,
+            "closed": false,
+            "pending": true,
+            "reading": true,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00002",
+            "phase": "query-finally",
+            "at": 14547.399999976158,
+            "closed": false,
+            "pending": true,
+            "reading": false,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00002",
+            "phase": "next",
+            "at": 14547.399999976158,
+            "closed": false,
+            "pending": true,
+            "reading": false,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00002",
+            "phase": "resolve",
+            "at": 14547.899999976158,
+            "closed": false,
+            "pending": true,
+            "reading": false,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00011",
+            "phase": "entity-read",
+            "at": 14602,
+            "closed": false,
+            "pending": true,
+            "reading": true,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00012",
+            "phase": "entity-read",
+            "at": 14602.599999964237,
+            "closed": false,
+            "pending": true,
+            "reading": true,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00020",
+            "phase": "query-start",
+            "at": 14603.199999988079,
+            "closed": false,
+            "pending": true,
+            "reading": true,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00001",
+            "phase": "reads-complete",
+            "at": 14604.199999988079,
+            "closed": false,
+            "pending": true,
+            "reading": true,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00001",
+            "phase": "query-finally",
+            "at": 14604.199999988079,
+            "closed": false,
+            "pending": true,
+            "reading": false,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00001",
+            "phase": "next",
+            "at": 14604.199999988079,
+            "closed": false,
+            "pending": true,
+            "reading": false,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00001",
+            "phase": "resolve",
+            "at": 14604.399999976158,
+            "closed": false,
+            "pending": true,
+            "reading": false,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00021",
+            "phase": "query-start",
+            "at": 14660.799999952316,
+            "closed": false,
+            "pending": true,
+            "reading": true,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00012",
+            "phase": "reads-complete",
+            "at": 14665.699999988079,
+            "closed": false,
+            "pending": true,
+            "reading": true,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00012",
+            "phase": "query-finally",
+            "at": 14665.699999988079,
+            "closed": false,
+            "pending": true,
+            "reading": false,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00012",
+            "phase": "next",
+            "at": 14665.799999952316,
+            "closed": false,
+            "pending": true,
+            "reading": false,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00012",
+            "phase": "resolve",
+            "at": 14666.199999988079,
+            "closed": false,
+            "pending": true,
+            "reading": false,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00020",
+            "phase": "entity-read",
+            "at": 14675.899999976158,
+            "closed": false,
+            "pending": true,
+            "reading": true,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00020",
+            "phase": "reads-complete",
+            "at": 14675.899999976158,
+            "closed": false,
+            "pending": true,
+            "reading": true,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00020",
+            "phase": "query-finally",
+            "at": 14675.899999976158,
+            "closed": false,
+            "pending": true,
+            "reading": false,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00020",
+            "phase": "next",
+            "at": 14675.899999976158,
+            "closed": false,
+            "pending": true,
+            "reading": false,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00020",
+            "phase": "resolve",
+            "at": 14676.699999988079,
+            "closed": false,
+            "pending": true,
+            "reading": false,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00021",
+            "phase": "entity-read",
+            "at": 14745,
+            "closed": false,
+            "pending": true,
+            "reading": true,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00011",
+            "phase": "reads-complete",
+            "at": 14745.5,
+            "closed": false,
+            "pending": true,
+            "reading": true,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00011",
+            "phase": "query-finally",
+            "at": 14745.5,
+            "closed": false,
+            "pending": true,
+            "reading": false,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00011",
+            "phase": "next",
+            "at": 14745.599999964237,
+            "closed": false,
+            "pending": true,
+            "reading": false,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00011",
+            "phase": "resolve",
+            "at": 14745.699999988079,
+            "closed": false,
+            "pending": true,
+            "reading": false,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00022",
+            "phase": "query-start",
+            "at": 14755.099999964237,
+            "closed": false,
+            "pending": true,
+            "reading": true,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00022",
+            "phase": "entity-read",
+            "at": 14756.699999988079,
+            "closed": false,
+            "pending": true,
+            "reading": true,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00021",
+            "phase": "reads-complete",
+            "at": 14757.5,
+            "closed": false,
+            "pending": true,
+            "reading": true,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00021",
+            "phase": "query-finally",
+            "at": 14757.5,
+            "closed": false,
+            "pending": true,
+            "reading": false,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00021",
+            "phase": "next",
+            "at": 14757.5,
+            "closed": false,
+            "pending": true,
+            "reading": false,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00021",
+            "phase": "resolve",
+            "at": 14757.599999964237,
+            "closed": false,
+            "pending": true,
+            "reading": false,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00022",
+            "phase": "reads-complete",
+            "at": 14768.799999952316,
+            "closed": false,
+            "pending": true,
+            "reading": true,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00022",
+            "phase": "query-finally",
+            "at": 14768.799999952316,
+            "closed": false,
+            "pending": true,
+            "reading": false,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00022",
+            "phase": "next",
+            "at": 14768.899999976158,
+            "closed": false,
+            "pending": true,
+            "reading": false,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00022",
+            "phase": "resolve",
+            "at": 14769.199999988079,
+            "closed": false,
+            "pending": true,
+            "reading": false,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00000",
+            "phase": "query-start",
+            "at": 18465.099999964237,
+            "closed": false,
+            "pending": false,
+            "reading": true,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00000",
+            "phase": "entity-read",
+            "at": 18485.599999964237,
+            "closed": false,
+            "pending": false,
+            "reading": true,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00000",
+            "phase": "reads-complete",
+            "at": 18485.69999998808,
+            "closed": false,
+            "pending": false,
+            "reading": true,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00000",
+            "phase": "query-finally",
+            "at": 18485.69999998808,
+            "closed": false,
+            "pending": false,
+            "reading": false,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00000",
+            "phase": "next",
+            "at": 18485.799999952316,
+            "closed": false,
+            "pending": false,
+            "reading": false,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00003",
+            "phase": "query-start",
+            "at": 19650.899999976158,
+            "closed": false,
+            "pending": true,
+            "reading": true,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00013",
+            "phase": "query-start",
+            "at": 19651.799999952316,
+            "closed": false,
+            "pending": true,
+            "reading": true,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00023",
+            "phase": "query-start",
+            "at": 19652.19999998808,
+            "closed": false,
+            "pending": true,
+            "reading": true,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00004",
+            "phase": "query-start",
+            "at": 19846.299999952316,
+            "closed": false,
+            "pending": true,
+            "reading": true,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00010",
+            "phase": "dispose",
+            "at": 19993.69999998808,
+            "closed": false,
+            "pending": false,
+            "reading": false,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00020",
+            "phase": "dispose",
+            "at": 19999.5,
+            "closed": false,
+            "pending": false,
+            "reading": false,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00003",
+            "phase": "entity-read",
+            "at": 23137.099999964237,
+            "closed": false,
+            "pending": true,
+            "reading": true,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00013",
+            "phase": "entity-read",
+            "at": 23138,
+            "closed": false,
+            "pending": true,
+            "reading": true,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00023",
+            "phase": "entity-read",
+            "at": 23138.5,
+            "closed": false,
+            "pending": true,
+            "reading": true,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00004",
+            "phase": "entity-read",
+            "at": 23138.899999976158,
+            "closed": false,
+            "pending": true,
+            "reading": true,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00004",
+            "phase": "reads-complete",
+            "at": 23139,
+            "closed": false,
+            "pending": true,
+            "reading": true,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00004",
+            "phase": "query-finally",
+            "at": 23139,
+            "closed": false,
+            "pending": true,
+            "reading": false,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00004",
+            "phase": "next",
+            "at": 23139,
+            "closed": false,
+            "pending": true,
+            "reading": false,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00004",
+            "phase": "resolve",
+            "at": 23140.19999998808,
+            "closed": false,
+            "pending": true,
+            "reading": false,
+            "aborted": false
+          },
+          {
+            "id": "native:object:00005",
+            "phase": "query-start",
+            "at": 23257.19999998808,
+            "closed": false,
+            "pending": true,
+            "reading": true,
+            "aborted": false
+          }
+        ],
+        "camera": {
+          "center": {
+            "x": 1370,
+            "y": 110
+          },
+          "width": 900.8125,
+          "height": 650,
+          "zoom": 1
+        },
+        "geometry": "[1200,0,340,220]",
+        "cards": [
+          {
+            "hidden": false,
+            "text": "⋮⋮ Select / drag cardNative object 3Inspect objectShow in GraphAsk AI",
+            "html": "",
+            "rect": {
+              "x": 616,
+              "y": 783.359375,
+              "width": 292,
+              "height": 220,
+              "top": 783.359375,
+              "right": 908,
+              "bottom": 1003.359375,
+              "left": 616
+            }
+          }
+        ],
+        "host": {
+          "nativeContentLoading": "4",
+          "nativeContentHydrated": "8",
+          "nativeContentPeak": "4"
+        },
+        "stats": {
+          "longTasks": 46,
+          "longTaskMs": 5726,
+          "reads": {
+            "boards:get": 7,
+            "entities:get": 7639,
+            "settings:getAll": 1,
+            "settings:get": 4,
+            "relationships:get": 300,
+            "searchState:get": 12,
+            "workspaceDrafts:get": 7,
+            "workspaceDrafts:getAll": 4,
+            "workspaceRevisions:getAll": 2
+          },
+          "firstReferenceAt": 6596.699999988079,
+          "firstPaneAt": 6131.399999976158
+        }
+      },
+      "revealMixedContentKinds": {
+        "ms": 6302.2127,
+        "ok": false,
+        "error": "expect(locator).toBeAttached() failed\n\nLocator: getByRole('region', { name: 'AFFiNE workspace' }).locator('edgeless-editor').locator('[data-placement-id=\"native:placement:3\"]').locator('img')\nExpected: attached\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"to.be.attached\" with timeout 5000ms\n  - waiting for getByRole('region', { name: 'AFFiNE workspace' }).locator('edgeless-editor').locator('[data-placement-id=\"native:placement:3\"]').locator('img')\n"
+      }
+    },
+    "errors": [
+      "Error: expect(locator).toBeAttached() failed\n\nLocator: getByRole('region', { name: 'AFFiNE workspace' }).locator('edgeless-editor').locator('[data-placement-id=\"native:placement:3\"]').locator('img')\nExpected: attached\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"to.be.attached\" with timeout 5000ms\n  - waiting for getByRole('region', { name: 'AFFiNE workspace' }).locator('edgeless-editor').locator('[data-placement-id=\"native:placement:3\"]').locator('img')\n\n    at captureRawStack (C:\\Users\\marko\\.codex\\.chatgpt-projects\\g-p-6a817432f6e08191a17958ef96430522\\BookmarkModifiedNewTab\\node_modules\\playwright-core\\lib\\coreBundle.js:9681:17)\n    at callMatcherAsStep (C:\\Users\\marko\\.codex\\.chatgpt-projects\\g-p-6a817432f6e08191a17958ef96430522\\BookmarkModifiedNewTab\\node_modules\\playwright\\lib\\matchers\\expect.js:13310:57)\n    at Object.toBeAttached (C:\\Users\\marko\\.codex\\.chatgpt-projects\\g-p-6a817432f6e08191a17958ef96430522\\BookmarkModifiedNewTab\\node_modules\\playwright\\lib\\matchers\\expect.js:13300:23)\n    at C:\\Users\\marko\\.codex\\.chatgpt-projects\\g-p-6a817432f6e08191a17958ef96430522\\BookmarkModifiedNewTab\\.superpowers\\sdd\\2026-11-17-native-startup-followup\\content-trace-worker.cjs:140:60\n    at async measure (C:\\Users\\marko\\.codex\\.chatgpt-projects\\g-p-6a817432f6e08191a17958ef96430522\\BookmarkModifiedNewTab\\.superpowers\\sdd\\2026-11-17-native-startup-followup\\content-trace-worker.cjs:11:28)\n    at async process.<anonymous> (C:\\Users\\marko\\.codex\\.chatgpt-projects\\g-p-6a817432f6e08191a17958ef96430522\\BookmarkModifiedNewTab\\.superpowers\\sdd\\2026-11-17-native-startup-followup\\content-trace-worker.cjs:130:9)"
+    ],
+    "output": "",
+    "elapsedMs": 32488.4239
+  },
+  "postBatchPilot": [
+    {
+      "label": "startup-pan-batch-pilot",
+      "sourceRevision": "753ed9275cedb58429ebf09e4c669b3559f0d205",
+      "harnessRevision": "753ed9275cedb58429ebf09e4c669b3559f0d205",
+      "dirty": true,
+      "artifactDigest": "0106195fa37d85fe069e15a877f013f983eb21400e43fbf2e5b948e22e639749",
+      "count": 1000,
+      "mode": "canvas",
+      "sample": 0,
+      "ok": true,
+      "timedOut": false,
+      "workerStillRunning": false,
+      "supervisorException": false,
+      "ownedPid": 15016,
+      "metrics": {
+        "fixtureSetup": {
+          "ms": 3105.1745,
+          "ok": true
+        },
+        "freshDocumentStartup": {
+          "ms": 535.9494999999997,
+          "ok": true
+        },
+        "browser": "151.0.7922.34",
+        "viewport": {
+          "width": 1584,
+          "height": 1024
+        },
+        "workspaceReady": {
+          "ms": 13390.510899999997,
+          "ok": true
+        },
+        "initialVisibleContentReady": {
+          "ms": 263.61279999999897,
+          "ok": true
+        },
+        "render": {
+          "stats": {
+            "longTasks": 17,
+            "longTaskMs": 2531,
+            "reads": {
+              "boards:get": 4,
+              "entities:get": 3020,
+              "settings:getAll": 1,
+              "settings:get": 2,
+              "relationships:get": 100,
+              "searchState:get": 1
+            },
+            "firstReferenceAt": 6936.5,
+            "firstPaneAt": 6467.800000011921
+          },
+          "startedAt": 1285.1000000238419,
+          "modelReferences": 1000,
+          "distinctNativeDocs": 1,
+          "completeIdentityAndGeometry": true,
+          "nativeSurfaceConnectors": 100,
+          "nativeGroups": 2,
+          "contentLoading": 0,
+          "hydratedResources": 9,
+          "peakContentLoading": 4,
+          "projectionMeasures": [
+            {
+              "phase": "native-workspace:projection-total",
+              "ms": 11552.400000035763
+            },
+            {
+              "phase": "native-workspace:projection-models",
+              "ms": 3366.800000011921
+            },
+            {
+              "phase": "native-workspace:projection-indexes",
+              "ms": 264.60000002384186
+            },
+            {
+              "phase": "native-workspace:projection-render",
+              "ms": 7861.699999988079
+            }
+          ],
+          "renderedReferences": 1000,
+          "richEditors": 3,
+          "images": 0,
+          "rawLayerConnectorEntries": 200,
+          "modelConnectors": 100,
+          "connectorIds": [
+            "tiHt10Gs2t",
+            "9GH9D0lhSc",
+            "338STj-r5R",
+            "3PAtcVb9h7",
+            "BbGpYlYy3V",
+            "rNpm18z71I",
+            "wdqScWSy8_",
+            "BjWjw1NuOo",
+            "oThunMr-_H",
+            "8WxytLOWYg",
+            "V48WU6zgZt",
+            "WWnuBk_Zxo",
+            "o-hmnRtVvS",
+            "czhqGONovr",
+            "4GIDuX_5On",
+            "fOw2n6nvGY",
+            "z49xSedQPR",
+            "C7PR2dAa7g",
+            "ehw1LmwXN5",
+            "UiE_-qkZiE",
+            "3iAhbq_NWf",
+            "MvSA9WpCg9",
+            "b1Fn_vmUk8",
+            "ePuCdjnvhr",
+            "RzIUhjRtb-",
+            "JP8bGFUWn3",
+            "Oel734OXRa",
+            "lHsbLc245I",
+            "x93y-28mbw",
+            "dNS5Sab1hA",
+            "fcgV5WO8gm",
+            "_tZf2Vesla",
+            "-WBa3HCK87",
+            "tnaKltBS0G",
+            "Tq7-yF0v6C",
+            "2b-vWe1aHv",
+            "qRmij2KYJZ",
+            "YwiDU5EBmQ",
+            "tH9Qjf24Tg",
+            "ZZyshxrgkS",
+            "Bs6KLwe0Yw",
+            "6-Vtc4xTn4",
+            "o15E_xAtjV",
+            "XlDB4jcKrF",
+            "rFGgL7LjHk",
+            "IR1KJKLh7h",
+            "JNOP3_Xbkg",
+            "_rTKOiCpPQ",
+            "Vm0baMAPUQ",
+            "6X374qLSAg",
+            "09F3bdiT-8",
+            "IYwhtT1N2v",
+            "EbLdYq7zT9",
+            "akkBC8Nu6h",
+            "V58Pq9-VZT",
+            "WodhdVEoBI",
+            "p39rHEOp-5",
+            "tllUZ-UUQq",
+            "t1zoc0ZmCW",
+            "iBRbC3gS7Z",
+            "nFYxN7-NVB",
+            "dkn3hq2Rf1",
+            "0RvePBmmms",
+            "UFnd6cMEpl",
+            "jMjpx36agi",
+            "eJVT_kvuuc",
+            "tAkoaT5iKb",
+            "t6jl9Y3mZu",
+            "Ro9zS6Wi6v",
+            "4QExO_dM_N",
+            "cXeKih3bY0",
+            "VRXqmKu3kZ",
+            "tJe5UFeZxv",
+            "MYhGbXxYHU",
+            "bC8lTJdBt2",
+            "ZV7Z4eGxCg",
+            "7VQSQKsiFA",
+            "5FBA14Z5aB",
+            "RC8vzYFUbq",
+            "7tSomDmtKD",
+            "uyzq4eEwe2",
+            "q27JOdgA1O",
+            "9mLc8oSsT7",
+            "zX7aBMRVX9",
+            "xFKF-1AJML",
+            "lwrFrcLgv5",
+            "rajETRDdoQ",
+            "f_Ux3T55om",
+            "PnB2RJgY-7",
+            "BLUEoryY4p",
+            "5M4mwmFc5O",
+            "kFdI58LX5w",
+            "eKAArppofx",
+            "btkyA_jQo_",
+            "1VeYjWo-VE",
+            "frQbRg7cgX",
+            "JuZh8NGjXH",
+            "55vLh-8cJ5",
+            "tmuwZuBcAH",
+            "_kpafCdPV-",
+            "tiHt10Gs2t",
+            "9GH9D0lhSc",
+            "338STj-r5R",
+            "3PAtcVb9h7",
+            "BbGpYlYy3V",
+            "rNpm18z71I",
+            "wdqScWSy8_",
+            "BjWjw1NuOo",
+            "oThunMr-_H",
+            "8WxytLOWYg",
+            "V48WU6zgZt",
+            "WWnuBk_Zxo",
+            "o-hmnRtVvS",
+            "czhqGONovr",
+            "4GIDuX_5On",
+            "fOw2n6nvGY",
+            "z49xSedQPR",
+            "C7PR2dAa7g",
+            "ehw1LmwXN5",
+            "UiE_-qkZiE",
+            "3iAhbq_NWf",
+            "MvSA9WpCg9",
+            "b1Fn_vmUk8",
+            "ePuCdjnvhr",
+            "RzIUhjRtb-",
+            "JP8bGFUWn3",
+            "Oel734OXRa",
+            "lHsbLc245I",
+            "x93y-28mbw",
+            "dNS5Sab1hA",
+            "fcgV5WO8gm",
+            "_tZf2Vesla",
+            "-WBa3HCK87",
+            "tnaKltBS0G",
+            "Tq7-yF0v6C",
+            "2b-vWe1aHv",
+            "qRmij2KYJZ",
+            "YwiDU5EBmQ",
+            "tH9Qjf24Tg",
+            "ZZyshxrgkS",
+            "Bs6KLwe0Yw",
+            "6-Vtc4xTn4",
+            "o15E_xAtjV",
+            "XlDB4jcKrF",
+            "rFGgL7LjHk",
+            "IR1KJKLh7h",
+            "JNOP3_Xbkg",
+            "_rTKOiCpPQ",
+            "Vm0baMAPUQ",
+            "6X374qLSAg",
+            "09F3bdiT-8",
+            "IYwhtT1N2v",
+            "EbLdYq7zT9",
+            "akkBC8Nu6h",
+            "V58Pq9-VZT",
+            "WodhdVEoBI",
+            "p39rHEOp-5",
+            "tllUZ-UUQq",
+            "t1zoc0ZmCW",
+            "iBRbC3gS7Z",
+            "nFYxN7-NVB",
+            "dkn3hq2Rf1",
+            "0RvePBmmms",
+            "UFnd6cMEpl",
+            "jMjpx36agi",
+            "eJVT_kvuuc",
+            "tAkoaT5iKb",
+            "t6jl9Y3mZu",
+            "Ro9zS6Wi6v",
+            "4QExO_dM_N",
+            "cXeKih3bY0",
+            "VRXqmKu3kZ",
+            "tJe5UFeZxv",
+            "MYhGbXxYHU",
+            "bC8lTJdBt2",
+            "ZV7Z4eGxCg",
+            "7VQSQKsiFA",
+            "5FBA14Z5aB",
+            "RC8vzYFUbq",
+            "7tSomDmtKD",
+            "uyzq4eEwe2",
+            "q27JOdgA1O",
+            "9mLc8oSsT7",
+            "zX7aBMRVX9",
+            "xFKF-1AJML",
+            "lwrFrcLgv5",
+            "rajETRDdoQ",
+            "f_Ux3T55om",
+            "PnB2RJgY-7",
+            "BLUEoryY4p",
+            "5M4mwmFc5O",
+            "kFdI58LX5w",
+            "eKAArppofx",
+            "btkyA_jQo_",
+            "1VeYjWo-VE",
+            "frQbRg7cgX",
+            "JuZh8NGjXH",
+            "55vLh-8cJ5",
+            "tmuwZuBcAH",
+            "_kpafCdPV-"
+          ],
+          "mainHeapBytes": 110220343,
+          "excludesWorkerHeap": true
+        },
+        "firstUsableEdit": {
+          "ms": 685.3061000000016,
+          "ok": true
+        },
+        "save": {
+          "ms": 1125.375899999999,
+          "ok": true
+        },
+        "canonicalEditVerified": {
+          "ms": 973.9141000000018,
+          "ok": true,
+          "value": true
+        },
+        "revealMixedContentKinds": {
+          "ms": 855.3745000000017,
+          "ok": true,
+          "value": true
+        },
+        "nativeCameraPan": {
+          "ms": 98.48649999999907,
+          "ok": true,
+          "value": {
+            "x": 500,
+            "y": 300
+          }
+        },
+        "offscreenResourceRelease": {
+          "ms": 1630.7199999999975,
+          "ok": true,
+          "value": {
+            "loading": 0,
+            "hydrated": 10,
+            "peak": 4
+          }
+        },
+        "postPanSave": {
+          "ms": 1252.7485000000015,
+          "ok": true,
+          "value": true
+        },
+        "completeAfterReveal": {
+          "references": 1000,
+          "connectors": 100
+        },
+        "requestedReferences": 1000,
+        "librarySize": 0,
+        "measurementScope": "workspaceReady retains the baseline definition: canonical loading, import, projection and native shell/controller readiness. Initial visible content is measured separately before initial resource capture/edit/save. Mixed content kinds are explicitly revealed later; this replaces the old eager firstMixedContentReady phase and is not a directly comparable latency. Projection measures are elapsed wall time, not CPU. Read counts count requests, not returned rows. Heap excludes worker. Pan starts from restored initial camera."
+      },
+      "errors": [],
+      "output": "(node:15016) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\n(Use `node --trace-warnings ...` to show where the warning was created)\n",
+      "elapsedMs": 36346.2097
+    }
+  ]
+}

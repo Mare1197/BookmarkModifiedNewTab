@@ -1,5 +1,9 @@
 # Native workspace upgrade — November 17, 2026
 
+This is the preserved predecessor checkpoint. The later [native startup follow-up](NATIVE_STARTUP_FOLLOWUP.md)
+retains its failures and adds indexed preparation, elapsed-work scheduling, faster page validation
+and separately measured cancellation/startup results on `MiniPCCodex/native-startup-performance`.
+
 The complete native model is retained, with indexed planning, cooperative construction, pre-render ordering and bounded visible/pinned content hydration. No references are removed to improve timings. The [acceptance archive](evidence/native-board-acceptance.json) contains all 68 emitted attempts: **66 passed, two failed**. Seven later native repetitions were skipped. The native matrix is **51 passed / two failed / seven skipped**, and the separate fixed-board library matrix is **15/15 passed**, not a 75/75 acceptance claim. The [baseline and implementation checkpoints](NATIVE_BOARD_PERFORMANCE_VERIFICATION.md) retain earlier results.
 
 ## Measurement scope

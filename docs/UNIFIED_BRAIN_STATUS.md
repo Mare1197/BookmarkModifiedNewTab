@@ -1,17 +1,26 @@
 # Unified Brain: implementation status
 
-The November 17 [clean GitHub build](https://github.com/Mare1197/BookmarkModifiedNewTab/actions/runs/44054619008)
+The November 17 [native startup follow-up](NATIVE_STARTUP_FOLLOWUP.md) is isolated on
+`MiniPCCodex/native-startup-performance`, preserving the previous branches. Indexed
+layout/preparation lookups, elapsed-work scheduling and batched page validation pass
+305 source tests, lint/format/both types and the 41.44 MB build. Five cancellation
+samples per mode confirm medians of 316/242/252 ms; the final-source 1,000-reference
+canvas pilot passes at 13.4 seconds, including image reveal. Single pilots do not
+certify repeated capacity or the sub-ten-second target. Unrelated-library memory/save
+costs remain a separate upgrade. The report retains diagnostic failures and exact sources.
+
+The predecessor's November 17 [clean GitHub build](https://github.com/Mare1197/BookmarkModifiedNewTab/actions/runs/44054619008)
 passes clean installation, lint/format/both types, **281 source tests**, the 41.44 MB build
 and **55/55 browser cases** with no flaky cases reported. The extension artifact is attached.
 This correctness result does not certify the large-native-page performance targets below.
 
-November 17 native checkpoint: complete projection planning, cooperative preparation
+Before the startup follow-up, the November 17 native checkpoint added complete projection planning, cooperative preparation
 with progress/Cancel/Retry, pre-render ordering and visible/pinned body hydration are
 implemented without a second content database. The [native upgrade report](NATIVE_BOARD_UPGRADE.md)
 retains all measurements: 51 native passes, two failures and seven skipped repetitions;
 15/15 fixed-board library passes. At 500 references, readiness medians are 10.8/12.9/16.8
 seconds for document/canvas/mixed. Responsive 1,000-reference startup and cancellation
-remain unmet, and memory/save costs still grow with unrelated library size. Use the
+were unmet at that checkpoint, and memory/save costs still grow with unrelated library size. Use the
 [current builder instructions](AI_BUILDER_CURRENT_BUILD.md) for functional behavior and
 the remaining requested roadmap. Older checkpoints below retain their original scope.
 Author fixes pass 281 source tests, lint/format/both types and the 41.44 MB build.

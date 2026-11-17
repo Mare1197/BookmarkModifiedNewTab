@@ -1,0 +1,160 @@
+{
+  "scope": "15 serial synthetic 1000-reference cancel/cleanup/fresh50 retry cases, no retries. Pre-captured-writer compatibility fix artifact; later final-harness coverage is separate.",
+  "sourceRevision": "4ca8d2511918aa1cf56f7f42a596be8c5ef12c49",
+  "applicationChanges": "Uncommitted cooperativeProjection time budget when built; provenance is this archived diff, not a clean-source benchmark claim.",
+  "applicationPatch": "diff --git a/src/react/workspace/cooperativeProjection.ts b/src/react/workspace/cooperativeProjection.ts\nindex a017353..79004a9 100644\n--- a/src/react/workspace/cooperativeProjection.ts\n+++ b/src/react/workspace/cooperativeProjection.ts\n@@ -7,13 +7,15 @@ const aborted = () => new DOMException('Workspace preparation cancelled', 'Abort\n const checkSignal = (signal?: AbortSignal) => {if (signal?.aborted) throw aborted();};\n \n export async function runProjectionBatches(operations: readonly (() => void)[], options: NativeMountOptions = {},\n-    yieldControl: () => Promise<void> = () => new Promise(resolve => setTimeout(resolve, 0))) {\n+    yieldControl: () => Promise<void> = () => new Promise(resolve => setTimeout(resolve, 0)), now: () => number = () => performance.now()) {\n     checkSignal(options.signal);\n-    for (let offset = 0; offset < operations.length; offset += 50) {\n-        const end = Math.min(operations.length, offset + 50);\n-        for (let index = offset; index < end; index++) {checkSignal(options.signal); operations[index]!();}\n+    for (let offset = 0; offset < operations.length;) {\n+        const started = now(), limit = Math.min(operations.length, offset + 50);\n+        let end = offset;\n+        do {checkSignal(options.signal); operations[end++]!();} while (end < limit && now() - started < 8);\n         checkSignal(options.signal); options.onProgress?.(end, operations.length);\n         if (end < operations.length) {await yieldControl(); checkSignal(options.signal);}\n+        offset = end;\n     }\n }\n \n",
+  "groups": [
+    {
+      "mode": "document",
+      "count": 5,
+      "confirmationMs": {
+        "median": 315.80000001192093,
+        "min": 247.5999999642372,
+        "max": 475.2000000476837
+      },
+      "eventToFeedbackMs": {
+        "median": 3.199999988079071,
+        "min": 3,
+        "max": 3.800000011920929
+      }
+    },
+    {
+      "mode": "canvas",
+      "count": 5,
+      "confirmationMs": {
+        "median": 241.69999998807907,
+        "min": 197.5,
+        "max": 426.5999999642372
+      },
+      "eventToFeedbackMs": {
+        "median": 3.400000035762787,
+        "min": 3,
+        "max": 4.5
+      }
+    },
+    {
+      "mode": "mixed",
+      "count": 5,
+      "confirmationMs": {
+        "median": 251.5,
+        "min": 194.39999997615814,
+        "max": 262.2000000476837
+      },
+      "eventToFeedbackMs": {
+        "median": 4.199999988079071,
+        "min": 3.199999988079071,
+        "max": 5.200000047683716
+      }
+    }
+  ],
+  "cases": [
+    {
+      "mode": "document",
+      "referenceCount": 1000,
+      "confirmationMs": 291.60000002384186,
+      "eventToFeedbackMs": 3.199999988079071,
+      "scope": "Automation click through observed cancelled status, no editor panes and two animation frames; includes automation overhead."
+    },
+    {
+      "mode": "canvas",
+      "referenceCount": 1000,
+      "confirmationMs": 197.5,
+      "eventToFeedbackMs": 3.400000035762787,
+      "scope": "Automation click through observed cancelled status, no editor panes and two animation frames; includes automation overhead."
+    },
+    {
+      "mode": "mixed",
+      "referenceCount": 1000,
+      "confirmationMs": 259.9000000357628,
+      "eventToFeedbackMs": 4.600000023841858,
+      "scope": "Automation click through observed cancelled status, no editor panes and two animation frames; includes automation overhead."
+    },
+    {
+      "mode": "document",
+      "referenceCount": 1000,
+      "confirmationMs": 475.2000000476837,
+      "eventToFeedbackMs": 3,
+      "scope": "Automation click through observed cancelled status, no editor panes and two animation frames; includes automation overhead."
+    },
+    {
+      "mode": "canvas",
+      "referenceCount": 1000,
+      "confirmationMs": 275.19999998807907,
+      "eventToFeedbackMs": 3,
+      "scope": "Automation click through observed cancelled status, no editor panes and two animation frames; includes automation overhead."
+    },
+    {
+      "mode": "mixed",
+      "referenceCount": 1000,
+      "confirmationMs": 251.5,
+      "eventToFeedbackMs": 3.199999988079071,
+      "scope": "Automation click through observed cancelled status, no editor panes and two animation frames; includes automation overhead."
+    },
+    {
+      "mode": "document",
+      "referenceCount": 1000,
+      "confirmationMs": 361.19999998807907,
+      "eventToFeedbackMs": 3.400000035762787,
+      "scope": "Automation click through observed cancelled status, no editor panes and two animation frames; includes automation overhead."
+    },
+    {
+      "mode": "canvas",
+      "referenceCount": 1000,
+      "confirmationMs": 426.5999999642372,
+      "eventToFeedbackMs": 3.699999988079071,
+      "scope": "Automation click through observed cancelled status, no editor panes and two animation frames; includes automation overhead."
+    },
+    {
+      "mode": "mixed",
+      "referenceCount": 1000,
+      "confirmationMs": 194.39999997615814,
+      "eventToFeedbackMs": 5.200000047683716,
+      "scope": "Automation click through observed cancelled status, no editor panes and two animation frames; includes automation overhead."
+    },
+    {
+      "mode": "document",
+      "referenceCount": 1000,
+      "confirmationMs": 247.5999999642372,
+      "eventToFeedbackMs": 3.199999988079071,
+      "scope": "Automation click through observed cancelled status, no editor panes and two animation frames; includes automation overhead."
+    },
+    {
+      "mode": "canvas",
+      "referenceCount": 1000,
+      "confirmationMs": 231.5999999642372,
+      "eventToFeedbackMs": 4.5,
+      "scope": "Automation click through observed cancelled status, no editor panes and two animation frames; includes automation overhead."
+    },
+    {
+      "mode": "mixed",
+      "referenceCount": 1000,
+      "confirmationMs": 215.5999999642372,
+      "eventToFeedbackMs": 3.399999976158142,
+      "scope": "Automation click through observed cancelled status, no editor panes and two animation frames; includes automation overhead."
+    },
+    {
+      "mode": "document",
+      "referenceCount": 1000,
+      "confirmationMs": 315.80000001192093,
+      "eventToFeedbackMs": 3.800000011920929,
+      "scope": "Automation click through observed cancelled status, no editor panes and two animation frames; includes automation overhead."
+    },
+    {
+      "mode": "canvas",
+      "referenceCount": 1000,
+      "confirmationMs": 241.69999998807907,
+      "eventToFeedbackMs": 3.100000023841858,
+      "scope": "Automation click through observed cancelled status, no editor panes and two animation frames; includes automation overhead."
+    },
+    {
+      "mode": "mixed",
+      "referenceCount": 1000,
+      "confirmationMs": 262.2000000476837,
+      "eventToFeedbackMs": 4.199999988079071,
+      "scope": "Automation click through observed cancelled status, no editor panes and two animation frames; includes automation overhead."
+    }
+  ],
+  "log": "\r\nRunning 15 tests using 1 worker\r\n\r\n(node:22208) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\r\n(Use `node --trace-warnings ...` to show where the warning was created)\r\nNATIVE_CANCEL_RESULT {\"mode\":\"document\",\"referenceCount\":1000,\"confirmationMs\":291.60000002384186,\"eventToFeedbackMs\":3.199999988079071,\"scope\":\"Automation click through observed cancelled status, no editor panes and two animation frames; includes automation overhead.\"}\r\n  ok  1 tests\\e2e\\native-preparation.spec.js:16:53 › preparing document can cancel and retry without late mounts or fake journals (25.5s)\r\nNATIVE_CANCEL_RESULT {\"mode\":\"canvas\",\"referenceCount\":1000,\"confirmationMs\":197.5,\"eventToFeedbackMs\":3.400000035762787,\"scope\":\"Automation click through observed cancelled status, no editor panes and two animation frames; includes automation overhead.\"}\r\n  ok  2 tests\\e2e\\native-preparation.spec.js:16:53 › preparing canvas can cancel and retry without late mounts or fake journals (24.3s)\r\nNATIVE_CANCEL_RESULT {\"mode\":\"mixed\",\"referenceCount\":1000,\"confirmationMs\":259.9000000357628,\"eventToFeedbackMs\":4.600000023841858,\"scope\":\"Automation click through observed cancelled status, no editor panes and two animation frames; includes automation overhead.\"}\r\n  ok  3 tests\\e2e\\native-preparation.spec.js:16:53 › preparing mixed can cancel and retry without late mounts or fake journals (20.7s)\r\n(node:9256) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\r\n(Use `node --trace-warnings ...` to show where the warning was created)\r\nNATIVE_CANCEL_RESULT {\"mode\":\"document\",\"referenceCount\":1000,\"confirmationMs\":475.2000000476837,\"eventToFeedbackMs\":3,\"scope\":\"Automation click through observed cancelled status, no editor panes and two animation frames; includes automation overhead.\"}\r\n  ok  4 tests\\e2e\\native-preparation.spec.js:16:53 › preparing document can cancel and retry without late mounts or fake journals (25.6s)\r\nNATIVE_CANCEL_RESULT {\"mode\":\"canvas\",\"referenceCount\":1000,\"confirmationMs\":275.19999998807907,\"eventToFeedbackMs\":3,\"scope\":\"Automation click through observed cancelled status, no editor panes and two animation frames; includes automation overhead.\"}\r\n  ok  5 tests\\e2e\\native-preparation.spec.js:16:53 › preparing canvas can cancel and retry without late mounts or fake journals (23.0s)\r\nNATIVE_CANCEL_RESULT {\"mode\":\"mixed\",\"referenceCount\":1000,\"confirmationMs\":251.5,\"eventToFeedbackMs\":3.199999988079071,\"scope\":\"Automation click through observed cancelled status, no editor panes and two animation frames; includes automation overhead.\"}\r\n  ok  6 tests\\e2e\\native-preparation.spec.js:16:53 › preparing mixed can cancel and retry without late mounts or fake journals (19.0s)\r\n(node:21464) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\r\n(Use `node --trace-warnings ...` to show where the warning was created)\r\nNATIVE_CANCEL_RESULT {\"mode\":\"document\",\"referenceCount\":1000,\"confirmationMs\":361.19999998807907,\"eventToFeedbackMs\":3.400000035762787,\"scope\":\"Automation click through observed cancelled status, no editor panes and two animation frames; includes automation overhead.\"}\r\n  ok  7 tests\\e2e\\native-preparation.spec.js:16:53 › preparing document can cancel and retry without late mounts or fake journals (14.1s)\r\nNATIVE_CANCEL_RESULT {\"mode\":\"canvas\",\"referenceCount\":1000,\"confirmationMs\":426.5999999642372,\"eventToFeedbackMs\":3.699999988079071,\"scope\":\"Automation click through observed cancelled status, no editor panes and two animation frames; includes automation overhead.\"}\r\n  ok  8 tests\\e2e\\native-preparation.spec.js:16:53 › preparing canvas can cancel and retry without late mounts or fake journals (19.5s)\r\nNATIVE_CANCEL_RESULT {\"mode\":\"mixed\",\"referenceCount\":1000,\"confirmationMs\":194.39999997615814,\"eventToFeedbackMs\":5.200000047683716,\"scope\":\"Automation click through observed cancelled status, no editor panes and two animation frames; includes automation overhead.\"}\r\n  ok  9 tests\\e2e\\native-preparation.spec.js:16:53 › preparing mixed can cancel and retry without late mounts or fake journals (22.7s)\r\n(node:4460) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\r\n(Use `node --trace-warnings ...` to show where the warning was created)\r\nNATIVE_CANCEL_RESULT {\"mode\":\"document\",\"referenceCount\":1000,\"confirmationMs\":247.5999999642372,\"eventToFeedbackMs\":3.199999988079071,\"scope\":\"Automation click through observed cancelled status, no editor panes and two animation frames; includes automation overhead.\"}\r\n  ok 10 tests\\e2e\\native-preparation.spec.js:16:53 › preparing document can cancel and retry without late mounts or fake journals (16.7s)\r\nNATIVE_CANCEL_RESULT {\"mode\":\"canvas\",\"referenceCount\":1000,\"confirmationMs\":231.5999999642372,\"eventToFeedbackMs\":4.5,\"scope\":\"Automation click through observed cancelled status, no editor panes and two animation frames; includes automation overhead.\"}\r\n  ok 11 tests\\e2e\\native-preparation.spec.js:16:53 › preparing canvas can cancel and retry without late mounts or fake journals (20.4s)\r\nNATIVE_CANCEL_RESULT {\"mode\":\"mixed\",\"referenceCount\":1000,\"confirmationMs\":215.5999999642372,\"eventToFeedbackMs\":3.399999976158142,\"scope\":\"Automation click through observed cancelled status, no editor panes and two animation frames; includes automation overhead.\"}\r\n  ok 12 tests\\e2e\\native-preparation.spec.js:16:53 › preparing mixed can cancel and retry without late mounts or fake journals (13.4s)\r\n(node:8132) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\r\n(Use `node --trace-warnings ...` to show where the warning was created)\r\nNATIVE_CANCEL_RESULT {\"mode\":\"document\",\"referenceCount\":1000,\"confirmationMs\":315.80000001192093,\"eventToFeedbackMs\":3.800000011920929,\"scope\":\"Automation click through observed cancelled status, no editor panes and two animation frames; includes automation overhead.\"}\r\n  ok 13 tests\\e2e\\native-preparation.spec.js:16:53 › preparing document can cancel and retry without late mounts or fake journals (17.8s)\r\nNATIVE_CANCEL_RESULT {\"mode\":\"canvas\",\"referenceCount\":1000,\"confirmationMs\":241.69999998807907,\"eventToFeedbackMs\":3.100000023841858,\"scope\":\"Automation click through observed cancelled status, no editor panes and two animation frames; includes automation overhead.\"}\r\n  ok 14 tests\\e2e\\native-preparation.spec.js:16:53 › preparing canvas can cancel and retry without late mounts or fake journals (16.9s)\r\nNATIVE_CANCEL_RESULT {\"mode\":\"mixed\",\"referenceCount\":1000,\"confirmationMs\":262.2000000476837,\"eventToFeedbackMs\":4.199999988079071,\"scope\":\"Automation click through observed cancelled status, no editor panes and two animation frames; includes automation overhead.\"}\r\n  ok 15 tests\\e2e\\native-preparation.spec.js:16:53 › preparing mixed can cancel and retry without late mounts or fake journals (19.8s)\r\n\r\n  15 passed (5.1m)\r\n",
+  "artifactDigest": "0db1bc38540eceb859fd3786c602b4b2231fce77794b8dbc0b94814491b88b97",
+  "artifactProvenance": "Unchanged .output/chrome-mv3 from Task4 build, which finalize-wxt copied byte-for-byte into dist before the 15-case cancellation run. Computed before the next production build."
+}

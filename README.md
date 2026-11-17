@@ -44,6 +44,8 @@ complete AFFiNE parity or completion of the entire product specification.
 - Complete native workspace preparation with progress, Cancel and fresh-snapshot Retry;
   visible/pinned content hydration with at most four initial loads, retained dirty editors,
   and canonical reference IDs, geometry, groups and connectors throughout.
+- Pages/layout controls load on first opening and retain unfinished geometry edits when
+  closed and reopened; incomplete native reference creation fails preparation with Retry.
 
 The extension does not calculate accumulated total-open time and does not require an AI provider.
 
@@ -125,18 +127,18 @@ unrelated library relationships. See [routing and performance verification](docs
 
 ## Verification checkpoint
 
-The current [clean GitHub build](https://github.com/Mare1197/BookmarkModifiedNewTab/actions/runs/44054619008)
+The previous branch's [clean GitHub build](https://github.com/Mare1197/BookmarkModifiedNewTab/actions/runs/44054619008)
 passes dependency installation, lint/formatting, both type checks, **281 source tests**,
 the 41.44 MB production build and **55/55 browser tests** with no flaky cases reported.
 The [packaged extension](https://github.com/Mare1197/BookmarkModifiedNewTab/actions/runs/44054619008/artifacts/14314609545)
 is attached to that run. Native performance limits remain separate from these correctness checks.
 
-The November 17 [native workspace upgrade](docs/NATIVE_BOARD_UPGRADE.md) adds cooperative
+The earlier November 17 [native workspace upgrade](docs/NATIVE_BOARD_UPGRADE.md) adds cooperative
 preparation and bounded content hydration over the complete model. Five-sample 500-card
 readiness medians improved from 65.2 to 10.8 seconds for Document and 98.2 to 12.9 seconds
 for Canvas; Mixed now completes at 16.8 seconds. The fixed 50-card workspace passed all
-15 library cases at 1k/10k/50k objects. **Responsive 1,000-card startup and cancellation
-remain unmet**: Document took about 103 seconds, Canvas/Mixed encountered failures,
+15 library cases at 1k/10k/50k objects. **That checkpoint did not meet responsive 1,000-card startup or cancellation**:
+Document took about 103 seconds, Canvas/Mixed encountered failures,
 and cancellation confirmation took about eight seconds. The report distinguishes
 measured pre-review source, verified author fixes, failed/skipped cases and memory costs.
 The author fixes pass 281 source tests and the 41.44 MB production build. All 55 browser
@@ -145,7 +147,15 @@ shutdown failure, retained and distinguished from the seven-case cleanup confirm
 
 Give another builder the [current functional instructions](docs/AI_BUILDER_CURRENT_BUILD.md),
 which cover implemented behavior and retain the remaining requested roadmap without
-prescribing a stack or appearance. The isolated branch remains `feature/large-library-performance`.
+prescribing a stack or appearance. The current isolated branch is `MiniPCCodex/native-startup-performance`;
+`feature/large-library-performance` remains the preserved predecessor.
+
+The [native startup follow-up](docs/NATIVE_STARTUP_FOLLOWUP.md) indexes layout/preparation
+lookups, budgets construction work and batches page validation. It passes 305 source tests,
+lint/format/both types and the 41.44 MB build. Five cancellation samples per mode have
+confirmation medians of 316/242/252 ms. A final-source 1,000-card canvas pilot passes
+at 13.4 seconds readiness, including the previously failing image reveal. Single pilots
+are distinguished from repeated acceptance and remaining native rendering/memory limits.
 
 The earlier October 26 local search index provides Pause/Resume, Retry/Rebuild, exact
 fallback, background processing and cache-free exports. Its [verification report](docs/LOCAL_SEARCH_INDEX_VERIFICATION.md)
@@ -215,7 +225,7 @@ The browser suite uses disposable profiles, not your personal Chrome profile.
 For a separate test checkout:
 
 ```powershell
-git clone --branch feature/large-library-performance --single-branch https://github.com/Mare1197/BookmarkModifiedNewTab.git NewTabOS-test
+git clone --branch MiniPCCodex/native-startup-performance --single-branch https://github.com/Mare1197/BookmarkModifiedNewTab.git NewTabOS-test
 cd NewTabOS-test
 ```
 
