@@ -77,16 +77,31 @@ for (const operation of ['add', 'move', 'delete', 'callback', 'children', 'unown
         assert.equal(observedRestored, true); assert.equal(listeners.size, 0);
         assert.deepEqual(Object.getOwnPropertyDescriptors(doc), descriptors);
         const before = scans.parent; assert.equal(captured.call(doc, ids.note), doc.getParent(ids.note)); assert.equal(scans.parent, before + 2);
-        if (['move', 'delete', 'children'].includes(operation)) assert.throws(() => index.verify(), /native|parent|missing/i);
+        if (['add', 'move', 'delete', 'children'].includes(operation)) assert.throws(() => index.verify(), /native|parent|missing|unexpected/i);
         else index.verify();
         index.dispose(); assert.deepEqual(Object.getOwnPropertyDescriptors(doc), descriptors);
     });
 }
-test('ordinary presentation updates and approved surface transactions retain fast lookups', async t => {
+test('explicitly approved presentation updates and surface transactions retain fast lookups', async t => {
     const {create, doc} = await fixture(t), index = create(doc), ids = populate(index, doc);
-    doc.updateBlock(ids.model(ids.note), {index: 'a0', edgeless: {collapse: false}, xywh: '[1,2,3,4]'});
+    index.mutate(() => doc.updateBlock(ids.model(ids.note), {index: 'a0', edgeless: {collapse: false}, xywh: '[1,2,3,4]'}));
     index.mutate(() => doc.spaceDoc.transact(() => {}));
     assert.equal(Object.hasOwn(doc, 'getParent'), true); index.verify(); index.dispose();
+});
+test('an unowned plain property write restores lookups before native validation', async t => {
+    const {create, doc} = await fixture(t), original = doc.updateBlock;
+    let indexedAtValidation;
+    doc.updateBlock = (model, props) => {indexedAtValidation = Object.hasOwn(doc, 'getParent'); return original(model, props);};
+    const index = create(doc), ids = populate(index, doc);
+    doc.updateBlock(ids.model(ids.note), {xywh: '[0,0,340,220]'});
+    assert.equal(indexedAtValidation, false); assert.equal(Object.hasOwn(doc, 'getParent'), false);
+    index.verify(); index.dispose();
+});
+for (const flavour of ['affine:page', 'affine:surface']) test('an unexpected extra ' + flavour + ' fails projection verification', async t => {
+    const {create, doc} = await fixture(t), index = create(doc), ids = populate(index, doc);
+    doc.addBlock(flavour, {}, flavour === 'affine:surface' ? ids.root : undefined);
+    assert.equal(Object.hasOwn(doc, 'getParent'), false);
+    assert.throws(() => index.verify(), /unexpected/i); index.dispose();
 });
 test('captured root getter and existing own descriptors restore exactly', async t => {
     const {create, doc} = await fixture(t), originalParent = doc.getParent;

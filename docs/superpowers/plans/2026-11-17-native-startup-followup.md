@@ -61,7 +61,7 @@ The overlay indexes known parent/root/surface IDs and returns original models/Bl
 
 **Interfaces:** Consume Task 2's overlay. Install after loading the new Doc; register its scope owner before the Doc disposal owner so native teardown can use the index. Use its `addBlock` for root/surface/note/reference and `mutate` for controlled surface/group writes. Verify after construction and again before readiness; dispose the overlay before interaction starts.
 
-The guarded `doc.updateBlock` wrapper approves ordinary property objects automatically: this explicitly includes initial edgeless/collapse/xywh presentation and every per-note index update. Callback/children updates fall back before delegation.
+The two controlled construction call sites explicitly approve initial edgeless/collapse/xywh presentation and per-note index assignment. Unowned property and callback/children updates fall back before native validation and mutation. Verification checks that every model was either present on entry to the fallback or created by the adapter.
 
 - [ ] Add browser RED `a missing final native reference fails preparation and retries without canonical loss`. Capture the actual Doc prototype from a synthetic initial workspace, return an ID without adding the final embed on a subsequent mount, assert visible failure/no editor panes/no fake journals and unchanged canonical references, restore prototype, retry successfully.
 - [ ] Add browser RED `an unowned native transaction before mount restores original lookups`. Intercept the owned editor append in the test, mutate an unrelated transient Y map through public `spaceDoc`, assert original descriptors restored immediately, and verify complete ready models/geometry. Restore the test interception.

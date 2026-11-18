@@ -335,10 +335,10 @@ test('a missing final native reference fails preparation and retries without can
     await page.getByRole('button', {name: 'Return to desktop', exact: true}).click(); await expect(ws).not.toBeVisible();
 });
 
-test('an unowned native transaction before mount restores original lookups', async ({context, extensionId}) => {
+for (const kind of ['transaction', 'property write']) test(`an unowned native ${kind} before mount restores original lookups`, async ({context, extensionId}) => {
     const {page, ws} = await openFixture(context, extensionId, 'canvas');
     await page.getByRole('button', {name: 'Return to desktop', exact: true}).click();
-    await page.evaluate(() => {
+    await page.evaluate(kind => {
         window.preparationAppend = Element.prototype.append;
         Element.prototype.append = function (...nodes) {
             const editor = nodes.find(node => node?.localName === 'edgeless-editor');
@@ -347,12 +347,13 @@ test('an unowned native transaction before mount restores original lookups', asy
                 const doc = editor.doc;
                 const before = Object.hasOwn(doc, 'getParent');
                 window.preparationCapturedUpdate = doc.updateBlock.bind(doc);
-                doc.spaceDoc.transact(() => {doc.spaceDoc.getMap('synthetic-preparation-check').set('test', true);});
+                if (kind === 'transaction') doc.spaceDoc.transact(() => {doc.spaceDoc.getMap('synthetic-preparation-check').set('test', true);});
+                else {const note = doc.getBlocks().find(b => b.flavour === 'affine:note'); doc.updateBlock(note, {xywh: note.xywh});}
                 window.preparationFallback = {before, after: Object.hasOwn(doc, 'getParent'), root: Object.hasOwn(doc, 'root')};
             }
             return window.preparationAppend.apply(this, nodes);
         };
-    });
+    }, kind);
     try {
         await page.frameLocator('iframe[title="Browser OS desktop"]').getByRole('button', {name: 'Boards', exact: true}).click();
         await page.getByRole('button', {name: 'Workspace', exact: true}).click();
@@ -364,5 +365,71 @@ test('an unowned native transaction before mount restores original lookups', asy
         });
         expect(await ws.locator('edgeless-editor').evaluate(editor => editor.doc.getBlocks().filter(b => b.flavour === 'affine:embed-workspace-object').length)).toBe(50);
     } finally {await page.evaluate(() => {Element.prototype.append = window.preparationAppend;});}
+    await page.getByRole('button', {name: 'Return to desktop', exact: true}).click(); await expect(ws).not.toBeVisible();
+});
+
+test('an unexpected extra native root fails preparation and a fresh retry preserves the canonical page', async ({context, extensionId}) => {
+    const {page, ws} = await openFixture(context, extensionId, 'document');
+    await page.getByRole('button', {name: 'Return to desktop', exact: true}).click();
+    const names = ['workspaceDrafts', 'workspaceRevisions', 'activities'], before = await Promise.all(names.map(name => nativeRecords(page, name)));
+    await page.evaluate(() => {
+        window.extraRootAppend = Element.prototype.append;
+        Element.prototype.append = function (...nodes) {
+            const editor = nodes.find(node => node?.localName === 'page-editor');
+            if (editor) {Element.prototype.append = window.extraRootAppend; editor.doc.addBlock('affine:page', {});}
+            return window.extraRootAppend.apply(this, nodes);
+        };
+    });
+    try {
+        await page.frameLocator('iframe[title="Browser OS desktop"]').getByRole('button', {name: 'Boards', exact: true}).click();
+        await page.getByRole('button', {name: 'Workspace', exact: true}).click();
+        await expect(ws.getByRole('status').first()).toContainText('Native preparation failed: unexpected', {timeout: 30000});
+        await expect(ws.locator('page-editor,edgeless-editor')).toHaveCount(0);
+        expect((await nativeRecords(page, 'placements')).filter(p => p.boardId === 'native:board')).toHaveLength(50);
+        expect(await Promise.all(names.map(name => nativeRecords(page, name)))).toEqual(before);
+    } finally {
+        await page.evaluate(() => {Element.prototype.append = window.extraRootAppend;});
+        if (await ws.getByRole('status').first().textContent() === 'saved') await page.getByRole('button', {name: 'Return to desktop', exact: true}).click();
+    }
+    await ws.getByRole('button', {name: 'Retry preparation', exact: true}).click();
+    await expect(ws.getByRole('status').first()).toHaveText('saved', {timeout: 30000});
+    expect(await ws.locator('page-editor').evaluate(editor => editor.doc.getBlocks().filter(b => b.flavour === 'affine:embed-workspace-object').length)).toBe(50);
+    await page.getByRole('button', {name: 'Return to desktop', exact: true}).click(); await expect(ws).not.toBeVisible();
+});
+
+test('native route acknowledgements preserve connector style drafts and refresh untouched defaults', async ({context, extensionId}) => {
+    const {page, ws} = await openFixture(context, extensionId, 'canvas'), editor = ws.locator('edgeless-editor');
+    await editor.evaluate(node => {window.styleDraftEditor = node; window.styleDraftDoc = node.doc;});
+    await ws.getByText('Pages and layout controls', {exact: true}).click();
+    const style = ws.getByRole('group', {name: 'Connector style', exact: true}).first();
+    await style.getByLabel('Line color', {exact: true}).fill('#33aa99'); await style.getByLabel('Dashed line', {exact: true}).check();
+    await ws.locator('affine-edgeless-root').evaluate(root => {
+        const connector = root.service.elements.find(e => e.type === 'connector');
+        root.service.selection.set({elements: [connector.id], editing: false});
+    });
+    await ws.getByRole('button', {name: 'Add route bend', exact: true}).dispatchEvent('click');
+    await ws.getByRole('button', {name: 'Save now', exact: true}).click();
+    await expect(ws.getByRole('status').first()).toHaveText('saved');
+    await expect(style.getByLabel('Line color', {exact: true})).toHaveValue('#33aa99');
+    await expect(style.getByLabel('Dashed line', {exact: true})).toBeChecked();
+    await editor.evaluate(node => {
+        const surface = node.doc.getBlocks().find(b => b.flavour === 'affine:surface');
+        const connector = surface.getElementsByType('connector')[0];
+        surface.updateElement(connector.id, {mode: 2});
+    });
+    await ws.getByRole('button', {name: 'Save now', exact: true}).click();
+    await expect(ws.getByRole('status').first()).toHaveText('saved');
+    await expect(style.getByLabel('Line shape', {exact: true})).toHaveValue('curve');
+    await expect(style.getByLabel('Line color', {exact: true})).toHaveValue('#33aa99');
+    await expect(style.getByLabel('Dashed line', {exact: true})).toBeChecked();
+    expect(await editor.evaluate(node => node === window.styleDraftEditor && node.doc === window.styleDraftDoc)).toBe(true);
+    const before = (await nativeRecords(page, 'settings')).find(s => s.key === 'workspace-page:native:board').value.connectors[0];
+    expect(before.points).toHaveLength(1);
+    await style.getByRole('button', {name: 'Apply connector style', exact: true}).click();
+    await expect.poll(async () => (await nativeRecords(page, 'settings')).find(s => s.key === 'workspace-page:native:board').value.connectors[0].color).toBe('#33aa99');
+    const after = (await nativeRecords(page, 'settings')).find(s => s.key === 'workspace-page:native:board').value.connectors[0];
+    expect(after.dashed).toBe(true); expect(after.mode).toBe('curve');
+    expect(after.points).toEqual(before.points); expect(after.anchors).toEqual(before.anchors);
+    await expect(ws.getByRole('status').first()).toHaveText('saved');
     await page.getByRole('button', {name: 'Return to desktop', exact: true}).click(); await expect(ws).not.toBeVisible();
 });

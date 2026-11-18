@@ -100,8 +100,8 @@ async function buildPageProjection(container: HTMLElement, snapshot: PageSnapsho
             notes.set(p.id, note); placementIds.set(note, p.id);
         }, () => {
             const model = doc.getBlockById(notes.get(p.id)!) as NoteBlockModel;
-            doc.updateBlock(model, {edgeless: {...model.edgeless, collapse: collapsed, collapsedHeight: 100},
-                ...(collapsed ? {xywh: JSON.stringify([p.x, p.y, p.width, 100])} : {})});
+            preparationIndex.mutate(() => doc.updateBlock(model, {edgeless: {...model.edgeless, collapse: collapsed, collapsedHeight: 100},
+                ...(collapsed ? {xywh: JSON.stringify([p.x, p.y, p.width, 100])} : {})}));
         }, () => {preparationIndex.addBlock('affine:embed-workspace-object', {entityId: p.entityId, placementId: p.id}, notes.get(p.id)!);});
     }
     for (const group of snapshot.presentation.groups) operations.push(() => {
@@ -136,7 +136,7 @@ async function buildPageProjection(container: HTMLElement, snapshot: PageSnapsho
     scope.own(closeIndexLayer);
     try {
         const indexes = nativeProjectionIndexes(indexLayer.generateIndex(), notes.size);
-        await runProjectionBatches([...notes.values()].map((id, index) => () => {doc.updateBlock(doc.getBlockById(id)!, {index: indexes[index]!});}),
+        await runProjectionBatches([...notes.values()].map((id, index) => () => {preparationIndex.mutate(() => doc.updateBlock(doc.getBlockById(id)!, {index: indexes[index]!}));}),
             {...options, onProgress: done => options.onProgress?.(operations.length + done, total)});
         scope.check();
     } finally {closeIndexLayer();}

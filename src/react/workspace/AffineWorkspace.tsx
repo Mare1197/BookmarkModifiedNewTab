@@ -97,7 +97,10 @@ export function AffineWorkspace(props: Props) {
     };
     const command = (c: PageCommand) => run(async () => {
         const current = await loadPageSnapshot(props.boardId);
-        const next = await applyPageCommand(props.boardId, current.version, c); setUndoToken(next.undoToken); setPage(next); setMountKey(k => k + 1);
+        // A native route may have been saved by flush() after the style form submitted.
+        const connector = c.type === 'connector-style' && current.presentation.connectors.find(item => item.id === c.connectorId);
+        const next = await applyPageCommand(props.boardId, current.version, connector && c.type === 'connector-style' ? {...c, points: connector.points} : c);
+        setUndoToken(next.undoToken); setPage(next); setMountKey(k => k + 1);
     });
     const openParent = async (entityId: string) => {
         const setting = (await db.settings.where('key').startsWith('workspace-page:').toArray())
@@ -197,7 +200,7 @@ export function AffineWorkspace(props: Props) {
                     {page?.placements.filter(p => p.id !== chosen?.id).map(p => <option key={p.id} value={p.id}>{lookups.titleForPlacement(p.id, '')}</option>)}</select></label>
                     <button disabled={!chosen || !targetId} onClick={() => chosen && void command({type: 'connect', fromPlacementId: chosen.id, toPlacementId: targetId, relationType: 'related'})}>Connect cards</button>
                 </div>
-                {page?.presentation.connectors.map(c => <WorkspaceConnectorControls key={c.id} connector={c} busy={busy} onCommand={command}
+                {page?.presentation.connectors.map(c => <WorkspaceConnectorControls key={c.id + ':' + mountKey} connector={c} busy={busy} onCommand={command}
                     label={lookups.titleForPlacement(c.fromPlacementId) + ' → ' + lookups.titleForPlacement(c.toPlacementId)} />)}
                 </fieldset>}
             </details>

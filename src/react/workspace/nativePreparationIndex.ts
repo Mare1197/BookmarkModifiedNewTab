@@ -7,6 +7,7 @@ import type {Doc} from '@blocksuite/store';
 export function createNativePreparationIndex(doc: Doc) {
     const nativeAdd = doc.addBlock, nativeParent = doc.getParent, nativeFlavour = doc.getBlocksByFlavour;
     const nativeUpdate = doc.updateBlock;
+    const initialIds = new Set(doc.getBlocks().map(model => model.id));
     let rootOwner: object | null = doc;
     while (rootOwner && !Object.getOwnPropertyDescriptor(rootOwner, 'root')) rootOwner = Object.getPrototypeOf(rootOwner);
     const nativeRoot = rootOwner && Object.getOwnPropertyDescriptor(rootOwner, 'root');
@@ -47,7 +48,7 @@ export function createNativePreparationIndex(doc: Doc) {
     // Only a fresh public Doc with restorable descriptors is eligible. A native
     // fallback still records and verifies all creations made by this adapter.
     const keys = ['root', 'getParent', 'getBlocksByFlavour', 'addBlock', 'moveBlocks', 'deleteBlock', 'updateBlock'];
-    const eligible = Object.isExtensible(doc) && doc.getBlocks().length === 0 && typeof ydoc?.on === 'function' && typeof ydoc?.off === 'function' &&
+    const eligible = Object.isExtensible(doc) && initialIds.size === 0 && typeof ydoc?.on === 'function' && typeof ydoc?.off === 'function' &&
         keys.every(key => Object.getOwnPropertyDescriptor(doc, key)?.configurable !== false);
     if (eligible) {
         try {
@@ -77,10 +78,10 @@ export function createNativePreparationIndex(doc: Doc) {
             }
             install('updateBlock', {value: function (this: Doc, model: Parameters<Doc['updateBlock']>[0], props: object | (() => void)) {
                 if (!active) return Reflect.apply(nativeUpdate, this, [model, props]);
-                if (this !== doc || typeof props === 'function' || !props || 'children' in props || 'id' in props || 'flavour' in props) {
+                if (this !== doc || !approval || approval.used || typeof props === 'function' || !props || 'children' in props || 'id' in props || 'flavour' in props) {
                     restore(); return Reflect.apply(nativeUpdate, this, [model, props]);
                 }
-                return mutate(() => Reflect.apply(nativeUpdate, this, [model, props]));
+                return Reflect.apply(nativeUpdate, this, [model, props]);
             }, writable: true});
             active = true;
             ydoc.on('beforeTransaction', beforeTransaction);
@@ -113,6 +114,7 @@ export function createNativePreparationIndex(doc: Doc) {
         // Independently inspect actual native models/child edges. Do not validate
         // our expected parents by querying the accelerator itself.
         const models = doc.getBlocks(), actual = new Map(models.map(model => [model.id, model]));
+        for (const id of actual.keys()) if (!expected.has(id) && !initialIds.has(id)) throw new Error(`Native preparation failed: unexpected model ${id}`);
         const parents = new Map<string, string[]>();
         for (const model of models) for (const child of model.children) {
             const list = parents.get(child.id) || []; list.push(model.id); parents.set(child.id, list);
@@ -126,6 +128,6 @@ export function createNativePreparationIndex(doc: Doc) {
         }
     }, dispose() {
         if (closed) return;
-        restore(); closed = true; expected.clear(); surfaces.clear(); root = undefined;
+        restore(); closed = true; expected.clear(); initialIds.clear(); surfaces.clear(); root = undefined;
     }};
 }
