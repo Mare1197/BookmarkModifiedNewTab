@@ -1,0 +1,150 @@
+{
+  "sourceRevision": "213e82e68e32b2f8bcfef711ece66b400a7db22e",
+  "branch": "MiniPCCodex/native-startup-performance",
+  "workflowRun": "https://github.com/Mare1197/BookmarkModifiedNewTab/actions/runs/44227156870",
+  "job": {
+    "id": 134543038760,
+    "name": "verify",
+    "status": "completed",
+    "conclusion": "success",
+    "run_id": 44227156870,
+    "logs_url": null,
+    "steps": [
+      {
+        "name": "Set up job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 1
+      },
+      {
+        "name": "Checkout",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 2
+      },
+      {
+        "name": "Setup Node",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 3
+      },
+      {
+        "name": "Install dependencies",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 4
+      },
+      {
+        "name": "Lint and unit tests",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 5
+      },
+      {
+        "name": "Build loadable extension",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 6
+      },
+      {
+        "name": "Install Playwright Chromium",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 7
+      },
+      {
+        "name": "Run unpacked extension smoke tests",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 8
+      },
+      {
+        "name": "Package extension artifact",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 9
+      },
+      {
+        "name": "Upload extension artifact",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 10
+      },
+      {
+        "name": "Post Setup Node",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 19
+      },
+      {
+        "name": "Post Checkout",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 20
+      },
+      {
+        "name": "Complete job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 21
+      }
+    ]
+  },
+  "artifacts": [
+    {
+      "id": 14393602442,
+      "name": "browser-os-new-tab",
+      "size_in_bytes": 27548330,
+      "url": "https://api.github.com/repos/Mare1197/BookmarkModifiedNewTab/actions/artifacts/14393602442",
+      "archive_download_url": "https://api.github.com/repos/Mare1197/BookmarkModifiedNewTab/actions/artifacts/14393602442/zip",
+      "expired": false,
+      "created_at": "2026-11-18T03:03:54Z",
+      "expires_at": "2027-02-16T02:59:08Z",
+      "updated_at": "2026-11-18T03:03:54Z",
+      "digest": "sha256:36bfab612c3e015670d6aa5dd73b423ab677d2d1e8cc7d1652cabe2ec3c46575",
+      "workflow_run": {
+        "id": 44227156870,
+        "repository_id": 1138014810,
+        "head_repository_id": 1138014810,
+        "head_branch": "MiniPCCodex/native-startup-performance",
+        "head_sha": "213e82e68e32b2f8bcfef711ece66b400a7db22e"
+      }
+    }
+  ],
+  "sourceTestsPassed": 308,
+  "browserTestsPassed": 61,
+  "flakyCasesReported": 0,
+  "buildSize": "41.45 MB",
+  "selectedLogLines": [
+    "2026-11-18T02:59:12.2800722Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +213e82e68e32b2f8bcfef711ece66b400a7db22e:refs/remotes/origin/MiniPCCodex/native-startup-performance",
+    "2026-11-18T02:59:13.5724522Z  * [new ref]         213e82e68e32b2f8bcfef711ece66b400a7db22e -> origin/MiniPCCodex/native-startup-performance",
+    "2026-11-18T02:59:13.6562238Z 213e82e68e32b2f8bcfef711ece66b400a7db22e",
+    "2026-11-18T03:00:25.2332610Z # tests 308",
+    "2026-11-18T03:00:25.2332823Z # pass 308",
+    "2026-11-18T03:00:25.2332933Z # fail 0",
+    "2026-11-18T03:00:28.4475935Z Σ Total size: 41.45 MB                                                ",
+    "2026-11-18T03:01:42.2257621Z ··················NATIVE_CANCEL_RESULT {\"mode\":\"document\",\"referenceCount\":1000,\"confirmationMs\":186.90000000002328,\"eventToFeedbackMs\":2.2000000000116415,\"scope\":\"Automation click through observed cancelled status, no editor panes and two animation frames; includes automation overhead.\"}",
+    "2026-11-18T03:01:48.6023355Z ··NATIVE_CANCEL_RESULT {\"mode\":\"canvas\",\"referenceCount\":1000,\"confirmationMs\":136.59999999997672,\"eventToFeedbackMs\":1.6000000000058208,\"scope\":\"Automation click through observed cancelled status, no editor panes and two animation frames; includes automation overhead.\"}",
+    "2026-11-18T03:01:55.8994114Z ···NATIVE_CANCEL_RESULT {\"mode\":\"mixed\",\"referenceCount\":1000,\"confirmationMs\":173.5,\"eventToFeedbackMs\":2.5,\"scope\":\"Automation click through observed cancelled status, no editor panes and two animation frames; includes automation overhead.\"}",
+    "2026-11-18T03:03:51.5411622Z   61 passed (3.2m)",
+    "2026-11-18T03:03:51.5436672Z ##[notice]  61 passed (3.2m)"
+  ],
+  "local": {
+    "focusedReviewRegressionsPassed": 3,
+    "sourceTestsPassed": 308,
+    "earlierFullSuite": {
+      "passed": 57,
+      "planned": 58,
+      "failure": "Explorer keyboard and drag interactions: synthetic fixture setup failed with page.evaluate Resulting promise was garbage collected before app assertions."
+    },
+    "review": {
+      "important": 3,
+      "critical": 0,
+      "preFixBrowserRegressions": 3,
+      "postFixBrowserRegressions": 3,
+      "preFixHelperFailures": 4,
+      "postFixHelperPasses": 20,
+      "deferredMinor": "Fake Doc nested-transaction timing differs from observer-initiated reentrancy in Yjs."
+    }
+  }
+}

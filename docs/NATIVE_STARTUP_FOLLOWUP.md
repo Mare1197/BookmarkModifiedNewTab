@@ -1,8 +1,8 @@
-# Native startup follow-up — November 17, 2026
+# Native startup follow-up — November 18, 2026
 
 This pass keeps the complete native model and the existing canonical Brain. It removes repeated view/native lookups, yields construction by elapsed work, and batches page validation so camera saves do not hold visible content reads behind thousands of serial requests. No dependency upgrade, migration, new backend, native-reference truncation or second content authority is introduced.
 
-Application source is `753ed9275cedb58429ebf09e4c669b3559f0d205`; the frozen Windows production artifact has SHA-256 `0106195fa37d85fe069e15a877f013f983eb21400e43fbf2e5b948e22e639749` and is 41.44 MB. Documentation/evidence commits after that source do not change the measured application. The separate branch is `MiniPCCodex/native-startup-performance`; the prior performance and inspector branches are preserved.
+The final application source and benchmark harness are at commit `213e82e68e32b2f8bcfef711ece66b400a7db22e` on `MiniPCCodex/native-startup-performance`. The 41.45 MB Windows benchmark build has SHA-256 `50f4df47111b005b5153ec8d4285ae226246e87fdc662cd1e8e9e48b6b144ca9`. The GitHub workflow packages a separate build from the same commit.
 
 ## What changed
 
@@ -11,6 +11,7 @@ Application source is `753ed9275cedb58429ebf09e4c669b3559f0d205`; the frozen Win
 - The adapter restores original APIs before readiness and during owned cleanup. Retained native callbacks delegate correctly after the preparation owner closes; explicit late owned work remains rejected. Nonempty/incompatible documents retain native behavior with creation verification.
 - Construction yields after 8 ms of elapsed work or 50 operations. One indivisible synchronous operation can still exceed the budget. Cancellation retains reverse-order ownership cleanup, no fake draft/history, and Retry from a freshly saved snapshot.
 - Page commands validate unique referenced entities in batches of 100 inside the same atomic transaction and use maps/sets for placement matching. Missing references, stale versions, rollback, history, undo and canonical identities remain guarded. This changes scheduling and repeated searches, rather than dropping validation.
+- The review fixes restrict property-write grants to explicit construction operations and reject unexpected native models, including an extra root or surface. Connector forms retain edited fields when a route save is acknowledged, refresh untouched fields, and apply the style against the latest saved route.
 
 The preparation boundary trusts this adapter's fixed installed schema defaults and original native writer inside its approved transaction. Arbitrary third-party code rewriting topology inside that same transaction is outside that construction contract. Unowned transactions through other Doc/collection/Yjs handles fall back before mutation.
 
@@ -26,7 +27,7 @@ A separate instrumented canvas profile on source `977e57f` no longer has the rep
 
 A logging-only transformation of a copied frozen artifact recorded 74 content lifecycle events. The image had correct geometry, camera position and an uncollapsed body, but four loads remained pending. Newly visible entity reads waited about 3.5 seconds behind page-save work, with asset reads then queued. The trace did not show a cancellation deadlock. A source regression reproduced 1,002 serial entity reads for a 1,000-reference pan save; batching leaves two serial snapshot-owner reads and retains all reference checks. Missing-reference rejection and rollback have an additional regression.
 
-The post-batching canvas pilot uses the final source/digest above: readiness 13,391 ms, all three revealed content kinds in 855 ms total, and complete model/geometry/group/connector, edit/save, release and owned teardown checks pass. The unchanged image assertion now passes. This remains one pilot and does not establish a sub-ten-second canvas median.
+The post-batching canvas pilot used pre-review source `753ed9275cedb58429ebf09e4c669b3559f0d205` and artifact `0106195fa37d85fe069e15a877f013f983eb21400e43fbf2e5b948e22e639749`. It opened in 13,391 ms and revealed all three content kinds in 855 ms total. Complete model, geometry, group, connector, edit, save, release and teardown checks passed in this pilot. The repeated matrix below includes a later image-reveal failure.
 
 ## Cancellation
 
@@ -40,12 +41,37 @@ The post-batching canvas pilot uses the final source/digest above: readiness 13,
 
 Confirmation retains the previous definition: automation click through observed cancelled status, absence of editor panes and two animation frames. It includes automation overhead. The separate event metric starts at a capture-phase click listener and ends at observed cancelled-status DOM feedback. These cases cancel after preparation progress first appears; they do not certify every cancellation phase or preempt individual synchronous operations.
 
-The repeated run used artifact `0db1bc38540eceb859fd3786c602b4b2231fce77794b8dbc0b94814491b88b97`, before the retained-callback compatibility fix. Its exact source plus scheduler patch is archived, rather than called a clean-source benchmark. The corrected callback build separately passes all three cancel/retry cases at 260/230/240 ms and the real retained-callback browser regression. Later final-harness coverage is recorded separately.
+The repeated run used artifact `0db1bc38540eceb859fd3786c602b4b2231fce77794b8dbc0b94814491b88b97`, before the retained-callback compatibility fix. The archive includes its exact source and scheduler patch. GitHub Actions exercised cancellation on the final commit once in each mode with confirmation times of 187, 137 and 174 ms respectively. Those CI timings use a different environment.
 
-## Verification and measurement rules
+## Repeated native measurements
 
-The final application passes lint, formatting, both type checks, **305 source tests**, and the production build. The existing supervised native harness retains all canonical identities/dimensions, two fixture groups, complete unique connectors, body-load concurrency at most four, edit/save/reveal/release assertions and bounded owned teardown. CPU/logging diagnostics never enter acceptance medians.
+The frozen final build recorded **53 passes, two failures and five skips** across 60 planned cases. The table shows readiness in milliseconds. Complete groups report the median and range of five samples. [Raw measurements and failure diagnostics](evidence/native-startup-acceptance.json).
+
+| References | Document | Canvas | Mixed |
+| ---: | ---: | ---: | ---: |
+| 50 | 1,878 [1,714–2,263] | 2,298 [2,281–2,738] | 2,447 [2,446–2,500] |
+| 250 | 2,593 [2,270–2,611] | 3,945 [3,423–4,034] | 4,264 [3,934–5,004] |
+| 500 | 3,673 [3,372–5,739] | 6,156 [5,605–6,877] | 7,361 [7,153–7,981] |
+| 1,000 | 7,385 [6,647–7,776] | Three passes [12,396–13,821], one failure and one skip | One failure after opening at 17,406 ms, four skips |
+
+At 1,000 references, document mode reached the sub-ten-second median target and improved from the predecessor's 103,255 ms median. The other modes still exceed the target. Canvas sample four and mixed sample one both failed the unchanged five-second image-attachment assertion after readiness. Canvas had four active content loads and a visible image shell with an empty body in the failure capture. The mixed assertion targeted the document pane. The capture inspected both panes and found one hydrated image occurrence and a second empty occurrence. Those observations leave the remaining delay unresolved and support profiling the time between reveal, load dispatch and attachment under 1,000-card load.
+
+## Fixed 50-card board with unrelated library growth
+
+One Canvas smoke case at each library size passed all assertions. These individual runs illustrate the cost of larger libraries, with 50 references in the tested native board.
+
+| Additional library objects | Readiness | Save | Fixture setup | Main-thread heap |
+| ---: | ---: | ---: | ---: | ---: |
+| 1,000 | 2.32 s | 280 ms | 3.42 s | 53.8 MB |
+| 10,000 | 2.21 s | 264 ms | 23.21 s | 103.3 MB |
+| 50,000 | 2.57 s | 538 ms | 168.80 s | 291.9 MB |
+
+## Verification
+
+The exact final application passed lint, formatting, both type checks, **308 source tests**, the 41.45 MB production build and **61 browser tests** on GitHub Actions. The Windows focused run also passed the three regressions that previously reproduced the review findings. An earlier local full run passed 57 of 58 cases and failed during Explorer fixture seeding before its app assertions. The final Linux suite passed that case and all three added regressions without reported flaky cases. [GitHub run](https://github.com/Mare1197/BookmarkModifiedNewTab/actions/runs/44227156870) · [Extension package](https://github.com/Mare1197/BookmarkModifiedNewTab/actions/runs/44227156870/artifacts/14393602442) · [Verification evidence](evidence/native-startup-verification.json).
+
+The existing supervised native harness checks canonical identities and geometry, two fixture groups, unique connectors, up to four concurrent body loads, editing, saves, reveal, resource release and owned teardown. Acceptance medians use unprofiled samples.
 
 Native 50/250/500/1,000-reference measurements use Chromium 151.0.7922.34 on Windows, a 1584 × 1024 viewport, disposable synthetic profiles, serial execution and no automatic retries. Readiness retains the earlier harness definition; visible content and explicit reveal remain separate. A failed case stops further repetitions for its group, and an active owned worker or unexpected supervisor error stops the entire remaining matrix. No 5,000/50,000 native-reference capacity is claimed. Main-thread heap excludes workers, and long-task capture is not a smooth-frame guarantee.
 
-The prior [native report](NATIVE_BOARD_UPGRADE.md) and its failures/skips remain historical evidence. Unrelated-library memory/setup/save scaling is a separate follow-up, not solved by this native startup pass.
+See the [predecessor report](NATIVE_BOARD_UPGRADE.md) for its historical measurements and failures. Unrelated-library memory, setup and save scaling remain follow-up work.

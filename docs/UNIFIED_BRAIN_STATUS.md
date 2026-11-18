@@ -1,13 +1,13 @@
 # Unified Brain: implementation status
 
-The November 17 [native startup follow-up](NATIVE_STARTUP_FOLLOWUP.md) is isolated on
-`MiniPCCodex/native-startup-performance`, preserving the previous branches. Indexed
-layout/preparation lookups, elapsed-work scheduling and batched page validation pass
-305 source tests, lint/format/both types and the 41.44 MB build. Five cancellation
-samples per mode confirm medians of 316/242/252 ms; the final-source 1,000-reference
-canvas pilot passes at 13.4 seconds, including image reveal. Single pilots do not
-certify repeated capacity or the sub-ten-second target. Unrelated-library memory/save
-costs remain a separate upgrade. The report retains diagnostic failures and exact sources.
+The November 18 native startup follow-up is published on
+`MiniPCCodex/native-startup-performance`. The final build passes 308 source tests
+and 61 browser tests on GitHub. At 500 references, five samples per mode give
+median readiness times of 3.67, 6.16 and 7.36 seconds. At 1,000 references, Document
+passes five times with a 7.39-second median. Canvas and Mixed each have an
+image-reveal failure after opening. Cancellation confirmation medians are 316, 242
+and 252 ms in the repeated Windows run on the earlier scheduling build. Unrelated-library memory and save costs
+remain follow-up work. [Native startup report](NATIVE_STARTUP_FOLLOWUP.md).
 
 The predecessor's November 17 [clean GitHub build](https://github.com/Mare1197/BookmarkModifiedNewTab/actions/runs/44054619008)
 passes clean installation, lint/format/both types, **281 source tests**, the 41.44 MB build

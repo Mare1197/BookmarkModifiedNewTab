@@ -150,12 +150,18 @@ which cover implemented behavior and retain the remaining requested roadmap with
 prescribing a stack or appearance. The current isolated branch is `MiniPCCodex/native-startup-performance`;
 `feature/large-library-performance` remains the preserved predecessor.
 
-The [native startup follow-up](docs/NATIVE_STARTUP_FOLLOWUP.md) indexes layout/preparation
-lookups, budgets construction work and batches page validation. It passes 305 source tests,
-lint/format/both types and the 41.44 MB build. Five cancellation samples per mode have
-confirmation medians of 316/242/252 ms. A final-source 1,000-card canvas pilot passes
-at 13.4 seconds readiness, including the previously failing image reveal. Single pilots
-are distinguished from repeated acceptance and remaining native rendering/memory limits.
+The native startup follow-up indexes layout and preparation lookups, budgets construction
+work, batches page validation and preserves connector style drafts across route saves.
+At 500 cards, median readiness was 3.67 seconds for Document, 6.16 for Canvas and
+7.36 for Mixed. At 1,000 cards, Document passed five times with a 7.39-second median.
+Canvas and Mixed each timed out on an image-reveal check after opening. The full matrix
+recorded 53 passes, two failures and five skips. Five Windows cancellation samples per
+mode on the earlier scheduling build gave medians of 316, 242 and 252 ms.
+[Performance report](docs/NATIVE_STARTUP_FOLLOWUP.md).
+
+The published build passed 308 source tests and 61 browser tests. The packaged
+extension is available from GitHub Actions. [Run](https://github.com/Mare1197/BookmarkModifiedNewTab/actions/runs/44227156870)
+· [Package](https://github.com/Mare1197/BookmarkModifiedNewTab/actions/runs/44227156870/artifacts/14393602442).
 
 The earlier October 26 local search index provides Pause/Resume, Retry/Rebuild, exact
 fallback, background processing and cache-free exports. Its [verification report](docs/LOCAL_SEARCH_INDEX_VERIFICATION.md)
