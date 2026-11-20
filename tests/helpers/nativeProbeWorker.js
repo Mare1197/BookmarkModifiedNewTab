@@ -5,7 +5,7 @@ const {makeNativeBoardFixture} = require('./nativeBoardFixture');
 const {seedLargeLibrary, makeLargeLibraryFixture} = require('./largeLibraryFixture');
 
 process.once('message', async options => {
-    const metrics = {}, errors = []; let context;
+    const metrics = {}, errors = []; let context, captureContentLoads;
     const measure = async (name, action) => {
         const start = performance.now();
         try {const value = await action(); metrics[name] = {ms: performance.now() - start, ok: true, value};
@@ -18,7 +18,13 @@ process.once('message', async options => {
             viewport: {width: 1584, height: 1024}, args: [`--disable-extensions-except=${path.resolve(options.extensionPath)}`,
                 `--load-extension=${path.resolve(options.extensionPath)}`]});
         const worker = context.serviceWorkers()[0] || await context.waitForEvent('serviceworker');
-        const page = await context.newPage(), url = `chrome-extension://${worker.url().split('/')[2]}/newtab.html`;
+        const traceLoads = process.env.NATIVE_TRACE_LOADS === '1';
+        const page = await context.newPage(), url = `chrome-extension://${worker.url().split('/')[2]}/newtab.html${traceLoads ? '?nativeLoadTrace=1' : ''}`;
+        if (traceLoads) captureContentLoads = async () => {
+            try {
+                metrics.contentLoads = await page.evaluate(() => document.querySelector('.affineNativeHost')?.nativeLoadDiagnostics?.snapshot() ?? null);
+            } catch (error) {metrics.contentLoadsError = error.message;}
+        };
         page.on('pageerror', error => errors.push(error.message));
         await page.addInitScript(() => {
             if (location.protocol !== 'chrome-extension:') return;
@@ -155,6 +161,7 @@ process.once('message', async options => {
             }
             return true;
         });
+        await captureContentLoads?.();
         if (options.mode !== 'document') {
             await page.locator('affine-edgeless-root').evaluate(root => root.service.viewport.setViewport(1, [400, 200]));
             await expect.poll(() => ws.locator('.affineNativeHost').evaluate(host => Number(host.dataset.nativeContentLoading))).toBe(0);
@@ -191,7 +198,7 @@ process.once('message', async options => {
         metrics.requestedReferences = options.referenceCount; metrics.librarySize = options.librarySize || 0;
         metrics.measurementScope = 'workspaceReady retains the baseline definition: canonical loading, import, projection and native shell/controller readiness. Initial visible content is measured separately before initial resource capture/edit/save. Mixed content kinds are explicitly revealed later; this replaces the old eager firstMixedContentReady phase and is not a directly comparable latency. Projection measures are elapsed wall time, not CPU. Read counts count requests, not returned rows. Heap excludes worker. Pan starts from restored initial camera.';
         ok = errors.length === 0;
-    } catch (error) {errors.push(error.stack || error.message);}
+    } catch (error) {errors.push(error.stack || error.message); await captureContentLoads?.();}
     process.send({type: 'result', result: {ok, metrics, errors}});
     try {await context?.close();} catch (error) {process.exitCode = 1; console.error(error.message);}
     process.disconnect();

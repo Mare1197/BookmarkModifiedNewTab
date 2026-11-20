@@ -25,6 +25,7 @@ import {createReferenceDataSource} from './referenceDataSource';
 import {createReferenceHydration} from './referenceHydration';
 import {createReferenceResources} from './referenceResources';
 import {loadReferenceContent} from './referenceContent';
+import {createReferenceLoadDiagnostics, type ReferenceLoadDiagnostics} from './referenceLoadDiagnostics';
 import {observeCanvasReferences} from './referenceVisibility';
 import type {PageCommand, PageMode} from '../../workspace/pageTypes';
 import '@toeverything/theme/style.css';
@@ -41,6 +42,17 @@ export async function mountPageProjection(container: HTMLElement, snapshot: Page
 async function buildPageProjection(container: HTMLElement, snapshot: PageSnapshot, mode: PageMode, input: ReferenceInput,
     onCommand: (command: PageCommand) => void, scope: NativeMountScope, options: NativeMountOptions) {
     scope.check();
+    const traceEnabled = new URLSearchParams(container.ownerDocument.defaultView?.location.search).get('nativeLoadTrace') === '1';
+    const loadDiagnostics = traceEnabled ? createReferenceLoadDiagnostics() : undefined;
+    if (loadDiagnostics) {
+        const diagnosticHost = container as HTMLElement & {nativeLoadDiagnostics?: {snapshot: ReferenceLoadDiagnostics['snapshot']}};
+        const reader = {snapshot: loadDiagnostics.snapshot};
+        diagnosticHost.nativeLoadDiagnostics = reader;
+        scope.own(() => {
+            if (diagnosticHost.nativeLoadDiagnostics === reader) delete diagnosticHost.nativeLoadDiagnostics;
+            loadDiagnostics.dispose();
+        });
+    }
     const plan = planNativeProjection(snapshot);
     const geometryState = createNativeReferenceGeometry(snapshot.placements, plan.collapsedByPlacement);
     const groupByPlacement = new Map(plan.placements.map(row => [row.p.id, row.presentation.groupId]));
@@ -52,10 +64,10 @@ async function buildPageProjection(container: HTMLElement, snapshot: PageSnapsho
         container.dataset.nativeContentPeak = String(Math.max(Number(container.dataset.nativeContentPeak), loading));
     }});
     const resources = createReferenceResources({session: input.session, hydration,
-        load: (entityId, signal) => loadReferenceContent(entityId, signal, input)});
+        load: (entityId, signal, occurrenceId) => loadReferenceContent(entityId, signal, input, loadDiagnostics ? {loads: loadDiagnostics, occurrenceId} : undefined)});
     scope.own(() => resources.dispose());
     const visibility = new Map<string, Set<() => void>>();
-    const context: ReferenceContext = {...input, data, resources, canvasVisibility: new Map(),
+    const context: ReferenceContext = {...input, data, resources, loadDiagnostics, canvasVisibility: new Map(),
         subscribeVisibility(id, listener) {
             const listeners = visibility.get(id) || new Set(); listeners.add(listener); visibility.set(id, listeners);
             return () => {listeners.delete(listener); if (!listeners.size) visibility.delete(id);};

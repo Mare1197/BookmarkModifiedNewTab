@@ -47,6 +47,10 @@ complete AFFiNE parity or completion of the entire product specification.
 - Pages/layout controls load on first opening and retain unfinished geometry edits when
   closed and reopened; incomplete native reference creation fails preparation with Retry.
 
+An opt-in [reference content load trace](docs/IMAGE_REVEAL_DIAGNOSTICS.md) is prepared
+locally to investigate the remaining 1,000-card image-reveal failures. Its tests, build
+and browser verification are pending the Windows restart; the failures remain open.
+
 The extension does not calculate accumulated total-open time and does not require an AI provider.
 
 ## Brain, workspace and recovery

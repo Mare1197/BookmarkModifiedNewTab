@@ -1,7 +1,7 @@
 const {test, expect} = require('./fixtures');
 const {makeNativeBoardFixture, seedNativeBoardFixture} = require('../helpers/nativeBoardFixture');
 
-async function openFixture(context, extensionId, mode, measureIndexes = false) {
+async function openFixture(context, extensionId, mode, measureIndexes = false, traceLoads = false) {
     const page = await context.newPage();
     await page.setViewportSize({width: 1584, height: 1024});
     await page.addInitScript(measure => {
@@ -17,7 +17,7 @@ async function openFixture(context, extensionId, mode, measureIndexes = false) {
             }
         }).observe(document, {childList: true, subtree: true});
     }, measureIndexes);
-    await page.goto(`chrome-extension://${extensionId}/newtab.html`);
+    await page.goto(`chrome-extension://${extensionId}/newtab.html${traceLoads ? '?nativeLoadTrace=1' : ''}`);
     const boards = () => page.frameLocator('iframe[title="Browser OS desktop"]').getByRole('button', {name: 'Boards', exact: true}).click();
     await boards(); await expect(page.locator('.workspaceTitlebar')).toBeVisible(); await page.reload();
     await seedNativeBoardFixture(page, makeNativeBoardFixture(50, mode)); await page.reload(); await boards();
@@ -40,10 +40,32 @@ for (const mode of ['document', 'canvas', 'mixed']) test(`native ${mode} keeps c
     await expect(ws.locator('[data-placement-id="native:placement:49"] .brainRichBlock')).toHaveCount(0);
     expect(await ws.locator('.brainRichBlock').count()).toBeLessThan(mode === 'mixed' ? 40 : 20);
     const host = ws.locator('.affineNativeHost');
+    expect(await host.evaluate(node => node.nativeLoadDiagnostics)).toBeUndefined();
     await expect.poll(async () => Number(await host.getAttribute('data-native-content-loading'))).toBe(0);
     const peak = Number(await host.getAttribute('data-native-content-peak'));
     expect(peak).toBeGreaterThan(0); expect(peak).toBeLessThanOrEqual(4);
     expect(Number(await host.getAttribute('data-native-content-hydrated'))).toBeLessThan(mode === 'mixed' ? 100 : 50);
+});
+
+test('opt-in reference diagnostics trace image reveal and release their workspace reader', async ({context, extensionId}) => {
+    const {page, ws} = await openFixture(context, extensionId, 'canvas', false, true);
+    const host = ws.locator('.affineNativeHost');
+    await ws.locator('affine-edgeless-root').evaluate(root => root.service.viewport.setViewport(1, [1370, 110]));
+    await expect(ws.locator('[data-placement-id="native:placement:3"] img')).toBeAttached();
+    const snapshot = await host.evaluate(node => node.nativeLoadDiagnostics.snapshot());
+    const image = snapshot.completed.filter(record => record.entityId === 'native:object:00003');
+    for (const phase of ['entity', 'asset', 'raster', 'render', 'attach']) {
+        expect(image.some(record => record.phase === phase && record.status === 'complete' && record.occurrenceId === 'canvas:native:placement:3')).toBe(true);
+    }
+    expect(snapshot.active.length).toBeLessThanOrEqual(64);
+    expect(snapshot.completed.length).toBeLessThanOrEqual(200);
+    expect(image.every(record => record.durationMs >= 0)).toBe(true);
+    await host.evaluate(node => {window.tracedNativeHost = node; window.tracedNativeReader = node.nativeLoadDiagnostics;});
+    await page.getByRole('button', {name: 'Return to desktop', exact: true}).click();
+    await expect(ws).not.toBeVisible();
+    expect(await page.evaluate(() => window.tracedNativeHost.nativeLoadDiagnostics)).toBeUndefined();
+    const released = await page.evaluate(() => window.tracedNativeReader.snapshot());
+    expect(released.active).toEqual([]); expect(released.completed).toEqual([]);
 });
 
 test('dirty rich-text resource survives actual native disconnect and reconnect', async ({context, extensionId}) => {

@@ -6,10 +6,20 @@ import {loadConversationMessages} from './conversationMessages';
 import {updateTask} from './workspaceRepository';
 import {setMemoryPolicy} from './brainRepository';
 import type {ReferenceContext} from './blocksuiteBrainReference';
+import type {ReferenceLoadDiagnostics, ReferenceLoadPhase} from './referenceLoadDiagnostics';
 
 export interface ReferenceContent {element: HTMLElement; dispose(): void}
 export function loadReferenceContent(entityId: string, signal: AbortSignal,
-    context: Pick<ReferenceContext, 'session' | 'onAction' | 'onError'>): Promise<ReferenceContent> {
+    context: Pick<ReferenceContext, 'session' | 'onAction' | 'onError'>,
+    diagnostic?: {loads: ReferenceLoadDiagnostics; occurrenceId: string}): Promise<ReferenceContent> {
+    const begin = (phase: ReferenceLoadPhase) => diagnostic?.loads.begin(entityId, diagnostic.occurrenceId, phase);
+    function read<T>(phase: ReferenceLoadPhase, action: () => Promise<T>): Promise<T> {
+        const finish = begin(phase);
+        if (!finish) return action();
+        try {
+            return action().then(value => {finish('complete'); return value;}, error => {finish('error'); throw error;});
+        } catch (error) {finish('error'); throw error;}
+    }
     const element = document.createElement('div'), body = document.createElement('div'), actions = document.createElement('div');
     element.append(body, actions);
     let closed = false, pending = true, reading = false, richDispose: (() => void) | undefined, assetUrl: string | undefined;
@@ -17,11 +27,12 @@ export function loadReferenceContent(entityId: string, signal: AbortSignal,
     const clearAsset = () => {if (assetUrl) {URL.revokeObjectURL(assetUrl); assetUrl = undefined;}};
     const dispose = () => {
         if (closed) return; closed = true; signal.removeEventListener('abort', abort);
+        begin('dispose')?.('released');
         richDispose?.(); richDispose = undefined; clearAsset(); element.remove();
         // Let the first pending read settle before releasing its concurrency slot.
         if (!pending || !reading) subscription.unsubscribe();
     };
-    const abort = () => {dispose(); if (!reading) rejectFirst(new DOMException('Content load cancelled', 'AbortError'));};
+    const abort = () => {begin('abort')?.('aborted'); dispose(); if (!reading) rejectFirst(new DOMException('Content load cancelled', 'AbortError'));};
     const button = (label: string, action: () => void | Promise<void>) => {
         const control = document.createElement('button'); control.type = 'button'; control.textContent = label;
         control.onclick = () => {void Promise.resolve().then(action).catch(context.onError);}; return control;
@@ -30,11 +41,11 @@ export function loadReferenceContent(entityId: string, signal: AbortSignal,
         reading = true;
         try {
             if (closed || signal.aborted) throw new DOMException('Content load cancelled', 'AbortError');
-            const entity = await db.entities.get(entityId);
-            const messages = entity?.type === 'conversation' ? await loadConversationMessages(entityId) : [];
-            const task = entity?.type === 'task' ? await db.tasks.where('entityId').equals(entityId).first() : undefined;
-            const asset = entity && ['file', 'image', 'screenshot'].includes(entity.type) ? await loadPageAsset(entityId) : undefined;
-            const raster = asset ? await isSafeRaster(asset) : false;
+            const entity = await read('entity', () => db.entities.get(entityId));
+            const messages = entity?.type === 'conversation' ? await read('messages', () => loadConversationMessages(entityId)) : [];
+            const task = entity?.type === 'task' ? await read('task', () => db.tasks.where('entityId').equals(entityId).first()) : undefined;
+            const asset = entity && ['file', 'image', 'screenshot'].includes(entity.type) ? await read('asset', () => loadPageAsset(entityId)) : undefined;
+            const raster = asset ? await read('raster', () => isSafeRaster(asset)) : false;
             if (closed || signal.aborted) throw new DOMException('Content load cancelled', 'AbortError');
             return {entity, messages, task, asset, raster};
         } catch (error) {
@@ -43,6 +54,7 @@ export function loadReferenceContent(entityId: string, signal: AbortSignal,
         } finally {reading = false; if (closed) subscription.unsubscribe();}
     }).subscribe({next: ({entity, messages, task, asset, raster}) => {
         if (closed || signal.aborted) return;
+        const finishRender = begin('render');
         try {
             if (!entity) {
                 if (!context.session.isDirty(entityId)) {richDispose?.(); richDispose = undefined; clearAsset(); body.textContent = 'Object unavailable'; actions.replaceChildren();}
@@ -80,8 +92,9 @@ export function loadReferenceContent(entityId: string, signal: AbortSignal,
                         () => setMemoryPolicy(entityId, {excludedFromAI: !memory.excludedFromAI})));
                 }
             }
+            finishRender?.('complete');
             if (pending) {pending = false; resolveFirst({element, dispose});}
-        } catch (error) {if (pending) rejectFirst(error); else context.onError(error); dispose();}
+        } catch (error) {finishRender?.('error'); if (pending) rejectFirst(error); else context.onError(error); dispose();}
     }, error: error => {if (pending) rejectFirst(error); else if (!closed) context.onError(error); dispose();}});
     let resolveFirst: (resource: ReferenceContent) => void = () => {};
     const ready = new Promise<ReferenceContent>((resolve, reject) => {resolveFirst = resolve; rejectFirst = reject;});

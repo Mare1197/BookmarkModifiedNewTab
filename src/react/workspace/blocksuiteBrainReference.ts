@@ -6,6 +6,7 @@ import type {ContentSession} from './pageEditorSession';
 import type {createReferenceDataSource} from './referenceDataSource';
 import type {createReferenceResources} from './referenceResources';
 import type {ReferenceContent} from './referenceContent';
+import type {ReferenceLoadDiagnostics} from './referenceLoadDiagnostics';
 import {observeDocumentReference} from './referenceVisibility';
 
 export const PageReferenceSchema = defineBlockSchema({
@@ -25,6 +26,7 @@ export interface ReferenceInput {
     collapsed: Set<string>; colors: Map<string, string>;
 }
 export interface ReferenceContext extends ReferenceInput {
+    loadDiagnostics?: ReferenceLoadDiagnostics;
     data: ReturnType<typeof createReferenceDataSource>;
     resources: ReturnType<typeof createReferenceResources<ReferenceContent>>;
     canvasVisibility: Map<string, boolean>;
@@ -68,8 +70,12 @@ export class WorkspaceReferenceBlock extends BlockComponent<ReferenceModel> {
         const updateShell = () => {this.heading.textContent = ctx.data.readShell(entityId).title;};
         updateShell(); this.cleanups.push(ctx.data.subscribe(ids => {if (ids.includes(entityId)) updateShell();}));
         const connection = ctx.resources.connect((canvas ? 'canvas:' : 'document:') + placementId, entityId, resource => {
-            this.body.replaceChildren(...(resource ? [resource.element] : []));
-            this.card.dataset.hydrated = String(Boolean(resource));
+            const finishAttach = ctx.loadDiagnostics?.begin(entityId, (canvas ? 'canvas:' : 'document:') + placementId, 'attach');
+            try {
+                this.body.replaceChildren(...(resource ? [resource.element] : []));
+                this.card.dataset.hydrated = String(Boolean(resource));
+                finishAttach?.(resource ? 'complete' : 'released');
+            } catch (error) {finishAttach?.('error'); throw error;}
         }, placementId, ctx.collapsed.has(placementId));
         const updatePresentation = () => {
             const collapsed = ctx.collapsed.has(placementId), note = this.doc.getParent(this.model) as {xywh?: string} | null;
