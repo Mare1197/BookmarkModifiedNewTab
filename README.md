@@ -47,9 +47,10 @@ complete AFFiNE parity or completion of the entire product specification.
 - Pages/layout controls load on first opening and retain unfinished geometry edits when
   closed and reopened; incomplete native reference creation fails preparation with Retry.
 
-An opt-in [reference content load trace](docs/IMAGE_REVEAL_DIAGNOSTICS.md) is prepared
-locally to investigate the remaining 1,000-card image-reveal failures. Its tests, build
-and browser verification are pending the Windows restart; the failures remain open.
+Opt-in [reference content load diagnostics](docs/IMAGE_REVEAL_DIAGNOSTICS.md) record
+object/occurrence IDs, stage timings and outcomes in bounded memory. They are disabled
+by default and cleared on workspace close. The intermittent 1,000-card Mixed-mode
+image-reveal failure remains open; its captured trace is included in the report.
 
 The extension does not calculate accumulated total-open time and does not require an AI provider.
 
@@ -163,9 +164,13 @@ recorded 53 passes, two failures and five skips. Five Windows cancellation sampl
 mode on the earlier scheduling build gave medians of 316, 242 and 252 ms.
 [Performance report](docs/NATIVE_STARTUP_FOLLOWUP.md).
 
-The published build passed 308 source tests and 61 browser tests. The packaged
-extension is available from GitHub Actions. [Run](https://github.com/Mare1197/BookmarkModifiedNewTab/actions/runs/44227156870)
-· [Package](https://github.com/Mare1197/BookmarkModifiedNewTab/actions/runs/44227156870/artifacts/14393602442).
+The November 20 local verification passed 311 source tests, all 62 serial browser
+tests without retries, lint/type checks and the 41.45 MB production build. Traced
+1,000-card probes recorded six passes, one Mixed-mode image failure and three skips;
+one untraced control per mode passed. These controls are single pilots, and the
+intermittent failure is not fixed. [Diagnostic evidence](docs/IMAGE_REVEAL_DIAGNOSTICS.md).
+The [GitHub verification workflow](https://github.com/Mare1197/BookmarkModifiedNewTab/actions/workflows/static.yml)
+produces a packaged extension after a successful run.
 
 The earlier October 26 local search index provides Pause/Resume, Retry/Rebuild, exact
 fallback, background processing and cache-free exports. Its [verification report](docs/LOCAL_SEARCH_INDEX_VERIFICATION.md)
@@ -317,6 +322,7 @@ Analysis view.
 - [Current Unified Brain implementation and limitations](docs/UNIFIED_BRAIN_STATUS.md)
 - [Reliability batch verification](docs/RELIABILITY_BATCH_VERIFICATION.md)
 - [Workspace recovery verification](docs/WORKSPACE_RECOVERY_VERIFICATION.md)
+- [Reference load diagnostics and November 20 verification](docs/IMAGE_REVEAL_DIAGNOSTICS.md)
 - [Complete product handoff](docs/AI_BUILDER_PRODUCT_HANDOFF.md)
 - [Current-build instructions for another AI builder](docs/AI_BUILDER_CURRENT_BUILD.md)
 - [Connected knowledge specification](docs/CONNECTED_KNOWLEDGE_ADDENDUM.md)

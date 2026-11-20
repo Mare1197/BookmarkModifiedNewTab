@@ -1,10 +1,10 @@
 # New Tab OS — instructions to reproduce the current build
 
-Updated 18 November 2026. The reference is `MiniPCCodex/native-startup-performance` in `Mare1197/BookmarkModifiedNewTab`. The final build prepares complete native models, yields during construction, validates references in batches and retains connector style drafts across route saves. At 1,000 references, Document passed five times with 7.39-second median readiness. Canvas and Mixed opened and each recorded an image-reveal timeout. The earlier Windows scheduling build gave cancellation confirmation medians of 316, 242 and 252 ms for Document, Canvas and Mixed. Unrelated-library memory and save scaling remain follow-up work. [Native startup report](NATIVE_STARTUP_FOLLOWUP.md).
+Updated 20 November 2026. The reference is `MiniPCCodex/native-startup-performance` in `Mare1197/BookmarkModifiedNewTab`. The build prepares complete native models, yields during construction, validates references in batches and retains connector style drafts across route saves. It now includes optional bounded load diagnostics without storing object content. The latest 1,000-card diagnostic runs passed five Canvas samples, passed one Mixed sample and reproduced the intermittent Mixed image-reveal failure on the second sample; three subsequent samples were skipped. One untraced control per mode passed. The failure remains open. Unrelated-library memory and save scaling remain follow-up work. [Diagnostic verification](IMAGE_REVEAL_DIAGNOSTICS.md), [earlier startup measurements](NATIVE_STARTUP_FOLLOWUP.md).
 
 Give this document to a builder when asking for the same functional application. It defines behavior and app logic without prescribing a technology stack or visual design. The [full product handoff](AI_BUILDER_PRODUCT_HANDOFF.md) and [connected knowledge requirements](CONNECTED_KNOWLEDGE_ADDENDUM.md) retain the broader requested roadmap. Features under “Remaining requested features” below are future work, not requirements already satisfied by this reference build.
 
-The reference build passed 308 source tests and 61 browser tests. [GitHub verification](https://github.com/Mare1197/BookmarkModifiedNewTab/actions/runs/44227156870).
+Local verification passed 311 source tests, all 62 serial browser tests without retries, lint/type checks and the 41.45 MB production build. [GitHub verification workflow](https://github.com/Mare1197/BookmarkModifiedNewTab/actions/workflows/static.yml).
 
 ## Builder instructions
 
@@ -129,6 +129,8 @@ Same-count cross-tab changes update their affected scopes. Preserve prior succes
 Optional views load when used. Failed view loading must leave navigation available and provide Retry/confirmed Reload. Warn about unsaved edits before reload. Initialization failures must be visible and retryable.
 
 Broad substring/title/custom-order queries still have scope-sized scan/metadata costs. Active boards retain their complete reference dataset; the native workspace loads expensive bodies only when needed. Explicit complete operations still read their full intended scope. Do not promise unlimited native-editor capacity or hardware-independent latency. Reproduce measurements using isolated synthetic profiles; report sample count, variability, complete model counts, loaded body resources, read volume and unavailable metrics honestly. Library size and references in one native workspace are different capacity measures.
+
+Optional workspace diagnostics record stable object and occurrence IDs, load stages, outcomes and elapsed times in bounded memory. Keep them disabled by default, exclude content and credentials, clear them when the workspace closes and preserve normal loading/cancellation behavior. Diagnostic timings do not prove a cause or certify capacity, and a post-timeout image appearing does not erase the failed assertion.
 
 ## 10. Roles of the five product references
 
