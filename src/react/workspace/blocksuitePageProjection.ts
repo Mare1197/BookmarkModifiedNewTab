@@ -42,8 +42,9 @@ export async function mountPageProjection(container: HTMLElement, snapshot: Page
 async function buildPageProjection(container: HTMLElement, snapshot: PageSnapshot, mode: PageMode, input: ReferenceInput,
     onCommand: (command: PageCommand) => void, scope: NativeMountScope, options: NativeMountOptions) {
     scope.check();
-    const traceEnabled = new URLSearchParams(container.ownerDocument.defaultView?.location.search).get('nativeLoadTrace') === '1';
-    const loadDiagnostics = traceEnabled ? createReferenceLoadDiagnostics() : undefined;
+    const query = new URLSearchParams(container.ownerDocument.defaultView?.location.search);
+    const tracePlacementId = query.get('nativeLoadPlacement') || undefined;
+    const loadDiagnostics = query.get('nativeLoadTrace') === '1' ? createReferenceLoadDiagnostics({placementId: tracePlacementId}) : undefined;
     if (loadDiagnostics) {
         const diagnosticHost = container as HTMLElement & {nativeLoadDiagnostics?: {snapshot: ReferenceLoadDiagnostics['snapshot']}};
         const reader = {snapshot: loadDiagnostics.snapshot};
@@ -59,7 +60,8 @@ async function buildPageProjection(container: HTMLElement, snapshot: PageSnapsho
     let acknowledgedPlacements = plan.placementsById;
     const data = createReferenceDataSource(workspaceClient, snapshot, input.onError); scope.own(() => data.dispose());
     container.dataset.nativeContentLoading = '0'; container.dataset.nativeContentHydrated = '0'; container.dataset.nativeContentPeak = '0';
-    const hydration = createReferenceHydration({maxConcurrent: 4, onError: input.onError, onState: ({loading, hydrated}) => {
+    const hydration = createReferenceHydration({maxConcurrent: 4, trace: tracePlacementId ? loadDiagnostics : undefined,
+        onError: input.onError, onState: ({loading, hydrated}) => {
         container.dataset.nativeContentLoading = String(loading); container.dataset.nativeContentHydrated = String(hydrated);
         container.dataset.nativeContentPeak = String(Math.max(Number(container.dataset.nativeContentPeak), loading));
     }});
@@ -185,7 +187,11 @@ async function buildPageProjection(container: HTMLElement, snapshot: PageSnapsho
                 if (!note) return [];
                 const [x, y, width, height] = JSON.parse(note.xywh) as number[];
                 return [{id: p.id, x: x!, y: y!, width: width!, height: height!}];
-            }), (id, visible) => {context.canvasVisibility.set(id, visible); visibility.get(id)?.forEach(listener => listener());});
+            }), (id, visible) => {
+                if (loadDiagnostics && id === tracePlacementId) loadDiagnostics.record('canvas:' + id, {phase: 'visibility', visible});
+                context.canvasVisibility.set(id, visible);
+                visibility.get(id)?.forEach(listener => listener());
+            });
             disposables.push({dispose: canvasVisibility});
             const select = () => {
                 const queue = [...gfx.selection.selectedIds], seen = new Set<string>(), selected: string[] = [];

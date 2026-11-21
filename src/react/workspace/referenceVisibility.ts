@@ -25,13 +25,14 @@ export function observeCanvasReferences(viewport: Pick<Viewport, 'center' | 'wid
     const subscriptions = [viewport.viewportUpdated.on(update), viewport.sizeUpdated.on(update)]; update();
     return Object.assign(() => {closed = true; subscriptions.forEach(subscription => subscription.dispose()); previous.clear();}, {refresh: update});
 }
-const documentPanes = new WeakMap<HTMLElement, {observer: IntersectionObserver; targets: Map<Element, (visible: boolean) => void>}>();
-export function observeDocumentReference(node: HTMLElement, pane: HTMLElement, publish: (visible: boolean) => void) {
+type DocumentVisibilityCallback = (visible: boolean, intersectionAt: number) => void;
+const documentPanes = new WeakMap<HTMLElement, {observer: IntersectionObserver; targets: Map<Element, DocumentVisibilityCallback>}>();
+export function observeDocumentReference(node: HTMLElement, pane: HTMLElement, publish: DocumentVisibilityCallback) {
     let owner = documentPanes.get(pane);
     if (!owner) {
-        const targets = new Map<Element, (visible: boolean) => void>();
+        const targets = new Map<Element, DocumentVisibilityCallback>();
         const observer = new IntersectionObserver(entries => {
-            for (const entry of entries) targets.get(entry.target)?.(entry.isIntersecting);
+            for (const entry of entries) targets.get(entry.target)?.(entry.isIntersecting, entry.time);
         }, {root: pane, rootMargin: '200px', threshold: 0});
         owner = {observer, targets}; documentPanes.set(pane, owner);
     }

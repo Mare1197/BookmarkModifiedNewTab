@@ -9,15 +9,31 @@ interface ActiveLoad {
 }
 interface CompletedLoad extends ActiveLoad {finishedAt: number; durationMs: number; status: Outcome}
 
-export function createReferenceLoadDiagnostics(options: {historyLimit?: number; activeLimit?: number; now?: () => number} = {}) {
-    const {historyLimit = 200, activeLimit = 64, now = () => performance.now()} = options;
+export type ReferenceRevealEvent =
+    | {phase: 'visibility'; visible: boolean; intersectionAt?: number}
+    | {phase: 'eligible'; eligible: boolean; activeLoads: number}
+    | {phase: 'slot'; activeLoads: number};
+
+export function createReferenceLoadDiagnostics(options: {historyLimit?: number; activeLimit?: number; placementId?: string; now?: () => number} = {}) {
+    const {historyLimit = 200, activeLimit = 64, placementId, now = () => performance.now()} = options;
     for (const limit of [historyLimit, activeLimit]) {
         if (!Number.isSafeInteger(limit) || limit < 1 || limit > 10000) throw new Error('Invalid diagnostic limit');
     }
     const active = new Map<number, ActiveLoad>();
     const completed: CompletedLoad[] = [];
+    const revealEvents: Array<ReferenceRevealEvent & {occurrenceId: string; at: number}> = [];
+    const documentId = placementId && 'document:' + placementId;
+    const canvasId = placementId && 'canvas:' + placementId;
+    const tracks = (occurrenceId: string) => !closed && Boolean(placementId) && (occurrenceId === documentId || occurrenceId === canvasId);
     let nextId = 0, closed = false, droppedActive = 0, droppedHistory = 0;
+    let droppedRevealEvents = 0;
     return {
+        tracks,
+        record(occurrenceId: string, event: ReferenceRevealEvent) {
+            if (!tracks(occurrenceId)) return;
+            revealEvents.push({...event, occurrenceId, at: now()});
+            if (revealEvents.length > historyLimit) {revealEvents.shift(); droppedRevealEvents++;}
+        },
         begin(entityId: string, occurrenceId: string, phase: ReferenceLoadPhase): (status: Outcome) => void {
             if (closed) return () => {};
             const record: ActiveLoad = {id: ++nextId, entityId, occurrenceId, phase, startedAt: now()};
@@ -36,9 +52,10 @@ export function createReferenceLoadDiagnostics(options: {historyLimit?: number; 
         snapshot() {
             const time = now();
             return {active: [...active.values()].map(record => ({...record, elapsedMs: Math.max(0, time - record.startedAt)})),
-                completed: completed.map(record => ({...record})), droppedActive, droppedHistory};
+                completed: completed.map(record => ({...record})), droppedActive, droppedHistory,
+                revealEvents: revealEvents.map(event => ({...event})), droppedRevealEvents};
         },
-        dispose() {closed = true; active.clear(); completed.length = 0;}
+        dispose() {closed = true; active.clear(); completed.length = 0; revealEvents.length = 0;}
     };
 }
 export type ReferenceLoadDiagnostics = ReturnType<typeof createReferenceLoadDiagnostics>;

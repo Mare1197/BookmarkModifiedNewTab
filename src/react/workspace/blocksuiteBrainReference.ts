@@ -69,8 +69,9 @@ export class WorkspaceReferenceBlock extends BlockComponent<ReferenceModel> {
         this.card.replaceChildren(handle, this.content);
         const updateShell = () => {this.heading.textContent = ctx.data.readShell(entityId).title;};
         updateShell(); this.cleanups.push(ctx.data.subscribe(ids => {if (ids.includes(entityId)) updateShell();}));
-        const connection = ctx.resources.connect((canvas ? 'canvas:' : 'document:') + placementId, entityId, resource => {
-            const finishAttach = ctx.loadDiagnostics?.begin(entityId, (canvas ? 'canvas:' : 'document:') + placementId, 'attach');
+        const occurrenceId = (canvas ? 'canvas:' : 'document:') + placementId;
+        const connection = ctx.resources.connect(occurrenceId, entityId, resource => {
+            const finishAttach = ctx.loadDiagnostics?.begin(entityId, occurrenceId, 'attach');
             try {
                 this.body.replaceChildren(...(resource ? [resource.element] : []));
                 this.card.dataset.hydrated = String(Boolean(resource));
@@ -91,8 +92,10 @@ export class WorkspaceReferenceBlock extends BlockComponent<ReferenceModel> {
         this.cleanups.push(() => connection.disconnect());
         if (!canvas) {
             const pane = this.closest<HTMLElement>('.brainNativePane');
-            if (pane) this.cleanups.push(observeDocumentReference(this.card, pane,
-                visible => connection.setVisible(visible)));
+            if (pane) this.cleanups.push(observeDocumentReference(this.card, pane, (visible, intersectionAt) => {
+                if (ctx.loadDiagnostics?.tracks(occurrenceId)) ctx.loadDiagnostics.record(occurrenceId, {phase: 'visibility', visible, intersectionAt});
+                connection.setVisible(visible);
+            }));
         }
     }
     override disconnectedCallback() {

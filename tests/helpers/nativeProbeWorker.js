@@ -3,6 +3,7 @@ const {performance} = require('node:perf_hooks');
 const {chromium, expect} = require('@playwright/test');
 const {makeNativeBoardFixture} = require('./nativeBoardFixture');
 const {seedLargeLibrary, makeLargeLibraryFixture} = require('./largeLibraryFixture');
+const {installNativeImageReveal} = require('./nativeImageReveal');
 
 process.once('message', async options => {
     const metrics = {}, errors = []; let context, captureContentLoads;
@@ -19,7 +20,9 @@ process.once('message', async options => {
                 `--load-extension=${path.resolve(options.extensionPath)}`]});
         const worker = context.serviceWorkers()[0] || await context.waitForEvent('serviceworker');
         const traceLoads = process.env.NATIVE_TRACE_LOADS === '1';
-        const page = await context.newPage(), url = `chrome-extension://${worker.url().split('/')[2]}/newtab.html${traceLoads ? '?nativeLoadTrace=1' : ''}`;
+        const imagePlacementId = 'native:placement:3';
+        const traceQuery = traceLoads ? '?nativeLoadTrace=1&nativeLoadPlacement=' + encodeURIComponent(imagePlacementId) : '';
+        const page = await context.newPage(), url = `chrome-extension://${worker.url().split('/')[2]}/newtab.html${traceQuery}`;
         if (traceLoads) captureContentLoads = async () => {
             try {
                 metrics.contentLoads = await page.evaluate(() => document.querySelector('.affineNativeHost')?.nativeLoadDiagnostics?.snapshot() ?? null);
@@ -134,28 +137,58 @@ process.once('message', async options => {
         // Explicit reveal is a separate phase; deferred offscreen content is
         // intentionally absent at initial readiness, unlike the frozen baseline.
         await measure('revealMixedContentKinds', async () => {
-            const scope = ws.locator(options.mode === 'canvas' ? 'edgeless-editor' : 'page-editor');
+            const editor = options.mode === 'canvas' ? 'edgeless-editor' : 'page-editor';
+            const scope = ws.locator(editor);
             for (const index of [1, 2, 3]) {
                 const card = scope.locator(`[data-placement-id="native:placement:${index}"]`);
-                if (options.mode === 'canvas') await page.locator('affine-edgeless-root').evaluate((root, i) =>
-                    root.service.viewport.setViewport(1, [i * 400 + 170, 110]), index);
-                else await card.scrollIntoViewIfNeeded();
-                if (index === 1) await expect(card).toContainText('Message 2 for 1');
-                if (index === 2) await expect(card.getByLabel('Task status')).toBeAttached();
-                if (index === 3) {
-                    try {await expect(card.locator('img')).toBeAttached();}
-                    catch (error) {
-                        metrics.revealFailure = await page.evaluate(() => {
+                const traceImage = traceLoads && index === 3;
+                let scrollCompletionClock, assertion, revealFailed = false;
+                if (traceImage) await page.evaluate(installNativeImageReveal, {editor, placementId: imagePlacementId});
+                try {
+                    if (options.mode === 'canvas') await page.locator('affine-edgeless-root').evaluate((root, i) =>
+                        root.service.viewport.setViewport(1, [i * 400 + 170, 110]), index);
+                    else await card.scrollIntoViewIfNeeded();
+                    if (index === 1) await expect(card).toContainText('Message 2 for 1');
+                    if (index === 2) await expect(card.getByLabel('Task status')).toBeAttached();
+                    if (index === 3) {
+                        if (traceImage) {
+                            const runnerBefore = performance.now();
+                            const pageAt = await page.evaluate(() => window.nativeImageRevealProbe.markScrollComplete());
+                            scrollCompletionClock = {runnerBefore, pageAt, runnerAfter: performance.now()};
+                        }
+                        const startedAt = performance.now();
+                        let passed = false;
+                        try {await expect(card.locator('img')).toBeAttached({timeout: 5000}); passed = true;}
+                        finally {
+                            const finishedAt = performance.now();
+                            assertion = {startedAt, finishedAt, durationMs: finishedAt - startedAt, passed};
+                        }
+                    }
+                } catch (error) {
+                    revealFailed = true;
+                    throw error;
+                } finally {
+                    if (traceImage) {
+                        try {
+                            const runnerBefore = performance.now();
+                            const timeline = await page.evaluate(() => window.nativeImageRevealProbe.finish());
+                            metrics.imageReveal = {...timeline, scrollCompletionClock, assertion,
+                                captureClock: {runnerBefore, pageAt: timeline.capturedAt, runnerAfter: performance.now()}};
+                        } catch (error) {metrics.imageRevealCaptureError = error.message;}
+                    }
+                    if (revealFailed && index === 3) {
+                        // Capture geometry after the timeline so its layout reads cannot affect the recorded window.
+                        try {metrics.revealFailure = await page.evaluate(() => {
                             const root = document.querySelector('affine-edgeless-root'), viewport = root?.service.viewport;
                             const cards = [...document.querySelectorAll('[data-placement-id="native:placement:3"]')];
                             const block = root?.doc.getBlocks().find(b => b.flavour === 'affine:embed-workspace-object' && b.placementId === 'native:placement:3');
                             return {camera: viewport && {center: {...viewport.center}, width: viewport.width, height: viewport.height, zoom: viewport.zoom},
                                 geometry: block && root.doc.getParent(block)?.xywh,
-                                cards: cards.map(node => ({hydrated: node.dataset.hydrated, hidden: node.querySelector('.brainReferenceBody')?.hidden,
-                                    text: node.textContent, html: node.querySelector('.brainReferenceBody')?.innerHTML.slice(0, 1000), rect: node.getBoundingClientRect().toJSON()})),
+                                cards: cards.map(node => ({pane: node.closest('page-editor,edgeless-editor')?.localName,
+                                    hydrated: node.dataset.hydrated, hidden: node.querySelector('.brainReferenceBody')?.hidden,
+                                    imageAttached: Boolean(node.querySelector('img')), rect: node.getBoundingClientRect().toJSON()})),
                                 host: {...document.querySelector('.affineNativeHost')?.dataset}, stats: window.nativeProbeStats};
-                        });
-                        throw error;
+                        });} catch (error) {metrics.revealFailureCaptureError = error.message;}
                     }
                 }
             }
@@ -198,7 +231,7 @@ process.once('message', async options => {
         metrics.requestedReferences = options.referenceCount; metrics.librarySize = options.librarySize || 0;
         metrics.measurementScope = 'workspaceReady retains the baseline definition: canonical loading, import, projection and native shell/controller readiness. Initial visible content is measured separately before initial resource capture/edit/save. Mixed content kinds are explicitly revealed later; this replaces the old eager firstMixedContentReady phase and is not a directly comparable latency. Projection measures are elapsed wall time, not CPU. Read counts count requests, not returned rows. Heap excludes worker. Pan starts from restored initial camera.';
         ok = errors.length === 0;
-    } catch (error) {errors.push(error.stack || error.message); await captureContentLoads?.();}
+    } catch (error) {errors.push(error.stack || error.message); if (!metrics.contentLoads) await captureContentLoads?.();}
     process.send({type: 'result', result: {ok, metrics, errors}});
     try {await context?.close();} catch (error) {process.exitCode = 1; console.error(error.message);}
     process.disconnect();

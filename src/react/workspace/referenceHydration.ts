@@ -1,8 +1,10 @@
+import type {ReferenceLoadDiagnostics} from './referenceLoadDiagnostics';
+
 export interface HydrationPins {selected: boolean; focused: boolean; dragging: boolean; dirty: boolean}
 type Loader = (signal: AbortSignal) => Promise<() => void>;
 interface Entry {
     load: Loader; registration?: symbol; visible: boolean; pins: HydrationPins;
-    attempt?: AbortController; cleanup?: () => void; failed: boolean;
+    attempt?: AbortController; cleanup?: () => void; failed: boolean; lastEligibility?: boolean;
 }
 const unpinned = (): HydrationPins => ({selected: false, focused: false, dragging: false, dirty: false});
 const wanted = (entry: Entry) => Boolean(entry.registration && entry.visible) || Object.values(entry.pins).some(Boolean);
@@ -10,6 +12,7 @@ const wanted = (entry: Entry) => Boolean(entry.registration && entry.visible) ||
 // One owner per mounted page, with stable occurrence IDs. An aborted request
 // occupies its slot until it settles: cancellation must not exceed the IO bound.
 export function createReferenceHydration(options: {maxConcurrent: number; onError?: (error: unknown) => void;
+    trace?: Pick<ReferenceLoadDiagnostics, 'tracks' | 'record'>;
     onState?: (state: {loading: number; hydrated: number}) => void}) {
     if (!Number.isSafeInteger(options.maxConcurrent) || options.maxConcurrent < 1) throw new Error('Invalid hydration concurrency');
     const entries = new Map<string, Entry>(); let active = 0, hydrated = 0, closed = false;
@@ -21,7 +24,12 @@ export function createReferenceHydration(options: {maxConcurrent: number; onErro
         try {cleanup?.();} catch (error) {report(error);}
     };
     function reconcile(id: string, entry: Entry) {
-        if (!wanted(entry)) {
+        const eligible = wanted(entry);
+        if (options.trace?.tracks(id) && eligible !== (entry.lastEligibility ?? false)) {
+            entry.lastEligibility = eligible;
+            options.trace.record(id, {phase: 'eligible', eligible, activeLoads: active});
+        }
+        if (!eligible) {
             entry.attempt?.abort(); release(entry); entry.failed = false;
             if (!entry.registration && !entry.attempt) entries.delete(id);
         }
@@ -31,7 +39,9 @@ export function createReferenceHydration(options: {maxConcurrent: number; onErro
         for (const [id, entry] of entries) {
             if (active >= options.maxConcurrent) break;
             if (!wanted(entry) || entry.attempt || entry.cleanup || entry.failed) continue;
-            const controller = new AbortController(); entry.attempt = controller; active++; notify();
+            const controller = new AbortController(); entry.attempt = controller; active++;
+            if (options.trace?.tracks(id)) options.trace.record(id, {phase: 'slot', activeLoads: active});
+            notify();
             void Promise.resolve().then(() => {
                 if (closed || controller.signal.aborted) throw new DOMException('Content load cancelled', 'AbortError');
                 return entry.load(controller.signal);

@@ -58,3 +58,24 @@ test('diagnostic limits reject invalid allocation sizes', async t => {
         assert.throws(() => createReferenceLoadDiagnostics({activeLimit: value}), /limit/i);
     }
 });
+
+test('reveal events retain only the requested placement in both panes', async t => {
+    const {load} = await workspaceFixture(t);
+    const {createReferenceLoadDiagnostics} = load('referenceLoadDiagnostics.ts');
+    const trace = createReferenceLoadDiagnostics({placementId: 'target', historyLimit: 2, now: () => 20});
+    trace.record('document:other', {phase: 'visibility', visible: true, intersectionAt: 10});
+    trace.record('document:target', {phase: 'visibility', visible: true, intersectionAt: 12});
+    trace.record('document:target', {phase: 'eligible', eligible: true, activeLoads: 4});
+    trace.record('canvas:target', {phase: 'slot', activeLoads: 3});
+    const snapshot = trace.snapshot();
+    assert.deepEqual(snapshot.revealEvents, [
+        {occurrenceId: 'document:target', at: 20, phase: 'eligible', eligible: true, activeLoads: 4},
+        {occurrenceId: 'canvas:target', at: 20, phase: 'slot', activeLoads: 3}
+    ]);
+    assert.equal(snapshot.droppedRevealEvents, 1);
+    snapshot.revealEvents[0].at = -1;
+    assert.equal(trace.snapshot().revealEvents[0].at, 20);
+    trace.dispose();
+    trace.record('canvas:target', {phase: 'slot', activeLoads: 1});
+    assert.deepEqual(trace.snapshot().revealEvents, []);
+});

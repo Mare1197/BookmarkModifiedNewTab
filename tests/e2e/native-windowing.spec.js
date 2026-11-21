@@ -1,5 +1,6 @@
 const {test, expect} = require('./fixtures');
 const {makeNativeBoardFixture, seedNativeBoardFixture} = require('../helpers/nativeBoardFixture');
+const {installNativeImageReveal} = require('../helpers/nativeImageReveal');
 
 async function openFixture(context, extensionId, mode, measureIndexes = false, traceLoads = false) {
     const page = await context.newPage();
@@ -17,7 +18,7 @@ async function openFixture(context, extensionId, mode, measureIndexes = false, t
             }
         }).observe(document, {childList: true, subtree: true});
     }, measureIndexes);
-    await page.goto(`chrome-extension://${extensionId}/newtab.html${traceLoads ? '?nativeLoadTrace=1' : ''}`);
+    await page.goto(`chrome-extension://${extensionId}/newtab.html${traceLoads ? '?nativeLoadTrace=1&nativeLoadPlacement=native%3Aplacement%3A3' : ''}`);
     const boards = () => page.frameLocator('iframe[title="Browser OS desktop"]').getByRole('button', {name: 'Boards', exact: true}).click();
     await boards(); await expect(page.locator('.workspaceTitlebar')).toBeVisible(); await page.reload();
     await seedNativeBoardFixture(page, makeNativeBoardFixture(50, mode)); await page.reload(); await boards();
@@ -48,14 +49,47 @@ for (const mode of ['document', 'canvas', 'mixed']) test(`native ${mode} keeps c
 });
 
 test('opt-in reference diagnostics trace image reveal and release their workspace reader', async ({context, extensionId}) => {
-    const {page, ws} = await openFixture(context, extensionId, 'canvas', false, true);
+    const {page, ws} = await openFixture(context, extensionId, 'mixed', false, true);
     const host = ws.locator('.affineNativeHost');
+    const placementId = 'native:placement:3';
+    const imageSelector = '[data-placement-id="native:placement:3"] img';
+    const docCard = ws.locator('page-editor [data-placement-id="native:placement:3"]');
+    await expect(docCard.locator('img')).toHaveCount(0);
+    await page.evaluate(installNativeImageReveal, {editor: 'page-editor', placementId});
     await ws.locator('affine-edgeless-root').evaluate(root => root.service.viewport.setViewport(1, [1370, 110]));
-    await expect(ws.locator('[data-placement-id="native:placement:3"] img')).toBeAttached();
+    await expect(ws.locator('edgeless-editor ' + imageSelector)).toBeAttached();
+    const canvasOnly = await page.evaluate(() => window.nativeImageRevealProbe.finish());
+    expect(canvasOnly.firstObservedAt).toBeNull();
+    expect(canvasOnly.attachedAtCapture).toBe(false);
+
+    await page.evaluate(installNativeImageReveal, {editor: 'page-editor', placementId});
+    await docCard.scrollIntoViewIfNeeded();
+    await page.evaluate(() => window.nativeImageRevealProbe.markScrollComplete());
+    await expect(docCard.locator('img')).toBeAttached();
+    const reveal = await page.evaluate(() => window.nativeImageRevealProbe.finish());
+    expect(reveal.alreadyAttached).toBe(false);
+    expect(reveal.firstObservedAt).toBeGreaterThanOrEqual(reveal.scrollRequestedAt);
+    expect(reveal.firstObservedAt).toBeLessThanOrEqual(reveal.capturedAt);
+    expect(reveal.scrollCompletedAt).toBeGreaterThanOrEqual(reveal.scrollRequestedAt);
+    expect(reveal.attachedAtCapture).toBe(true);
+    expect(await page.evaluate(() => window.nativeImageRevealProbe)).toBeUndefined();
     const snapshot = await host.evaluate(node => node.nativeLoadDiagnostics.snapshot());
     const image = snapshot.completed.filter(record => record.entityId === 'native:object:00003');
-    for (const phase of ['entity', 'asset', 'raster', 'render', 'attach']) {
-        expect(image.some(record => record.phase === phase && record.status === 'complete' && record.occurrenceId === 'canvas:native:placement:3')).toBe(true);
+    for (const pane of ['document', 'canvas']) {
+        const occurrenceId = pane + ':' + placementId;
+        const events = snapshot.revealEvents.filter(event => event.occurrenceId === occurrenceId);
+        const visible = events.find(event => event.phase === 'visibility' && event.visible);
+        const eligible = events.find(event => event.phase === 'eligible' && event.eligible);
+        const slot = events.find(event => event.phase === 'slot');
+        const read = image.find(record => record.phase === 'entity' && record.occurrenceId === occurrenceId);
+        expect(eligible.at).toBeGreaterThanOrEqual(visible.at);
+        expect(slot.at).toBeGreaterThanOrEqual(eligible.at);
+        expect(slot.activeLoads).toBeLessThanOrEqual(4);
+        expect(read.startedAt).toBeGreaterThanOrEqual(slot.at);
+        if (pane === 'document') expect(visible.intersectionAt).toBeLessThanOrEqual(visible.at);
+        for (const phase of ['entity', 'asset', 'raster', 'render', 'attach']) {
+            expect(image.some(record => record.phase === phase && record.status === 'complete' && record.occurrenceId === occurrenceId)).toBe(true);
+        }
     }
     expect(snapshot.active.length).toBeLessThanOrEqual(64);
     expect(snapshot.completed.length).toBeLessThanOrEqual(200);
@@ -66,6 +100,7 @@ test('opt-in reference diagnostics trace image reveal and release their workspac
     expect(await page.evaluate(() => window.tracedNativeHost.nativeLoadDiagnostics)).toBeUndefined();
     const released = await page.evaluate(() => window.tracedNativeReader.snapshot());
     expect(released.active).toEqual([]); expect(released.completed).toEqual([]);
+    expect(released.revealEvents).toEqual([]);
 });
 
 test('dirty rich-text resource survives actual native disconnect and reconnect', async ({context, extensionId}) => {
