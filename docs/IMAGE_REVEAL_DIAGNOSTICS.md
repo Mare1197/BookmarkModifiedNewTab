@@ -14,6 +14,8 @@ document.querySelector('.affineNativeHost')?.nativeLoadDiagnostics?.snapshot()
 
 The snapshot contains pending stages with elapsed times and completed stages with durations and outcomes. Each record identifies the canonical object and its document/canvas occurrence. Stages cover entity reads, conversation messages, task reads, asset reads, raster validation, rendering, body attachment, abort and disposal.
 
+Add `&nativeLoadPlacement=<placement ID>` to record a second bounded history for one placement across both panes. It records visibility changes, eligibility for hydration, and slot acquisition. For document visibility, `intersectionAt` is the browser's timestamp for the intersection entry and `at` is when the application processed it. The snapshot retains the latest 200 reveal events with a separate drop counter.
+
 The collector retains at most 64 pending records and the latest 200 completed records. Drop counters identify truncated data. It records IDs and timing metadata, without titles, message bodies or file bytes. It does not write to the Brain or browser storage. Closing the workspace removes its reader and clears the collector; export a snapshot before closing if needed.
 
 A completed read can follow an abort record: pending database operations still settle before their concurrency slot is released. The trace does not change the four-load concurrency limit or assertion deadlines. Timing adds instrumentation overhead, so traced results must be labeled separately from ordinary benchmarks. The `attach` stage measures DOM attachment, not image decoding or paint.
@@ -30,11 +32,29 @@ $env:NATIVE_TRACE_LOADS = '1'
 
 The worker then enables the page switch and adds `metrics.contentLoads` after the mixed-content reveal, or in its error handler. A capture failure is reported as `metrics.contentLoadsError` without replacing the original error. A terminated or unresponsive browser may prevent capture; a supervisor timeout alone does not establish the slow stage.
 
+The worker targets `native:placement:3` and adds `metrics.imageReveal` for the pane under test. It records a page marker before the scroll or pan command, a second marker after the command returns, the first image attachment observed in that pane, and up to 200 overlapping Long Tasks API entries. The runner records the five-second assertion separately and includes the round trips for both clock samples. The scroll markers bracket browser automation calls, and the mutation observer timestamp includes callback delivery time. Treat comparisons between the two clocks as approximate.
+
 Remove the variable for ordinary comparison runs:
 
 ```powershell
 Remove-Item Env:NATIVE_TRACE_LOADS
 ```
+
+## Mixed-mode reveal timeline
+
+All five serial 1,000-card Mixed samples passed with tracing enabled. There were no failures or skips, and all five owned profiles were removed. The [timeline evidence](evidence/mixed-image-reveal-timeline.json) records the timings, Chromium version, tested source `377fb731eff079c8c484dfbcebd9e5845697a683`, and artifact digest.
+
+| Sample | Workspace ready (s) | Scroll marker to observed image (s) | Image assertion (s) | Intersection delivery (ms) | Slot to entity read start (ms) |
+| ---: | ---: | ---: | ---: | ---: | ---: |
+| 1 | 16.69 | 2.65 | 3.86 | 1,258 | 127 |
+| 2 | 16.41 | 2.07 | 3.54 | 60 | 1,171 |
+| 3 | 15.67 | 3.54 | 3.66 | 1,198 | 64 |
+| 4 | 16.51 | 2.65 | 3.85 | 1,273 | 124 |
+| 5 | 16.40 | 3.53 | 3.73 | 1,188 | 79 |
+
+Every document occurrence became eligible with zero slots in use and acquired a slot within 0.2 ms at the browser timer's precision. Read and validation timings varied. The entity read took 0.71–1.07 seconds, the asset read reached 1.12 seconds in sample 3, and raster validation reached 1.13 seconds in sample 5. DOM attachment took at most 0.2 ms. The observer reported no overlapping long tasks and no dropped records. The long-task observation does not capture shorter tasks, other processes, or all sources of callback and I/O delay.
+
+The expanded trace remains opt-in. These runs did not reproduce the intermittent timeout, so the issue stays open. The earlier failed sample below remains part of the evidence.
 
 ## Verification on 20 November 2026
 

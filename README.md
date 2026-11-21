@@ -48,9 +48,9 @@ complete AFFiNE parity or completion of the entire product specification.
   closed and reopened; incomplete native reference creation fails preparation with Retry.
 
 Opt-in [reference content load diagnostics](docs/IMAGE_REVEAL_DIAGNOSTICS.md) record
-object/occurrence IDs, stage timings and outcomes in bounded memory. They are disabled
-by default and cleared on workspace close. The intermittent 1,000-card Mixed-mode
-image-reveal failure remains open; its captured trace is included in the report.
+visibility, load-slot acquisition, reads, and attachment in bounded memory. They are
+disabled by default and cleared on workspace close. Five traced 1,000-card Mixed
+samples passed in the latest run. The intermittent timeout remains open.
 
 The extension does not calculate accumulated total-open time and does not require an AI provider.
 

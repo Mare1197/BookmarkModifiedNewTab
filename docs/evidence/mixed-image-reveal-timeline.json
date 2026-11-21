@@ -1,0 +1,667 @@
+{
+  "sourceRevision": "377fb731eff079c8c484dfbcebd9e5845697a683",
+  "artifactDigest": "3191dbef1ea0f5e95d1282eb5a1952898cba03343ac39e957b8a95424a412be0",
+  "platform": "win32",
+  "node": "v24.13.0",
+  "chromium": "151.0.7922.34",
+  "mode": "mixed",
+  "cards": 1000,
+  "traceEnabled": true,
+  "imageTimeoutMs": 5000,
+  "requested": 5,
+  "passed": 5,
+  "failed": 0,
+  "skipped": 0,
+  "samples": [
+    {
+      "sample": 1,
+      "passed": true,
+      "elapsedMs": 48561.3065,
+      "workspaceReadyMs": 16693.1713,
+      "revealAllKindsMs": 4741.428599999999,
+      "peakLoadSlots": 4,
+      "imageReveal": {
+        "editor": "page-editor",
+        "placementId": "native:placement:3",
+        "scrollRequestedAt": 28605.79999999702,
+        "scrollCompletedAt": 29010.59999999404,
+        "capturedAt": 32884.5,
+        "alreadyAttached": false,
+        "firstObservedAt": 31661.29999999702,
+        "attachedAtCapture": true,
+        "longTasks": [],
+        "droppedLongTasks": 0,
+        "scrollCompletionClock": {
+          "runnerBefore": 37538.4704,
+          "pageAt": 29010.59999999404,
+          "runnerAfter": 37541.0748
+        },
+        "assertion": {
+          "startedAt": 37541.0787,
+          "finishedAt": 41400.198,
+          "durationMs": 3859.1192999999985,
+          "passed": true
+        },
+        "captureClock": {
+          "runnerBefore": 41400.2363,
+          "pageAt": 32884.5,
+          "runnerAfter": 41414.7802
+        }
+      },
+      "revealEvents": [
+        {
+          "phase": "visibility",
+          "visible": false,
+          "intersectionAt": 8276.20000000298,
+          "occurrenceId": "document:native:placement:3",
+          "at": 8382.89999999106
+        },
+        {
+          "phase": "visibility",
+          "visible": false,
+          "occurrenceId": "canvas:native:placement:3",
+          "at": 17676.39999999106
+        },
+        {
+          "phase": "visibility",
+          "visible": true,
+          "intersectionAt": 29104.09999999404,
+          "occurrenceId": "document:native:placement:3",
+          "at": 30361.89999999106
+        },
+        {
+          "phase": "eligible",
+          "eligible": true,
+          "activeLoads": 0,
+          "occurrenceId": "document:native:placement:3",
+          "at": 30361.89999999106
+        },
+        {
+          "phase": "slot",
+          "activeLoads": 1,
+          "occurrenceId": "document:native:placement:3",
+          "at": 30362
+        }
+      ],
+      "targetStages": [
+        {
+          "id": 57,
+          "entityId": "native:object:00003",
+          "occurrenceId": "document:native:placement:3",
+          "phase": "entity",
+          "startedAt": 30489.20000000298,
+          "finishedAt": 31515.39999999106,
+          "durationMs": 1026.199999988079,
+          "status": "complete"
+        },
+        {
+          "id": 59,
+          "entityId": "native:object:00003",
+          "occurrenceId": "document:native:placement:3",
+          "phase": "asset",
+          "startedAt": 31515.39999999106,
+          "finishedAt": 31556.39999999106,
+          "durationMs": 41,
+          "status": "complete"
+        },
+        {
+          "id": 62,
+          "entityId": "native:object:00003",
+          "occurrenceId": "document:native:placement:3",
+          "phase": "raster",
+          "startedAt": 31556.39999999106,
+          "finishedAt": 31660.29999999702,
+          "durationMs": 103.90000000596046,
+          "status": "complete"
+        },
+        {
+          "id": 63,
+          "entityId": "native:object:00003",
+          "occurrenceId": "document:native:placement:3",
+          "phase": "render",
+          "startedAt": 31660.29999999702,
+          "finishedAt": 31660.89999999106,
+          "durationMs": 0.5999999940395355,
+          "status": "complete"
+        },
+        {
+          "id": 64,
+          "entityId": "native:object:00003",
+          "occurrenceId": "document:native:placement:3",
+          "phase": "attach",
+          "startedAt": 31661.09999999404,
+          "finishedAt": 31661.20000000298,
+          "durationMs": 0.10000000894069672,
+          "status": "complete"
+        }
+      ],
+      "activeAtCapture": [],
+      "dropped": {
+        "active": 0,
+        "history": 0,
+        "revealEvents": 0
+      },
+      "profileCleaned": true
+    },
+    {
+      "sample": 2,
+      "passed": true,
+      "elapsedMs": 46252.988099999995,
+      "workspaceReadyMs": 16414.96,
+      "revealAllKindsMs": 4083.5310000000027,
+      "peakLoadSlots": 4,
+      "imageReveal": {
+        "editor": "page-editor",
+        "placementId": "native:placement:3",
+        "scrollRequestedAt": 26667.5,
+        "scrollCompletedAt": 26789,
+        "capturedAt": 30335.79999999702,
+        "alreadyAttached": false,
+        "firstObservedAt": 28863.40000000596,
+        "attachedAtCapture": true,
+        "longTasks": [],
+        "droppedLongTasks": 0,
+        "scrollCompletionClock": {
+          "runnerBefore": 36193.4154,
+          "pageAt": 26789,
+          "runnerAfter": 36197.4307
+        },
+        "assertion": {
+          "startedAt": 36197.4361,
+          "finishedAt": 39736.4705,
+          "durationMs": 3539.034400000004,
+          "passed": true
+        },
+        "captureClock": {
+          "runnerBefore": 39736.5217,
+          "pageAt": 30335.79999999702,
+          "runnerAfter": 39745.832
+        }
+      },
+      "revealEvents": [
+        {
+          "phase": "visibility",
+          "visible": false,
+          "intersectionAt": 7908.0999999940395,
+          "occurrenceId": "document:native:placement:3",
+          "at": 8007.79999999702
+        },
+        {
+          "phase": "visibility",
+          "visible": false,
+          "occurrenceId": "canvas:native:placement:3",
+          "at": 16794.70000000298
+        },
+        {
+          "phase": "visibility",
+          "visible": true,
+          "intersectionAt": 26803.90000000596,
+          "occurrenceId": "document:native:placement:3",
+          "at": 26864.20000000298
+        },
+        {
+          "phase": "eligible",
+          "eligible": true,
+          "activeLoads": 0,
+          "occurrenceId": "document:native:placement:3",
+          "at": 26864.20000000298
+        },
+        {
+          "phase": "slot",
+          "activeLoads": 1,
+          "occurrenceId": "document:native:placement:3",
+          "at": 26864.29999999702
+        }
+      ],
+      "targetStages": [
+        {
+          "id": 57,
+          "entityId": "native:object:00003",
+          "occurrenceId": "document:native:placement:3",
+          "phase": "entity",
+          "startedAt": 28035.09999999404,
+          "finishedAt": 28740.09999999404,
+          "durationMs": 705,
+          "status": "complete"
+        },
+        {
+          "id": 59,
+          "entityId": "native:object:00003",
+          "occurrenceId": "document:native:placement:3",
+          "phase": "asset",
+          "startedAt": 28740.20000000298,
+          "finishedAt": 28788.20000000298,
+          "durationMs": 48,
+          "status": "complete"
+        },
+        {
+          "id": 62,
+          "entityId": "native:object:00003",
+          "occurrenceId": "document:native:placement:3",
+          "phase": "raster",
+          "startedAt": 28788.20000000298,
+          "finishedAt": 28862.59999999404,
+          "durationMs": 74.3999999910593,
+          "status": "complete"
+        },
+        {
+          "id": 63,
+          "entityId": "native:object:00003",
+          "occurrenceId": "document:native:placement:3",
+          "phase": "render",
+          "startedAt": 28862.59999999404,
+          "finishedAt": 28863,
+          "durationMs": 0.4000000059604645,
+          "status": "complete"
+        },
+        {
+          "id": 64,
+          "entityId": "native:object:00003",
+          "occurrenceId": "document:native:placement:3",
+          "phase": "attach",
+          "startedAt": 28863.29999999702,
+          "finishedAt": 28863.29999999702,
+          "durationMs": 0,
+          "status": "complete"
+        }
+      ],
+      "activeAtCapture": [],
+      "dropped": {
+        "active": 0,
+        "history": 0,
+        "revealEvents": 0
+      },
+      "profileCleaned": true
+    },
+    {
+      "sample": 3,
+      "passed": true,
+      "elapsedMs": 41791.000499999995,
+      "workspaceReadyMs": 15667.8675,
+      "revealAllKindsMs": 4155.228099999997,
+      "peakLoadSlots": 4,
+      "imageReveal": {
+        "editor": "page-editor",
+        "placementId": "native:placement:3",
+        "scrollRequestedAt": 25652.40000000596,
+        "scrollCompletedAt": 25738.30000001192,
+        "capturedAt": 29413.20000000298,
+        "alreadyAttached": false,
+        "firstObservedAt": 29278.40000000596,
+        "attachedAtCapture": true,
+        "longTasks": [],
+        "droppedLongTasks": 0,
+        "scrollCompletionClock": {
+          "runnerBefore": 31632.0871,
+          "pageAt": 25738.30000001192,
+          "runnerAfter": 31634.1387
+        },
+        "assertion": {
+          "startedAt": 31634.1428,
+          "finishedAt": 35294.5064,
+          "durationMs": 3660.363599999997,
+          "passed": true
+        },
+        "captureClock": {
+          "runnerBefore": 35294.5436,
+          "pageAt": 29413.20000000298,
+          "runnerAfter": 35310.5892
+        }
+      },
+      "revealEvents": [
+        {
+          "phase": "visibility",
+          "visible": false,
+          "intersectionAt": 7817.300000011921,
+          "occurrenceId": "document:native:placement:3",
+          "at": 7912.70000000298
+        },
+        {
+          "phase": "visibility",
+          "visible": false,
+          "occurrenceId": "canvas:native:placement:3",
+          "at": 16008.40000000596
+        },
+        {
+          "phase": "visibility",
+          "visible": true,
+          "intersectionAt": 25811.80000001192,
+          "occurrenceId": "document:native:placement:3",
+          "at": 27010
+        },
+        {
+          "phase": "eligible",
+          "eligible": true,
+          "activeLoads": 0,
+          "occurrenceId": "document:native:placement:3",
+          "at": 27010
+        },
+        {
+          "phase": "slot",
+          "activeLoads": 1,
+          "occurrenceId": "document:native:placement:3",
+          "at": 27010.10000000894
+        }
+      ],
+      "targetStages": [
+        {
+          "id": 57,
+          "entityId": "native:object:00003",
+          "occurrenceId": "document:native:placement:3",
+          "phase": "entity",
+          "startedAt": 27074.40000000596,
+          "finishedAt": 28141,
+          "durationMs": 1066.5999999940395,
+          "status": "complete"
+        },
+        {
+          "id": 59,
+          "entityId": "native:object:00003",
+          "occurrenceId": "document:native:placement:3",
+          "phase": "asset",
+          "startedAt": 28141.10000000894,
+          "finishedAt": 29258.90000000596,
+          "durationMs": 1117.7999999970198,
+          "status": "complete"
+        },
+        {
+          "id": 62,
+          "entityId": "native:object:00003",
+          "occurrenceId": "document:native:placement:3",
+          "phase": "raster",
+          "startedAt": 29258.90000000596,
+          "finishedAt": 29277.20000000298,
+          "durationMs": 18.299999997019768,
+          "status": "complete"
+        },
+        {
+          "id": 63,
+          "entityId": "native:object:00003",
+          "occurrenceId": "document:native:placement:3",
+          "phase": "render",
+          "startedAt": 29277.20000000298,
+          "finishedAt": 29277.90000000596,
+          "durationMs": 0.7000000029802322,
+          "status": "complete"
+        },
+        {
+          "id": 64,
+          "entityId": "native:object:00003",
+          "occurrenceId": "document:native:placement:3",
+          "phase": "attach",
+          "startedAt": 29278.10000000894,
+          "finishedAt": 29278.30000001192,
+          "durationMs": 0.20000000298023224,
+          "status": "complete"
+        }
+      ],
+      "activeAtCapture": [],
+      "dropped": {
+        "active": 0,
+        "history": 0,
+        "revealEvents": 0
+      },
+      "profileCleaned": true
+    },
+    {
+      "sample": 4,
+      "passed": true,
+      "elapsedMs": 45135.70939999999,
+      "workspaceReadyMs": 16514.0233,
+      "revealAllKindsMs": 4464.8704,
+      "peakLoadSlots": 4,
+      "imageReveal": {
+        "editor": "page-editor",
+        "placementId": "native:placement:3",
+        "scrollRequestedAt": 27990.29999999702,
+        "scrollCompletedAt": 28149.89999999106,
+        "capturedAt": 32012.29999999702,
+        "alreadyAttached": false,
+        "firstObservedAt": 30795,
+        "attachedAtCapture": true,
+        "longTasks": [],
+        "droppedLongTasks": 0,
+        "scrollCompletionClock": {
+          "runnerBefore": 34509.2937,
+          "pageAt": 28149.89999999106,
+          "runnerAfter": 34511.1059
+        },
+        "assertion": {
+          "startedAt": 34511.1095,
+          "finishedAt": 38358.3826,
+          "durationMs": 3847.2730999999985,
+          "passed": true
+        },
+        "captureClock": {
+          "runnerBefore": 38358.4246,
+          "pageAt": 32012.29999999702,
+          "runnerAfter": 38373.9742
+        }
+      },
+      "revealEvents": [
+        {
+          "phase": "visibility",
+          "visible": false,
+          "intersectionAt": 7809.0999999940395,
+          "occurrenceId": "document:native:placement:3",
+          "at": 7907.0999999940395
+        },
+        {
+          "phase": "visibility",
+          "visible": false,
+          "occurrenceId": "canvas:native:placement:3",
+          "at": 17277.29999999702
+        },
+        {
+          "phase": "visibility",
+          "visible": true,
+          "intersectionAt": 28225.29999999702,
+          "occurrenceId": "document:native:placement:3",
+          "at": 29498.09999999404
+        },
+        {
+          "phase": "eligible",
+          "eligible": true,
+          "activeLoads": 0,
+          "occurrenceId": "document:native:placement:3",
+          "at": 29498.09999999404
+        },
+        {
+          "phase": "slot",
+          "activeLoads": 1,
+          "occurrenceId": "document:native:placement:3",
+          "at": 29498.29999999702
+        }
+      ],
+      "targetStages": [
+        {
+          "id": 57,
+          "entityId": "native:object:00003",
+          "occurrenceId": "document:native:placement:3",
+          "phase": "entity",
+          "startedAt": 29621.79999999702,
+          "finishedAt": 30651.29999999702,
+          "durationMs": 1029.5,
+          "status": "complete"
+        },
+        {
+          "id": 59,
+          "entityId": "native:object:00003",
+          "occurrenceId": "document:native:placement:3",
+          "phase": "asset",
+          "startedAt": 30651.39999999106,
+          "finishedAt": 30691.20000000298,
+          "durationMs": 39.80000001192093,
+          "status": "complete"
+        },
+        {
+          "id": 62,
+          "entityId": "native:object:00003",
+          "occurrenceId": "document:native:placement:3",
+          "phase": "raster",
+          "startedAt": 30691.20000000298,
+          "finishedAt": 30793.79999999702,
+          "durationMs": 102.59999999403954,
+          "status": "complete"
+        },
+        {
+          "id": 63,
+          "entityId": "native:object:00003",
+          "occurrenceId": "document:native:placement:3",
+          "phase": "render",
+          "startedAt": 30793.89999999106,
+          "finishedAt": 30794.5,
+          "durationMs": 0.6000000089406967,
+          "status": "complete"
+        },
+        {
+          "id": 64,
+          "entityId": "native:object:00003",
+          "occurrenceId": "document:native:placement:3",
+          "phase": "attach",
+          "startedAt": 30794.70000000298,
+          "finishedAt": 30794.79999999702,
+          "durationMs": 0.09999999403953552,
+          "status": "complete"
+        }
+      ],
+      "activeAtCapture": [],
+      "dropped": {
+        "active": 0,
+        "history": 0,
+        "revealEvents": 0
+      },
+      "profileCleaned": true
+    },
+    {
+      "sample": 5,
+      "passed": true,
+      "elapsedMs": 49800.58869999999,
+      "workspaceReadyMs": 16402.269399999997,
+      "revealAllKindsMs": 4445.261100000003,
+      "peakLoadSlots": 4,
+      "imageReveal": {
+        "editor": "page-editor",
+        "placementId": "native:placement:3",
+        "scrollRequestedAt": 27246.39999999106,
+        "scrollCompletedAt": 27407.29999999702,
+        "capturedAt": 31232.70000000298,
+        "alreadyAttached": false,
+        "firstObservedAt": 30941.20000000298,
+        "attachedAtCapture": true,
+        "longTasks": [],
+        "droppedLongTasks": 0,
+        "scrollCompletionClock": {
+          "runnerBefore": 34413.7782,
+          "pageAt": 27407.29999999702,
+          "runnerAfter": 34415.4987
+        },
+        "assertion": {
+          "startedAt": 34415.5021,
+          "finishedAt": 38150.0719,
+          "durationMs": 3734.5698000000048,
+          "passed": true
+        },
+        "captureClock": {
+          "runnerBefore": 38150.1133,
+          "pageAt": 31232.70000000298,
+          "runnerAfter": 38243.7428
+        }
+      },
+      "revealEvents": [
+        {
+          "phase": "visibility",
+          "visible": false,
+          "intersectionAt": 8350.5,
+          "occurrenceId": "document:native:placement:3",
+          "at": 8445.89999999106
+        },
+        {
+          "phase": "visibility",
+          "visible": false,
+          "occurrenceId": "canvas:native:placement:3",
+          "at": 17222.5
+        },
+        {
+          "phase": "visibility",
+          "visible": true,
+          "intersectionAt": 27478.20000000298,
+          "occurrenceId": "document:native:placement:3",
+          "at": 28665.79999999702
+        },
+        {
+          "phase": "eligible",
+          "eligible": true,
+          "activeLoads": 0,
+          "occurrenceId": "document:native:placement:3",
+          "at": 28665.79999999702
+        },
+        {
+          "phase": "slot",
+          "activeLoads": 1,
+          "occurrenceId": "document:native:placement:3",
+          "at": 28665.89999999106
+        }
+      ],
+      "targetStages": [
+        {
+          "id": 57,
+          "entityId": "native:object:00003",
+          "occurrenceId": "document:native:placement:3",
+          "phase": "entity",
+          "startedAt": 28744.39999999106,
+          "finishedAt": 29762.29999999702,
+          "durationMs": 1017.9000000059605,
+          "status": "complete"
+        },
+        {
+          "id": 59,
+          "entityId": "native:object:00003",
+          "occurrenceId": "document:native:placement:3",
+          "phase": "asset",
+          "startedAt": 29762.39999999106,
+          "finishedAt": 29804.29999999702,
+          "durationMs": 41.900000005960464,
+          "status": "complete"
+        },
+        {
+          "id": 62,
+          "entityId": "native:object:00003",
+          "occurrenceId": "document:native:placement:3",
+          "phase": "raster",
+          "startedAt": 29804.39999999106,
+          "finishedAt": 30937.29999999702,
+          "durationMs": 1132.9000000059605,
+          "status": "complete"
+        },
+        {
+          "id": 63,
+          "entityId": "native:object:00003",
+          "occurrenceId": "document:native:placement:3",
+          "phase": "render",
+          "startedAt": 30937.29999999702,
+          "finishedAt": 30940.79999999702,
+          "durationMs": 3.5,
+          "status": "complete"
+        },
+        {
+          "id": 64,
+          "entityId": "native:object:00003",
+          "occurrenceId": "document:native:placement:3",
+          "phase": "attach",
+          "startedAt": 30941.09999999404,
+          "finishedAt": 30941.20000000298,
+          "durationMs": 0.10000000894069672,
+          "status": "complete"
+        }
+      ],
+      "activeAtCapture": [],
+      "dropped": {
+        "active": 0,
+        "history": 0,
+        "revealEvents": 0
+      },
+      "profileCleaned": true
+    }
+  ]
+}
